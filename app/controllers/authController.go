@@ -1,7 +1,7 @@
 package controllers
 
 import (
-	User "github.com/Vfuryx/fagin/app/models/user"
+	User "fagin/app/models/user"
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"strconv"

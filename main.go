@@ -1,9 +1,9 @@
 package main
 
 import (
-	_ "github.com/Vfuryx/fagin/database/migrations"
-	"github.com/Vfuryx/fagin/database"
-	"github.com/Vfuryx/fagin/routes"
+	_ "fagin/database/migrations"
+	"fagin/database"
+	"fagin/routes"
 	"github.com/gin-gonic/gin"
 	"net/http"
 )

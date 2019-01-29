@@ -7,7 +7,7 @@ import (
 
 func init() {
 	viper.SetConfigName("env")
-	viper.AddConfigPath("$GOPATH/src/github.com/Vfuryx/fagin/")
+	viper.AddConfigPath("$GOPATH/src/fagin/")
 	viper.SetConfigType("yml")
 	err := viper.ReadInConfig()
 	if err != nil {

@@ -2,7 +2,7 @@ package database
 
 import (
 	"fmt"
-	"github.com/Vfuryx/fagin/config"
+	"fagin/config"
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/mysql"
 

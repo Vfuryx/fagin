@@ -1,7 +1,7 @@
 package routes
 
 import (
-	c "github.com/Vfuryx/fagin/app/controllers"
+	c "fagin/app/controllers"
 	"github.com/gin-gonic/gin"
 )
 

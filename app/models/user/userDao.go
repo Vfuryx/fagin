@@ -1,6 +1,6 @@
 package user
 
-import "github.com/Vfuryx/fagin/database"
+import "fagin/database"
 
 func Create(user *User) (ok bool, err error) {
 

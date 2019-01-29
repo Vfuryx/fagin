@@ -1,8 +1,8 @@
 package migrations
 
 import (
-	"github.com/Vfuryx/fagin/database"
-	_ "github.com/Vfuryx/fagin/database"
+	"fagin/database"
+	_ "fagin/database"
 )
 
 var ORM = database.ORM
