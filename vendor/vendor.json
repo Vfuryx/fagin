@@ -47,6 +47,14 @@
 			"versionExact": "v1.3.0"
 		},
 		{
+			"checksumSHA1": "yg01DVQJjQgMeXf9C7Fpl2Yo5+Y=",
+			"path": "github.com/go-sql-driver/mysql",
+			"revision": "72cd26f257d44c1114970e19afddcd812016007e",
+			"revisionTime": "2018-11-14T12:08:49Z",
+			"version": "v1.4.1",
+			"versionExact": "v1.4.1"
+		},
+		{
 			"checksumSHA1": "Y2MOwzNZfl4NRNDbLCZa6sgx7O0=",
 			"path": "github.com/golang/protobuf/proto",
 			"revision": "347cf4a86c1cb8d262994d8ef5924d4576c5b331",
@@ -225,6 +233,10 @@
 			"revision": ""
 		},
 		{
+			"path": "google.golang.org/appengine/cloudsql",
+			"revision": ""
+		},
+		{
 			"checksumSHA1": "P/k5ZGf0lEBgpKgkwy++F7K1PSg=",
 			"path": "gopkg.in/go-playground/validator.v8",
 			"revision": "5f1438d3fca68893a817e4a66806cea46a9e4ebf",
@@ -237,5 +249,5 @@
 			"revisionTime": "2018-11-15T11:05:04Z"
 		}
 	],
-	"rootPath": "github.com/Vfuryx/fagin"
+	"rootPath": "fagin"
 }
