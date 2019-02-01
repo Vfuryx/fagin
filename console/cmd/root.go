@@ -26,7 +26,7 @@ var cfgFile string
 var rootCmd = &cobra.Command{
 	Use:   "cli",
 	Short: "",
-	Long: ``,
+	Long:  ``,
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.
@@ -37,5 +37,3 @@ func Execute() {
 		os.Exit(1)
 	}
 }
-
-

@@ -19,7 +19,9 @@ gin 构建的 api 项目
 -- controllers  -- 控制器
 -- middleware   -- 中间件
 -- services     -- 业务
-- cmd           -- cmd
+- console       -- 控制台
+-- main.go      -- cmd 入口
+-- cmd          -- cmd 命令
 - config        -- 项目配置
 - database      -- 数据库
 - public        -- 公共口
@@ -41,11 +43,16 @@ gin 构建的 api 项目
 
 ```
 
+- make 
+
+    启动web server
 
 - make install 
 
-安装项目依赖库
+    安装项目依赖库
 
-- make dev 
+- make migrate
 
-启动web server
+    数据迁移
+
+
