@@ -5,7 +5,7 @@ import (
 	"github.com/spf13/viper"
 )
 
-type DBConfig struct {
+type Database struct {
 	Host 		string
 	Port 		string
 	DBName 		string
@@ -13,7 +13,9 @@ type DBConfig struct {
 	Password 	string
 }
 
-func (DB DBConfig) GetConnectLink() string{
+var DB = Database{}
+
+func (Database)GetConnectLink() string{
 
 	DB.Host 	= viper.GetString("db.host")
 	DB.Port 	= viper.GetString("db.port")
@@ -21,5 +23,8 @@ func (DB DBConfig) GetConnectLink() string{
 	DB.User 	= viper.GetString("db.user")
 	DB.Password = viper.GetString("db.password")
 
-	return fmt.Sprintf("%s:%s@(%s:%s)/%s?charset=utf8&parseTime=True&loc=Local",DB.User,DB.Password,DB.Host,DB.Port,DB.DBName)
+	return fmt.Sprintf(
+		"%s:%s@(%s:%s)/%s?charset=utf8&parseTime=True&loc=Local",
+		DB.User,DB.Password,DB.Host,DB.Port,DB.DBName,
+		)
 }

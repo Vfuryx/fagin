@@ -13,7 +13,6 @@ type User struct {
 	Age 		uint8		`gorm:"type: tinyint unsigned; not null; default: 0; column: age"`
 }
 
-
 // 设定表名
 //func (User) TableName() string {
 //	return "users"

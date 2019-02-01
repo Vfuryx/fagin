@@ -1,8 +1,9 @@
 package main
 
 import (
-	_ "fagin/database/migrations"
-	"fagin/database"
+	"fagin/app/models"
+	"fagin/cmd"
+	_ "fagin/config" // 加载配置
 	"fagin/routes"
 	"github.com/gin-gonic/gin"
 	"net/http"
@@ -11,8 +12,14 @@ import (
 var Gin = gin.Default()
 
 func main() {
+
+	// 获取路由配置
 	router := routes.InitRoute()
 
+	// 开启cli
+	cmd.Execute()
+
+	// 设置服务
 	s := &http.Server{
 		Addr:           ":8080",
 		Handler:        router,
@@ -22,7 +29,9 @@ func main() {
 	}
 
 	// 关闭orm
-	defer database.ORM.Close()
+	defer models.ORM.Close()
 
+	// 开启监听
 	s.ListenAndServe()
 }
+

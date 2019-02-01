@@ -1,11 +1,10 @@
-package database
+package models
 
 import (
-	"fmt"
 	"fagin/config"
-	"github.com/jinzhu/gorm"
+	"fmt"
 	_ "github.com/go-sql-driver/mysql"
-
+	"github.com/jinzhu/gorm"
 )
 
 var ORM *gorm.DB
@@ -13,16 +12,16 @@ var ORM *gorm.DB
 func init()  {
 	var err error
 
-	link := config.DBConfig{}.GetConnectLink();
+	link := config.DB.GetConnectLink();
 
 	orm, err := gorm.Open("mysql", link)
 
 	if err != nil {
-		fmt.Printf("mysql connect error %v", err)
+		panic(fmt.Errorf("mysql connect error %v \n", err))
 	}
 
 	if orm.Error != nil {
-		fmt.Printf("database error %v", orm.Error)
+		panic(fmt.Errorf("database error %v \n", err))
 	}
 
 	ORM = orm

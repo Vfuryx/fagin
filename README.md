@@ -4,12 +4,11 @@ gin 构建的 api 项目
 
 扩展包
 
-- gin
-
-- gorm
-
-- github.com/spf13/viper@v1.3.1
-
+- gin                                   ---- gin
+- gorm                                  ---- orm
+- gormigrate                            ---- 数据迁移
+- github.com/spf13/viper@v1.3.1         ---- 配置
+- github.com/spf13/cobra                ---- cli 
 
 ### 项目结构
 
@@ -20,6 +19,7 @@ gin 构建的 api 项目
 -- controllers  -- 控制器
 -- middleware   -- 中间件
 -- services     -- 业务
+- cmd           -- cmd
 - config        -- 项目配置
 - database      -- 数据库
 - public        -- 公共口

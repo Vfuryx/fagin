@@ -5,6 +5,8 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+
+
 func InitRoute() *gin.Engine{
 
 	r := gin.New()
@@ -20,7 +22,6 @@ func InitRoute() *gin.Engine{
 		api.GET("/logout", c.AuthController{}.Logout)
 		api.GET("/add", c.AuthController{}.CreateUser)
 	}
-
 
 	return r
 }

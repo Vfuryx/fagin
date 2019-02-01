@@ -1,13 +1,12 @@
 package migrations
 
 import (
-	"fagin/database"
-	_ "fagin/database"
+	"fagin/app/models"
 )
 
-var ORM = database.ORM
+var ORM = models.ORM
 
-func init()  {
+func Init()  {
 
 	create_user_2018_01_23_00001()
 	//delete_user_col_phone_2018_01_23_00002()
