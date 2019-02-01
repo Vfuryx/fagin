@@ -7,3 +7,6 @@ install:
 
 migrate:
 	go run console/main.go migrate
+
+build:
+	go build .

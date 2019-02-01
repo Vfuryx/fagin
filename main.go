@@ -15,6 +15,9 @@ func main() {
 	// 获取路由配置
 	router := routes.InitRoute()
 
+	// 关闭orm
+	defer models.ORM.Close()
+
 	// 设置服务
 	s := &http.Server{
 		Addr:    ":8080",
@@ -23,9 +26,6 @@ func main() {
 		//WriteTimeout:   setting.WriteTimeout,
 		MaxHeaderBytes: 8 << 20,
 	}
-
-	// 关闭orm
-	defer models.ORM.Close()
 
 	// 开启监听
 	s.ListenAndServe()

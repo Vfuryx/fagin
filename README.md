@@ -54,5 +54,8 @@ gin 构建的 api 项目
 - make migrate
 
     数据迁移
+    
+- make build
+    打包程序
 
 
