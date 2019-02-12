@@ -17,8 +17,8 @@ package cmd
 import (
 	"fagin/database/migrations"
 	"fmt"
-
 	"github.com/spf13/cobra"
+	"strings"
 )
 
 // migrateCmd represents the migrate command
@@ -32,8 +32,20 @@ Cobra is a CLI library for Go that empowers applications.
 This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("migrate success")
-		migrations.Init()
+
+		str := strings.Join(args, " ")
+		fmt.Println(str)
+		switch str {
+			case "reset":
+				fmt.Println("migrate reset success")
+				migrations.Reset()
+			case "rollback":
+				fmt.Println("migrate rollback success")
+				migrations.Rollback()
+			default:
+				migrations.Init()
+				fmt.Println("migrate success")
+		}
 	},
 }
 
