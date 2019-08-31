@@ -15,16 +15,19 @@
 package cmd
 
 import (
-	"fagin/database/migrations"
+	"fagin/app/models/role"
+	"fagin/app/models/user"
+	"fagin/app/service"
 	"fagin/pkg/db"
 	"fmt"
+	"strconv"
+
 	"github.com/spf13/cobra"
-	"strings"
 )
 
-// migrateCmd represents the migrate command
-var migrateCmd = &cobra.Command{
-	Use:   "migrate",
+// adminCmd represents the admin command
+var adminCmd = &cobra.Command{
+	Use:   "admin",
 	Short: "A brief description of your command",
 	Long: `A longer description that spans multiple lines and likely contains examples
 and usage of using your command. For example:
@@ -32,36 +35,46 @@ and usage of using your command. For example:
 Cobra is a CLI library for Go that empowers applications.
 This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
-	Run: func(cmd *cobra.Command, args []string) {
 
-		str := strings.Join(args, " ")
-		fmt.Println(str)
-		switch str {
-			case "reset":
-				fmt.Println("migrate reset success")
-				migrations.Reset()
-			case "rollback":
-				fmt.Println("migrate rollback success")
-				migrations.Rollback()
-			default:
-				migrations.Init()
-				fmt.Println("migrate success")
+	Run: func(cmd *cobra.Command, args []string) {
+		fmt.Println("admin called")
+
+		password, _ := service.Encrypt("123456")
+		u := user.User{
+			Username: "admin",
+			Email:    "admin@admin.com",
+			Password: password,
 		}
-		// 关闭orm
-		defer db.ORM.Close()
+
+		// 添加超级管理员账号
+		if ok, _ := user.Create(&u); !ok {
+			fmt.Println("创建超级管理员失败")
+			return
+		}
+		// 添加角色
+		r := role.Role{Name: "admin", Sort: 9999}
+		role.Create(&r)
+
+		// 设置角色权限
+		service.Canbin.AddPolicyForRole("admin", "/*", "|")
+
+		// 设置超级管理员角色
+		service.Canbin.AddUserRole(strconv.Itoa(int(u.ID)), r.Name)
+
+		db.ORM.Close()
 	},
 }
 
 func init() {
-	rootCmd.AddCommand(migrateCmd)
+	rootCmd.AddCommand(adminCmd)
 
 	// Here you will define your flags and configuration settings.
 
 	// Cobra supports Persistent Flags which will work for this command
 	// and all subcommands, e.g.:
-	// migrateCmd.PersistentFlags().String("foo", "", "A help for foo")
+	// adminCmd.PersistentFlags().String("foo", "", "A help for foo")
 
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
-	// migrateCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	// adminCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }

@@ -13,3 +13,7 @@ db:
   port: "3306"
   user: "homestead"
   password: "secret"
+
+
+jwt:
+  secret:

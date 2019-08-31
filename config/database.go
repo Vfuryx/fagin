@@ -1,30 +1,33 @@
 package config
 
 import (
+	"fagin/pkg/conf"
 	"fmt"
-	"github.com/spf13/viper"
 )
 
 type Database struct {
 	Host 		string
 	Port 		string
-	DBName 		string
+	Name 		string
 	User 		string
 	Password 	string
 }
 
 var DB = Database{}
 
-func (Database)GetConnectLink() string{
+func init() {
+	DB.Host 	= conf.Env("DATABASE_HOST", "")
+	DB.Port 	= conf.Env("DATABASE_PORT", "")
+	DB.Name 	= conf.Env("DATABASE_NAME", "")
+	DB.User 	= conf.Env("DATABASE_USER", "")
+	DB.Password = conf.Env("DATABASE_PASSWORD", "")
+}
 
-	DB.Host 	= viper.GetString("db.host")
-	DB.Port 	= viper.GetString("db.port")
-	DB.DBName 	= viper.GetString("db.dbname")
-	DB.User 	= viper.GetString("db.user")
-	DB.Password = viper.GetString("db.password")
+// 获取 conn 链接
+func (Database)GetConnectLink() string{
 
 	return fmt.Sprintf(
 		"%s:%s@(%s:%s)/%s?charset=utf8&parseTime=True&loc=Local",
-		DB.User,DB.Password,DB.Host,DB.Port,DB.DBName,
+		DB.User,DB.Password,DB.Host,DB.Port,DB.Name,
 		)
 }

@@ -1,6 +1,8 @@
 package main
 
-import "fagin/console/cmd"
+import (
+	"fagin/console/cmd"
+)
 
 func main() {
 	// 开启cli

@@ -1,4 +1,4 @@
-package models
+package db
 
 import (
 	"fagin/config"
@@ -17,11 +17,11 @@ func init()  {
 	orm, err := gorm.Open("mysql", link)
 
 	if err != nil {
-		panic(fmt.Errorf("mysql connect error %v \n", err))
+		panic(fmt.Errorf("mysql connect exception %v \n", err))
 	}
 
 	if orm.Error != nil {
-		panic(fmt.Errorf("database error %v \n", err))
+		panic(fmt.Errorf("database exception %v \n", err))
 	}
 
 	ORM = orm

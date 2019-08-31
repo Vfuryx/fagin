@@ -1,5 +1,10 @@
 .idea
 .DS_store
-vendor/*
-!vendor/vendor.json
+.vscode
+vendor
 fagin
+main
+fagin
+fagin.log
+.env
+config.yml

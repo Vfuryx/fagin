@@ -1,38 +1,33 @@
 package migrations
 
 import (
-	"fagin/app/models"
+	"fagin/pkg/db"
 	"gopkg.in/gormigrate.v1"
 	"log"
 )
 
-var ORM = models.ORM
-
 /**
- * 加载迁移
- * 格式 m_20xx_xx_xx_xxxxx_action 要严格按照执行顺序
+ * 迁移集合
  */
-var migrations = []*gormigrate.Migration{
-	m_2018_01_23_00001_create_user,
-	m_2018_02_01_00001_add_user_col_phone_,
-	m_2018_02_01_00002_delete_user_col_phone,
+var migrations []*gormigrate.Migration
 
-	//...
+// 确保这里的init是最后一个执行
+func migration() *gormigrate.Gormigrate {
+	return gormigrate.New(db.ORM, gormigrate.DefaultOptions, migrations)
 }
-
-var migrate = gormigrate.New(ORM, gormigrate.DefaultOptions, migrations)
 
 /*
  * 迁移数据库
  */
-func Init()  {
+func Init() {
 	var err error
 
-	if err = migrate.Migrate(); err != nil {
+	if err = migration().Migrate(); err != nil {
 		log.Fatalf("Could not migrate: %v", err)
 	}
 
 	log.Printf("Migration did run successfully")
+
 }
 
 /**
@@ -41,7 +36,7 @@ func Init()  {
 func Rollback() {
 	var err error
 
-	if err = migrate.RollbackLast(); err != nil {
+	if err = migration().RollbackLast(); err != nil {
 		log.Fatalf("Could not migrate: %v", err)
 	}
 
@@ -51,11 +46,11 @@ func Rollback() {
 /**
  * 重置数据库
  */
-func Reset()  {
+func Reset() {
 	var err error
 
 	for {
-		if err = migrate.RollbackLast(); err != nil {
+		if err = migration().RollbackLast(); err != nil {
 			break
 		}
 	}

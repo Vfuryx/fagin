@@ -1,0 +1,48 @@
+kind: pipeline
+name: server
+
+
+platform:
+  os: linux
+  arch: amd64   // 设置平台
+
+ workspace:
+  base: /go
+  path: src/furyx/server
+
+
+steps:
+- name: restore-cache
+  image: drillster/drone-volume-cache  
+  settings:  
+    restore: true  
+    mount:  
+      - ./vendor
+  volumes:  
+    - name: cache  
+      path: /cache
+
+- name: build
+  image: golang:1.12
+  commands:
+    - pwd 
+    - export GOPROXY=https://athens.azurefd.net
+    - export GO111MODULE=on
+    - go build .
+    - go mod vendor
+    - ls
+
+- name: rebuild-cache  
+  image: drillster/drone-volume-cache  
+  settings:  
+    rebuild: true  
+    mount:  
+      - ./vendor
+  volumes:  
+    - name: cache  
+      path: /cache
+
+volumes:  
+  - name: cache  
+    host:  
+      path: /tmp/cache  # 主机路径 需要创建

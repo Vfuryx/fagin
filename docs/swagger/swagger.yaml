@@ -1,0 +1,37 @@
+basePath: '{{.BasePath}}'
+host: '{{.Host}}'
+info:
+  contact: {}
+  description: fagin服务.
+  license: {}
+  termsOfService: https://github.com/Vfuryx/server
+  title: server API
+  version: "1.0"
+paths:
+  /api/v1/login:
+    post:
+      consumes:
+      - application/json
+      description: 用户登录
+      parameters:
+      - description: 用户邮箱地址
+        in: formData
+        name: email
+        required: true
+        type: string
+      - description: 用户密码
+        in: formData
+        name: password
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"code":0,"message":"OK","data":{"token":"XXXXX"}}'
+          schema:
+            type: string
+      summary: 登录接口
+      tags:
+      - auth
+swagger: "2.0"
