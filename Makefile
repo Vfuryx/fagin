@@ -1,6 +1,7 @@
-
-export GOPROXY=http://mirrors.aliyun.com/goproxy/
+export GOPROXY=https://goproxy.cn
 export GO111MODULE=on
+
+Name=$(name)
 
 default:
 	go run main.go
@@ -20,6 +21,9 @@ create-admin:
 
 migrate:
 	go run console/main.go migrate
+
+migrate\:create:
+	go run console/main.go migrate create ${Name}
 
 migrate\:reset:
 	go run console/main.go migrate reset

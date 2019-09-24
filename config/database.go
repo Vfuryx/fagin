@@ -24,10 +24,9 @@ func init() {
 }
 
 // 获取 conn 链接
-func (Database)GetConnectLink() string{
-
+func (db *Database)GetConnectLink() string{
 	return fmt.Sprintf(
 		"%s:%s@(%s:%s)/%s?charset=utf8&parseTime=True&loc=Local",
-		DB.User,DB.Password,DB.Host,DB.Port,DB.Name,
-		)
+		db.User,db.Password,db.Host,db.Port,db.Name,
+	)
 }

@@ -6,7 +6,6 @@ require (
 	github.com/alecthomas/template v0.0.0-20160405071501-a0175ee3bccc
 	github.com/casbin/casbin v1.8.2
 	github.com/casbin/gorm-adapter v0.0.0-20190103152927-5f0f4b5ecad7
-	github.com/davecgh/go-spew v1.1.1
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/fastly/go-utils v0.0.0-20180712184237-d95a45783239 // indirect
 	github.com/fsnotify/fsnotify v1.4.7

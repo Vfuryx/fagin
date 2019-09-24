@@ -13,9 +13,8 @@ import (
 )
 
 func Run() {
-
 	// 关闭orm
-	defer db.ORM.Close()
+	defer db.Close()
 
 	// 获取路由配置
 	router := routes.InitRoute()

@@ -4,6 +4,8 @@ import (
 	"fagin/pkg/db"
 	"gopkg.in/gormigrate.v1"
 	"log"
+	"os"
+	"time"
 )
 
 /**
@@ -14,6 +16,43 @@ var migrations []*gormigrate.Migration
 // 确保这里的init是最后一个执行
 func migration() *gormigrate.Gormigrate {
 	return gormigrate.New(db.ORM, gormigrate.DefaultOptions, migrations)
+}
+
+/*
+ * 生成迁移文件
+ */
+func Create(name string)  {
+	if name == "" {
+		panic("文件名不能为空")
+	}
+
+	datetime := time.Now().Format("m_2006_01_02_150405_")
+
+	fileName := datetime + name
+	filePath := "./database/migrations/" + fileName + ".go"
+
+	//os.Stat获取文件信息
+	if _, err := os.Stat(filePath); err == nil {
+		panic("文件已存在")
+	}
+
+	file, err := os.Create(filePath)
+	if err != nil {
+		panic(err)
+	}
+	template := "package migrations \n\nimport (\n\t\"github.com/jinzhu/gorm\"\n\t\"gopkg.in/gormigrate.v1\"\n)\n\n" +
+		"func init() {\n\tmigrations = append(migrations, &gormigrate.Migration{\n\t\tID: \""+ fileName +"\",\n\t\t" +
+		"Migrate: func(tx *gorm.DB) error {\n\t\t\ttype table struct {\n\t\t\t\tgorm.Model\n\t\t\t}\n\t\t\treturn " +
+		"tx.AutoMigrate(&table{}).Error\n\t\t},\n\t\tRollback: func(tx *gorm.DB) error {\n\t\t\t" +
+		"return tx.DropTableIfExists(\"table\").Error\n\t\t},\n\t})\n}"
+
+	if _, err = file.WriteString(template); err != nil {
+		panic(err)
+	}
+
+	if err = file.Close(); err != nil {
+		panic(err)
+	}
 }
 
 /*

@@ -2,7 +2,6 @@ package user
 
 import (
 	"fagin/app/models/info"
-	_ "github.com/go-sql-driver/mysql"
 	"github.com/jinzhu/gorm"
 	"time"
 )

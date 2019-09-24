@@ -7,22 +7,28 @@ import (
 	"github.com/jinzhu/gorm"
 )
 
-var ORM *gorm.DB
+var (
+	ORM *gorm.DB
+	Err error
+)
 
 func init()  {
-	var err error
+	link := config.DB.GetConnectLink()
 
-	link := config.DB.GetConnectLink();
+	ORM, Err = gorm.Open("mysql", link)
 
-	orm, err := gorm.Open("mysql", link)
-
-	if err != nil {
-		panic(fmt.Errorf("mysql connect exception %v \n", err))
+	if Err != nil {
+		panic(fmt.Errorf("mysql connect exception %v \n", Err))
 	}
 
-	if orm.Error != nil {
-		panic(fmt.Errorf("database exception %v \n", err))
+	if ORM.Error != nil {
+		panic(fmt.Errorf("database exception %v \n", Err))
 	}
+}
 
-	ORM = orm
+func Close() {
+	Err = ORM.Close()
+	if Err != nil {
+		panic(Err)
+	}
 }
