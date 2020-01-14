@@ -4,7 +4,6 @@
 vendor
 fagin
 main
-fagin
 fagin.log
 server.log
 .env

@@ -65,7 +65,7 @@ gin 构建的 api 项目
 │    ├── api.go         api 路由
 │    └── web.go         web 路由
 │ 			
-├── test				测试文件  
+├── test                测试文件  
 │
 ├── storage             存放日志等文件
 │
@@ -240,6 +240,6 @@ go run .
 # 打包项目
 make build
 or
-go buuld .
+go build .
 
 ```
