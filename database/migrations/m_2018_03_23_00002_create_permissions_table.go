@@ -1,6 +1,7 @@
 package migrations
 
 import (
+	"fagin/pkg/migrate/migration"
 	"github.com/jinzhu/gorm"
 	"gopkg.in/gormigrate.v1"
 )
@@ -11,7 +12,7 @@ import (
  * 创建权限表
  */
 func init() {
-	migrations = append(migrations, &gormigrate.Migration{
+	migration.Migrations = append(migration.Migrations, &gormigrate.Migration{
 		ID: "m_2018_03_23_00001_create_permission_table",
 		Migrate: func(tx *gorm.DB) error {
 			type Permissions struct {

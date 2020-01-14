@@ -11,10 +11,20 @@ install:
 	go mod vendor
 
 doc:
-	swag init
+#需要权限来修改文件
+	sudo swag init
 
 create-cmd:
 	cd ./console && cobra add ${name}
+
+request:
+	go run console/main.go request ${Name}
+
+response:
+	go run console/main.go response ${Name}
+
+model:
+	go run console/main.go model ${Name}
 
 create-admin:
 	go run console/main.go admin
@@ -37,6 +47,13 @@ build:
 jwt-secret:
 	echo "jwt: \n  secret: `head -c 32 /dev/random | base64`" >> .env.yml
 
+pipeline:
+	go env -w GOPROXY=https://goproxy.cn,direct
+	go mod tidy
+	go run console/main.go migrate
+	go build -o fagin ./main.go
+	sh admin.sh restart fagin
+	sh ./admin.sh status fagin
 
 help:
 	@echo "make - 运行服务"

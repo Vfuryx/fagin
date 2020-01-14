@@ -16,11 +16,10 @@ func init() {
 	m := conf.GetStringMapStringSlice("casbin.model", map[string][]string{})
 
 	mLen := len(m)
-	for i := 0; i < mLen ; i++ {
+	for i := 0; i < mLen; i++ {
 		c := m[strconv.Itoa(i)]
 		Casbin.AddDef(c[0], c[1], c[2])
 	}
-
 
 	// rbac_model.conf 参考 https://github.com/casbin/casbin/blob/master/examples/rbac_model.conf
 	//Casbin.AddDef("r", "r", "sub, obj, act")

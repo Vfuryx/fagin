@@ -1,0 +1,69 @@
+[[ define "web.video.list" ]]
+[[template "web.layout.header" .]]
+<div id="app">
+    [[template "web.layout.nav" .]]
+    <main role="main">
+        <div class="top pt-2 pb-4">
+            <section class="container text-light">
+                <h1 class="pt-5">Business Name or Tagline</h1>
+                <p class="pb-5 pt-2">Lorem ipsum dolor sit ametconsecteturadipisicingelit. Non possimus
+                    alaboreprovidentmollitia.Idassumenda voluptatearum corporisfacere quibusdamquisquam istipsa cumque
+                    unde nisi,totamquas ipsam.
+                <p>
+            </section>
+        </div>
+        <section class="container">
+            <div class="row pt-5">
+                <div class="col-md-8 mb-5">
+                    <h2>What We Do</h2>
+                    <hr>
+                    <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. A deserunt neque tempore recusandae
+                        animi soluta quasi? Asperiores rem dolore eaque vel, porro, soluta unde debitis aliquam
+                        laboriosam. Repellat explicabo, maiores!</p>
+
+                    <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Omnis optio neque consectetur
+                        consequatur magni in nisi, natus beatae quidem quam odit commodi ducimus totam eum, alias,
+                        adipisci nesciunt voluptate. Voluptatum.</p>
+
+                    <a class="btn btn-primary btn-lg" href="#">Call to Action »</a>
+                </div>
+                <div class="col-md-4 mb-5">
+                    <img class="card-img-top"
+                         src="[[  WebAsset `/public/web/video/image/300x200.png` ]]"
+                         alt="">
+                </div>
+            </div>
+            <div class="row">
+                [[ range $k, $v := .list ]]
+                <div class="col-md-4 mb-5">
+                    <div class="card h-100">
+                        <img class="card-img-top"
+                             src="[[  WebAsset `/public/web/video/image/300x200.png` ]]"
+                             alt="">
+                        <div class="card-body">
+                            <h4 class="card-title">[[ $v.title ]]</h4>
+                            <p class="card-text">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Sapiente esse
+                                necessitatibus neque sequi doloribus.</p>
+                        </div>
+                        <div class="card-footer">
+                            <a href="/video/av[[ $v.id ]]" class="btn btn-primary">Find Out More!</a>
+                        </div>
+                    </div>
+                </div>
+                [[ end ]]
+            </div>
+        </section>
+    </main>
+
+
+</div>
+<script>
+    Vue.prototype.$http = axios;
+    var app = new Vue({
+        el: "#app",
+        data: {},
+        methods: {}
+    })
+</script>
+[[template "web.layout.footer" .]]
+[[ end ]]

@@ -21,7 +21,7 @@ func (auth) IsLogin() gin.HandlerFunc {
 		c, err := service.Token.ParseRequest(ctx)
 
 		if err != nil {
-			app.JosnResponse(ctx, err, nil)
+			app.JsonResponse(ctx, err, nil)
 			ctx.Abort()
 			return
 		}
@@ -47,7 +47,7 @@ func (auth) AuthCheckRole() gin.HandlerFunc {
 		if ok {
 			ctx.Next()
 		} else {
-			app.JosnResponse(ctx, errno.ErrPermissionDenied, nil)
+			app.JsonResponse(ctx, errno.ErrPermissionDenied, nil)
 			ctx.Abort()
 		}
 		return

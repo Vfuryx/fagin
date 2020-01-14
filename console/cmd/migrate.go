@@ -15,8 +15,8 @@
 package cmd
 
 import (
-	"fagin/database/migrations"
 	"fagin/pkg/db"
+	"fagin/pkg/migrate"
 	"github.com/spf13/cobra"
 )
 
@@ -31,19 +31,23 @@ Cobra is a CLI library for Go that empowers applications.
 This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
+		if len(args) <= 0 { 
+			args = append(args, "")
+		}
+		
 		switch args[0] {
 		case "create":
 			var name string
 			if len(args) >= 2 {
 				name = args[1]
 			}
-			migrations.Create(name)
+			migrate.Create(name)
 		case "reset":
-			migrations.Reset()
+			migrate.Reset()
 		case "rollback":
-			migrations.Rollback()
+			migrate.Rollback()
 		default:
-			migrations.Init()
+			migrate.Init()
 		}
 		// 关闭orm
 		defer db.Close()

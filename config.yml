@@ -1,0 +1,9 @@
+# casbin:
+#   model: !!omap
+#     0: ["r", "r", "sub, obj, act"]
+#     1: ["p", "p", "sub, obj, act"]
+#     2: ["g", "g", "_, _"]
+#     3: ["e", "e", "some(where (p.eft == allow))"]
+#     4: ["m", "m", "r.sub == p.sub && keyMatch(r.obj, p.obj) && regexMatch(r.act, p.act)"]
+
+

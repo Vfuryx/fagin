@@ -1,10 +1,10 @@
 package conf
 
 import (
+	"fagin/pkg/path"
 	"github.com/fsnotify/fsnotify"
 	"github.com/joho/godotenv"
 	"github.com/spf13/viper"
-
 )
 
 func init() {
@@ -16,7 +16,7 @@ func init() {
 // 读取 env
 func envLoad() {
 	// 加载 .env 文件的配置
-	err := godotenv.Load(".env")
+	err := godotenv.Load(path.RootPath + "/.env")
 	if err != nil {
 		panic(err)
 	}
@@ -24,11 +24,11 @@ func envLoad() {
 }
 
 // 读取 config
-func configLoad()  {
+func configLoad() {
 	viper.AutomaticEnv()
 
 	viper.SetConfigName("config")
-	viper.AddConfigPath(".")
+	viper.AddConfigPath(path.RootPath)
 	viper.SetConfigType("yml")
 
 	err := viper.ReadInConfig()
@@ -38,7 +38,7 @@ func configLoad()  {
 }
 
 // 监控 config
-func  watchConfig() {
+func watchConfig() {
 	viper.WatchConfig()
 	viper.OnConfigChange(func(in fsnotify.Event) {
 
@@ -78,7 +78,7 @@ func EnvFloat64(name string, def float64) float64 {
 	return v
 }
 
-func GetStringMapStringSlice(key string, def map[string][]string ) map[string][]string {
+func GetStringMapStringSlice(key string, def map[string][]string) map[string][]string {
 	v := viper.GetStringMapStringSlice("casbin.model")
 	if len(v) == 0 {
 		return def

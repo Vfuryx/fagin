@@ -1,0 +1,54 @@
+package responses
+
+import (
+	"fagin/app/models/video_info"
+	"fagin/pkg/response"
+)
+
+type videoInfoList struct {
+	Ms []video_info.VideoInfo
+	response.Collect
+}
+
+var _ response.Response = &videoInfoList{}
+
+func VideoInfoList(models ...video_info.VideoInfo) *videoInfoList {
+	res := videoInfoList{Ms: models}
+	res.Collect.Response = &res
+	return &res
+}
+
+func (res *videoInfoList) Serialize(sm *[]map[string]interface{}) *[]map[string]interface{} {
+	for _, model := range res.Ms {
+		m := map[string]interface{}{
+			"id":    model.ID,
+			"title": model.Title,
+		}
+		*sm = append(*sm, m)
+	}
+	return sm
+}
+
+type videoInfoShow struct {
+	Ms []video_info.VideoInfo
+	response.Collect
+}
+
+var _ response.Response = &videoInfoShow{}
+
+func VideoInfoShow(models ...video_info.VideoInfo) *videoInfoShow {
+	res := videoInfoShow{Ms: models}
+	res.Collect.Response = &res
+	return &res
+}
+
+func (res *videoInfoShow) Serialize(sm *[]map[string]interface{}) *[]map[string]interface{} {
+	for _, model := range res.Ms {
+		m := map[string]interface{}{
+			"id":    model.ID,
+			"title": model.Title,
+		}
+		*sm = append(*sm, m)
+	}
+	return sm
+}

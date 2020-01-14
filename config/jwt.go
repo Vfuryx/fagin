@@ -8,8 +8,8 @@ type jwt struct {
 	Secret string
 }
 
-var Jwt= jwt{}
+var Jwt jwt
 
-func init()  {
+func init() {
 	Jwt.Secret = conf.Env("JWT_SECRET", "")
 }

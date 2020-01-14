@@ -1,0 +1,74 @@
+[[ define "web.video.show" ]]
+[[template "web.layout.header" .]]
+<div id="app">
+    [[template "web.layout.nav" .]]
+    <main role="main">
+        <div class="top pt-2 pb-4">
+            <section class="container text-light">
+                <h3 class="pt-4">[[ .video.title]]</h3>
+                <video controls style="width: 100%">
+                    <source src="/api/video/play/[[.video.id]]" type="video/mp4">
+                    您的浏览器不支持 video 标签。
+                </video>
+            </section>
+        </div>
+        <section class="container">
+            <div class="row pt-5">
+                <div class="col-md-8 mb-5">
+                    <h3>评论</h3>
+                    <hr>
+                    <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. A deserunt neque tempore recusandae
+                        animi soluta quasi? Asperiores rem dolore eaque vel, porro, soluta unde debitis aliquam
+                        laboriosam. Repellat explicabo, maiores!</p>
+
+                    <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Omnis optio neque consectetur
+                        consequatur magni in nisi, natus beatae quidem quam odit commodi ducimus totam eum, alias,
+                        adipisci nesciunt voluptate. Voluptatum.</p>
+
+                </div>
+                <div class="col-md-4 mb-5">
+                    <div class="card mb-3 mx-2">
+                        <img class="card-img-top"
+                             src="[[  WebAsset `/public/web/video/image/300x200.png` ]]"
+                             alt="">
+                        <div class="px-2 pt-2">
+                            <h5 class="">Card title 2</h5>
+                        </div>
+                    </div>
+                    <div class="card mb-3 mx-2">
+                        <img class="card-img-top"
+                             src="[[  WebAsset `/public/web/video/image/300x200.png` ]]"
+                             alt="">
+                        <div class="px-2 pt-2">
+                            <h5 class="">Card title 2</h5>
+                        </div>
+                    </div>
+                    <div class="card mb-3 mx-2">
+                        <img class="card-img-top"
+                             src="[[  WebAsset `/public/web/video/image/300x200.png` ]]"
+                             alt="">
+                        <div class="px-2 pt-2">
+                            <h5 class="">Card title 2</h5>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+</div>
+{{if .}}
+{{ end}}
+<script>
+    Vue.prototype.$http = axios;
+    var app = new Vue({
+        el: "#app",
+        data: {
+
+        },
+        methods: {
+
+        }
+    })
+</script>
+[[template "web.layout.footer" .]]
+[[ end ]]
