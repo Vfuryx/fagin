@@ -9,7 +9,7 @@ import (
 )
 
 // 权限服务
-type canbin struct {
+type canbinService struct {
 	E *casbin.Enforcer
 }
 
@@ -22,10 +22,10 @@ type CasbinModel struct {
 	Method   string `gorm:"type:varchar(64);not null;default:'';comment:'方法';column:method;"`
 }
 
-var Canbin = canbin{}
+var Canbin canbinService
 
 //持久化到数据库
-func (this *canbin) canbin() *casbin.Enforcer {
+func (this *canbinService) canbin() *casbin.Enforcer {
 
 	if this.E != nil {
 		return this.E
@@ -41,52 +41,56 @@ func (this *canbin) canbin() *casbin.Enforcer {
 }
 
 // 添加用户角色
-func (this *canbin) AddUserRole(userId string, role string) (bool, error) {
+func (this *canbinService) AddUserRole(userId string, role string) (bool, error) {
 	return this.canbin().AddGroupingPolicySafe(userId, role)
 }
 
 // 删除用户的指定角色
-func (this *canbin) DeleteRoleForUser(userId string, role string) bool {
+func (this *canbinService) DeleteRoleForUser(userId string, role string) bool {
 	return this.canbin().DeleteRoleForUser(userId, role)
 }
 
 // 获取用户的所有权限
-func (this *canbin) GetRolesForUser(userId string) []string {
-	return this.canbin().GetRolesForUser(userId)
+func (this *canbinService) GetRolesForUser(userId string) []string {
+	roles, err := this.canbin().GetRolesForUser(userId)
+	if err != nil {
+		return []string{}
+	}
+	return roles
 }
 
 // 删除用户所有角色
-func (this *canbin) DeleteRolesForUser(userId string) bool {
+func (this *canbinService) DeleteRolesForUser(userId string) bool {
 	return this.canbin().DeleteRolesForUser(userId)
 }
 
 // 添加用户权限
-func (this *canbin) AddPolicyForUser(userId string, obj string, act string) bool {
+func (this *canbinService) AddPolicyForUser(userId string, obj string, act string) bool {
 	return this.canbin().AddPermissionForUser(userId, obj, act)
 }
 
 // 添加角色权限
-func (this *canbin) AddPolicyForRole(role, obj, act string) bool {
+func (this *canbinService) AddPolicyForRole(role, obj, act string) bool {
 	return this.canbin().AddPolicy(role, obj, act)
 }
 
 // 添加角色权限
-func (this *canbin) AddCasbin(cm CasbinModel) bool {
+func (this *canbinService) AddCasbin(cm CasbinModel) bool {
 	return this.canbin().AddPolicy(cm.RoleName, cm.Path, cm.Method)
 }
 
 // 删除权限
-func (this *canbin) ReCasbin(cm CasbinModel) bool {
+func (this *canbinService) ReCasbin(cm CasbinModel) bool {
 	return this.canbin().RemovePolicy(cm.RoleName, cm.Path, cm.Method)
 }
 
 // 验证角色权限
-func (this *canbin) CheckRole(sub, obj, act string) (bool, error) {
+func (this *canbinService) CheckRole(sub, obj, act string) (bool, error) {
 	return this.canbin().EnforceSafe(sub, obj, act)
 }
 
 // 验证所有角色权限
-func (this *canbin) CheckRoles(roles []string, obj, act string) bool {
+func (this *canbinService) CheckRoles(roles []string, obj, act string) bool {
 	for _, v := range roles {
 		ok, _ := this.canbin().EnforceSafe(v, obj, act)
 		if ok {
@@ -97,9 +101,12 @@ func (this *canbin) CheckRoles(roles []string, obj, act string) bool {
 }
 
 // 	获取所有角色
-func (this *canbin) GetRole() []string {
-	this.canbin().GetRolesForUser("admin")
-	return this.canbin().GetRolesForUser("admin")
+func (this *canbinService) GetRole() []string {
+	roles, err := this.canbin().GetRolesForUser("admin")
+	if err != nil {
+		return []string{}
+	}
+	return roles
 }
 
 //

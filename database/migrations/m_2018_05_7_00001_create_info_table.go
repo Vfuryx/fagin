@@ -1,6 +1,7 @@
 package migrations
 
 import (
+	"fagin/pkg/migrate/migration"
 	"github.com/jinzhu/gorm"
 	"gopkg.in/gormigrate.v1"
 )
@@ -16,7 +17,7 @@ type Info struct {
  * 创建权限表
  */
 func init() {
-	migrations = append(migrations, &gormigrate.Migration{
+	migration.Migrations = append(migration.Migrations, &gormigrate.Migration{
 		ID: "m_2018_05_7_00001_create_info_table",
 		Migrate: func(tx *gorm.DB) error {
 			return tx.AutoMigrate(&Info{}).Error

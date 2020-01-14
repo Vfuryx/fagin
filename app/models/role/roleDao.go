@@ -1,23 +1,46 @@
 package role
 
-import (
-	"fagin/pkg/db"
-)
+import "fagin/pkg/db"
 
-func Create(role *Role) (ok bool, err error) {
-
-	if err := db.ORM.Model(&Role{}).Create(role).Error; err != nil {
-		return false, err
-	}
-
-	return true, nil
+func New() *Role {
+	return &Role{}
 }
 
-func Update(role *Role) (ok bool, err error) {
+type dao struct {
+	db.Dao
+}
 
-	if err := db.ORM.Model(&Role{}).Update(role).Error; err != nil {
-		return false, err
+var _ db.IDao = &dao{}
+
+func (r *Role) Dao() *dao {
+	dao := &dao{}
+	dao.Dao.M = r
+	return dao
+}
+
+func Dao() *dao {
+	dao := &dao{}
+	dao.Dao.M = New()
+	return dao
+}
+
+func (dao) All(columns []string) (*[]Role, error) {
+	var model []Role
+	err := db.ORM.Select(columns).Find(&model).Error
+	return &model, err
+}
+
+func (d *dao) Query(params map[string]interface{}, columns []string, with map[string]interface{}) db.IDao {
+	query := db.ORM.Select(columns)
+
+	var (
+		v  interface{}
+		ok bool
+	)
+	if v, ok = params["id"]; ok {
+		query = query.Where("id = ?", v)
 	}
 
-	return true, nil
+	d.DB = query
+	return d
 }

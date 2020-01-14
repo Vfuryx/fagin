@@ -39,21 +39,21 @@ to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("admin called")
 
-		password, _ := service.Encrypt("123456")
 		u := user.User{
 			Username: "admin",
 			Email:    "admin@admin.com",
-			Password: password,
+			Password: "123456",
 		}
 
 		// 添加超级管理员账号
-		if ok, _ := user.Create(&u); !ok {
+		err := user.Dao().Create(&u)
+		if err != nil {
 			fmt.Println("创建超级管理员失败")
 			return
 		}
 		// 添加角色
 		r := role.Role{Name: "admin", Sort: 9999}
-		role.Create(&r)
+		_ = role.Dao().Create(&r)
 
 		// 设置角色权限
 		service.Canbin.AddPolicyForRole("admin", "/*", "|")
@@ -67,14 +67,4 @@ to quickly create a Cobra application.`,
 
 func init() {
 	rootCmd.AddCommand(adminCmd)
-
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// adminCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// adminCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }
