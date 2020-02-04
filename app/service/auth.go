@@ -19,12 +19,12 @@ func (authService) Login(email string, password string) (user.User, error) {
 	err := u.Dao().GetUserByEmail(email)
 	// 不存在用户
 	if err != nil {
-		return *u, errno.ErrUserNotFound
+		return *u, errno.Api.ErrUserNotFound
 	}
 
 	//匹配密码
 	if err := app.Compare(u.Password, password); err != nil {
-		return *u, errno.ErrPasswordIncorrect
+		return *u, errno.Api.ErrPasswordIncorrect
 	}
 
 	return *u, nil

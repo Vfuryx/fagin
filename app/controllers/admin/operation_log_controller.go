@@ -41,7 +41,7 @@ func (operationLogController) Show(ctx *gin.Context) {
 	id, err := request.ShouldBindUriUintID(ctx)
 	if err != nil {
 		log.Log.Errorln(err)
-		app.JsonResponse(ctx, errno.ErrBind, nil)
+		app.JsonResponse(ctx, errno.Api.ErrBind, nil)
 		return
 	}
 

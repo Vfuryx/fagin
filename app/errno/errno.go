@@ -13,6 +13,17 @@ func (errno *Errno) Error() string {
 	return errno.Message
 }
 
+var (
+	OK = &Errno{
+		Code:    0,
+		Message: "OK",
+	}
+	InternalServerError = &Errno{
+		Code:    500,
+		Message: "Internal server exception",
+	}
+)
+
 // Err represents an exception
 type Err struct {
 	Code    int

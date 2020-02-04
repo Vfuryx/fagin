@@ -49,7 +49,7 @@ func (videoController) VideoList(ctx *gin.Context) {
 func (videoController) CreateVideo(ctx *gin.Context) {
 	var r admin_request.CreateVideo
 	if data, ok := r.Validate(ctx); !ok {
-		app.JsonResponse(ctx, errno.ErrBind, data)
+		app.JsonResponse(ctx, errno.Api.ErrBind, data)
 		return
 	}
 	v := video_info.VideoInfo{
@@ -61,7 +61,7 @@ func (videoController) CreateVideo(ctx *gin.Context) {
 	err := service.VideoInfo.CreateVideo(&v)
 	if err != nil {
 		log.Log.Errorln(err)
-		app.JsonResponse(ctx, errno.ErrAddVideo, nil)
+		app.JsonResponse(ctx, errno.Api.ErrAddVideo, nil)
 		return
 	}
 
@@ -73,13 +73,13 @@ func (videoController) CreateVideo(ctx *gin.Context) {
 func (videoController) UpdateVideo(ctx *gin.Context) {
 	id, err := request.ShouldBindUriUintID(ctx)
 	if err != nil {
-		app.JsonResponse(ctx, errno.ErrBind, nil)
+		app.JsonResponse(ctx, errno.Api.ErrBind, nil)
 		return
 	}
 
 	var r admin_request.UpdateVideo
 	if data, ok := r.Validate(ctx); !ok {
-		app.JsonResponse(ctx, errno.ErrBind, data)
+		app.JsonResponse(ctx, errno.Api.ErrBind, data)
 		return
 	}
 
@@ -93,7 +93,7 @@ func (videoController) UpdateVideo(ctx *gin.Context) {
 	err = service.VideoInfo.UpdateVideo(id, data)
 	if err != nil {
 		log.Log.Errorln(err)
-		app.JsonResponse(ctx, errno.ErrUpdateVideo, nil)
+		app.JsonResponse(ctx, errno.Api.ErrUpdateVideo, nil)
 		return
 	}
 
@@ -105,14 +105,14 @@ func (videoController) UpdateVideo(ctx *gin.Context) {
 func (videoController) DeleteVideo(ctx *gin.Context) {
 	id, err := request.ShouldBindUriUintID(ctx)
 	if err != nil {
-		app.JsonResponse(ctx, errno.ErrBind, nil)
+		app.JsonResponse(ctx, errno.Api.ErrBind, nil)
 		return
 	}
 
 	err = service.VideoInfo.DeleteVideo(id)
 	if err != nil {
 		log.Log.Errorln(err)
-		app.JsonResponse(ctx, errno.ErrDeleteVideo, nil)
+		app.JsonResponse(ctx, errno.Api.ErrDeleteVideo, nil)
 	}
 
 	app.JsonResponse(ctx, errno.OK, nil)
@@ -122,7 +122,7 @@ func (videoController) DeleteVideo(ctx *gin.Context) {
 func (videoController) UploadVideo(ctx *gin.Context) {
 	var r admin_request.UploadVideo
 	if data, ok := r.Validate(ctx); !ok {
-		app.JsonResponse(ctx, errno.ErrBind, data)
+		app.JsonResponse(ctx, errno.Api.ErrBind, data)
 		return
 	}
 
@@ -139,7 +139,7 @@ func (videoController) UploadVideo(ctx *gin.Context) {
 	err = ctx.SaveUploadedFile(r.File, config.App.StoragePath+filePath)
 	if err != nil {
 		log.Log.Errorln(err)
-		app.JsonResponse(ctx, errno.ErrUploadFile, nil)
+		app.JsonResponse(ctx, errno.Api.ErrUploadFile, nil)
 		return
 	}
 
@@ -152,7 +152,7 @@ func (videoController) PlayVideo(ctx *gin.Context) {
 	id, err := request.ShouldBindUriUintID(ctx)
 	if err != nil {
 		log.Log.Errorln(err)
-		app.JsonResponse(ctx, errno.ErrBind, nil)
+		app.JsonResponse(ctx, errno.Api.ErrBind, nil)
 		return
 	}
 
@@ -162,7 +162,7 @@ func (videoController) PlayVideo(ctx *gin.Context) {
 	err = service.VideoInfo.Query(params, columns, nil).Find(&v)
 	if err != nil {
 		log.Log.Errorln(err)
-		app.JsonResponse(ctx, errno.ErrOpenFile, nil)
+		app.JsonResponse(ctx, errno.Api.ErrOpenFile, nil)
 		return
 	}
 
@@ -170,7 +170,7 @@ func (videoController) PlayVideo(ctx *gin.Context) {
 	file, err := os.Open(path)
 	if err != nil {
 		log.Log.Errorln(err)
-		app.JsonResponse(ctx, errno.ErrOpenFile, nil)
+		app.JsonResponse(ctx, errno.Api.ErrOpenFile, nil)
 		return
 	}
 	http.ServeContent(ctx.Writer, ctx.Request, "", time.Now(), file)

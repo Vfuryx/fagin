@@ -31,7 +31,7 @@ func (videoController) PlayVideo(ctx *gin.Context) {
 	id, err := request.ShouldBindUriUintID(ctx)
 	if err != nil {
 		log.Log.Errorln(err)
-		app.JsonResponse(ctx, errno.ErrBind, nil)
+		app.JsonResponse(ctx, errno.Api.ErrBind, nil)
 		return
 	}
 
@@ -44,7 +44,7 @@ func (videoController) PlayVideo(ctx *gin.Context) {
 	err = service.VideoInfo.Query(params, columns, nil).Find(&v)
 	if err != nil {
 		log.Log.Errorln(err)
-		app.JsonResponse(ctx, errno.ErrOpenFile, nil)
+		app.JsonResponse(ctx, errno.Api.ErrOpenFile, nil)
 		return
 	}
 
@@ -52,7 +52,7 @@ func (videoController) PlayVideo(ctx *gin.Context) {
 	file, err := os.Open(path)
 	if err != nil {
 		log.Log.Errorln(err)
-		app.JsonResponse(ctx, errno.ErrOpenFile, nil)
+		app.JsonResponse(ctx, errno.Api.ErrOpenFile, nil)
 		return
 	}
 	http.ServeContent(ctx.Writer, ctx.Request, "", time.Now(), file)

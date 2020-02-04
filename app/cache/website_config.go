@@ -14,7 +14,7 @@ type websiteConfig struct {
 
 func (websiteConfig) cache() (cache.ICache, error) {
 	if cache.Redis == nil {
-		return nil, errno.ErrCacheIsClose
+		return nil, errno.Api.ErrCacheIsClose
 	}
 	return cache.Redis, nil
 }
@@ -50,7 +50,7 @@ func (b *websiteConfig) GetInfo() (*website_config.WebsiteConfig, error) {
 		return nil, err
 	}
 	if h <= 0 {
-		return nil, errno.ErrCacheIsNil
+		return nil, errno.Api.ErrCacheIsNil
 	}
 	v, err := c.Get(b.infoKey())
 	if err != nil {

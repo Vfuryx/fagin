@@ -65,7 +65,7 @@ func (d *dao) Query(params map[string]interface{}, columns []string, with map[st
 func (d *dao) Create(data interface{}) error {
 	u, ok := data.(*User)
 	if !ok {
-		return errno.ErrAddUser
+		return errno.Api.ErrAddUser
 	}
 	if u.Password != "" {
 		// 加密密码

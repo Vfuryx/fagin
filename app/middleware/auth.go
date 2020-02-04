@@ -47,7 +47,7 @@ func (auth) AuthCheckRole() gin.HandlerFunc {
 		if ok {
 			ctx.Next()
 		} else {
-			app.JsonResponse(ctx, errno.ErrPermissionDenied, nil)
+			app.JsonResponse(ctx, errno.Api.ErrPermissionDenied, nil)
 			ctx.Abort()
 		}
 		return

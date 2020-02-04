@@ -19,7 +19,7 @@ func init() {
 	var Swagger = router.Group("swagger")
 
 	router.NoRoute(Swagger.BasePath(), func(ctx *gin.Context) {
-		app.JsonResponseWithStatus(ctx, http.StatusNotFound, errno.NotFound, gin.H{"m": "swagger 404"})
+		app.JsonResponseWithStatus(ctx, http.StatusNotFound, errno.Api.NotFound, gin.H{"m": "swagger 404"})
 	})
 
 	// use ginSwagger middleware to

@@ -25,7 +25,7 @@ func (indexController) Index(ctx *gin.Context) {
 	var v api_request.IndexRequest
 	data, ok := v.Validate(ctx)
 	if !ok {
-		app.JsonResponse(ctx, errno.ErrBind, data)
+		app.JsonResponse(ctx, errno.Api.ErrBind, data)
 		ctx.Abort()
 		return
 	}

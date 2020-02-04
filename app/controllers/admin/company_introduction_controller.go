@@ -26,7 +26,7 @@ func (companyIntroductionController) ShowCompanyIntroduction(ctx *gin.Context) {
 	ci, err := service.CompanyIntroduction.ShowCompanyIntroduction(1, column)
 	if err != nil {
 		log.Log.Errorln(err)
-		app.JsonResponse(ctx, errno.ErrCompanyIntroduction, nil)
+		app.JsonResponse(ctx, errno.Api.ErrCompanyIntroduction, nil)
 		return
 	}
 
@@ -57,7 +57,7 @@ func (companyIntroductionController) UpdateCompanyIntroduction(ctx *gin.Context)
 	err := service.CompanyIntroduction.UpdateCompanyIntroduction(1, data)
 	if err != nil {
 		log.Log.Errorln(err)
-		app.JsonResponse(ctx, errno.ErrUpdateCompanyIntroduction, err)
+		app.JsonResponse(ctx, errno.Api.ErrUpdateCompanyIntroduction, err)
 		return
 	}
 
@@ -69,7 +69,7 @@ func (companyIntroductionController) UpdateCompanyIntroduction(ctx *gin.Context)
 func (companyIntroductionController) Upload(ctx *gin.Context) {
 	var r admin_request.UploadCompanyImage
 	if data, ok := r.Validate(ctx); !ok {
-		app.JsonResponseWithStatus(ctx, http.StatusBadRequest, errno.ErrBind, data)
+		app.JsonResponseWithStatus(ctx, http.StatusBadRequest, errno.Api.ErrBind, data)
 		return
 	}
 
@@ -86,7 +86,7 @@ func (companyIntroductionController) Upload(ctx *gin.Context) {
 	err = ctx.SaveUploadedFile(r.File, config.App.PublicPath+filePath)
 	if err != nil {
 		log.Log.Errorln(err)
-		app.JsonResponse(ctx, errno.ErrUploadFile, nil)
+		app.JsonResponse(ctx, errno.Api.ErrUploadFile, nil)
 		return
 	}
 
