@@ -18,13 +18,14 @@ func VideoInfoList(models ...video_info.VideoInfo) *videoInfoList {
 	return &res
 }
 
-func (res *videoInfoList) Serialize(sm *[]map[string]interface{}) *[]map[string]interface{} {
+func (res *videoInfoList) Serialize() []map[string]interface{} {
+	sm := make([]map[string]interface{}, 0, 20)
 	for _, model := range res.Ms {
 		m := map[string]interface{}{
 			"id":    model.ID,
 			"title": model.Title,
 		}
-		*sm = append(*sm, m)
+		sm = append(sm, m)
 	}
 	return sm
 }
@@ -42,13 +43,14 @@ func VideoInfoShow(models ...video_info.VideoInfo) *videoInfoShow {
 	return &res
 }
 
-func (res *videoInfoShow) Serialize(sm *[]map[string]interface{}) *[]map[string]interface{} {
+func (res *videoInfoShow) Serialize() []map[string]interface{} {
+	sm := make([]map[string]interface{}, 0, 20)
 	for _, model := range res.Ms {
 		m := map[string]interface{}{
 			"id":    model.ID,
 			"title": model.Title,
 		}
-		*sm = append(*sm, m)
+		sm = append(sm, m)
 	}
 	return sm
 }
