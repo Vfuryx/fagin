@@ -2,47 +2,47 @@ package errno
 
 type api struct {
 	// 系统错误
-	NotFound              *Errno
-	ErrBind               *Errno
-	ErrUploadSizeExceeded *Errno
-	ErrUploadFile         *Errno
-	ErrOpenFile           *Errno
-	ErrCacheIsClose       *Errno
-	ErrCacheIsNil         *Errno
+	NotFound,
+	ErrBind,
+	ErrUploadSizeExceeded,
+	ErrUploadFile,
+	ErrOpenFile,
+	ErrCacheIsClose,
+	ErrCacheIsNil,
 
 	// 用户错误 *Errno
-	ErrEncrypt           *Errno
-	ErrUserNotFound      *Errno
-	ErrTokenInvalid      *Errno
-	ErrToken             *Errno
-	ErrPasswordIncorrect *Errno
-	ErrLogin             *Errno
-	ErrPermissionDenied  *Errno
-	ErrAddUser           *Errno
-	ErrUpdateUser        *Errno
-	ErrDeleteUser        *Errno
-	ErrUserList          *Errno
+	ErrEncrypt,
+	ErrUserNotFound,
+	ErrTokenInvalid,
+	ErrToken,
+	ErrPasswordIncorrect,
+	ErrLogin,
+	ErrPermissionDenied,
+	ErrAddUser,
+	ErrUpdateUser,
+	ErrDeleteUser,
+	ErrUserList,
 
 	// video err *Errno
-	ErrAddVideo    *Errno
-	ErrUpdateVideo *Errno
-	ErrDeleteVideo *Errno
-	ErrVideoList   *Errno
+	ErrAddVideo,
+	ErrUpdateVideo,
+	ErrDeleteVideo,
+	ErrVideoList,
 
 	// banner err *Errno
-	ErrAddBanner    *Errno
-	ErrUpdateBanner *Errno
-	ErrDeleteBanner *Errno
-	ErrBannerList   *Errno
-	ErrBanner       *Errno
+	ErrAddBanner,
+	ErrUpdateBanner,
+	ErrDeleteBanner,
+	ErrBannerList,
+	ErrBanner,
 
 	// 网站设置 err *Errno
-	ErrUpdateWebsiteConfig *Errno
-	ErrWebsiteConfig       *Errno
+	ErrUpdateWebsiteConfig,
+	ErrWebsiteConfig,
 
 	// 公司介绍 err *Errno
-	ErrUpdateCompanyIntroduction *Errno
-	ErrCompanyIntroduction       *Errno
+	ErrUpdateCompanyIntroduction,
+	ErrCompanyIntroduction *Errno
 }
 
 var Api = api{
