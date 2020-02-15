@@ -19,7 +19,7 @@ var Template template
 
 func init() {
 	Template.FuncMap = FuncMap()
-	Template.LoadHTMLGlob = "./resources/views/**/*"
+	Template.LoadHTMLGlob = App.ResourcePath + "/views/**/*"
 	Template.Static = App.PublicPath
 	Template.StaticRouter = "/public"
 	Template.DelimitersL = "[["
