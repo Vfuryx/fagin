@@ -32,7 +32,7 @@ func (adminUserService) CheckPassword(id uint, old string) error {
 		return err
 	}
 	if err = app.Compare(au.Password, old); err != nil {
-		return errno.ErrPasswordIncorrect
+		return errno.Api.ErrPasswordIncorrect
 	}
 	return nil
 }

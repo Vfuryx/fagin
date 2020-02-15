@@ -31,7 +31,7 @@ func (authController) Login(ctx *gin.Context) {
 	var r LoginRequest
 
 	if err := ctx.ShouldBind(&r); err != nil {
-		app.JsonResponse(ctx, errno.ErrBind, nil)
+		app.JsonResponse(ctx, errno.Api.ErrBind, nil)
 		return
 	}
 
@@ -43,7 +43,7 @@ func (authController) Login(ctx *gin.Context) {
 
 	token, err := service.Token.Sign(user, "")
 	if err != nil {
-		app.JsonResponse(ctx, errno.ErrToken, nil)
+		app.JsonResponse(ctx, errno.Api.ErrToken, nil)
 		return
 	}
 

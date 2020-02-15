@@ -26,7 +26,7 @@ func (authController) Login(ctx *gin.Context) {
 
 	if err := ctx.ShouldBind(&r); err != nil {
 		log.Log.Errorln(err)
-		app.JsonResponse(ctx, errno.ErrBind, nil)
+		app.JsonResponse(ctx, errno.Api.ErrBind, nil)
 		return
 	}
 
@@ -39,7 +39,7 @@ func (authController) Login(ctx *gin.Context) {
 	token, err := admin_auth.AdminAuth.Sign(r.Name, "")
 	if err != nil {
 		log.Log.Errorln(err)
-		app.JsonResponse(ctx, errno.ErrToken, nil)
+		app.JsonResponse(ctx, errno.Api.ErrToken, nil)
 		return
 	}
 
@@ -74,12 +74,12 @@ func (authController) UpdateAdminUser(ctx *gin.Context) {
 	id, err := request.ShouldBindUriUintID(ctx)
 	if err != nil {
 		log.Log.Errorln(err)
-		app.JsonResponse(ctx, errno.ErrBind, nil)
+		app.JsonResponse(ctx, errno.Api.ErrBind, nil)
 		return
 	}
 	r := new(admin_request.UpdateAdminUser)
 	if data, ok := r.Validate(ctx); !ok {
-		app.JsonResponse(ctx, errno.ErrBind, data)
+		app.JsonResponse(ctx, errno.Api.ErrBind, data)
 		return
 	}
 
@@ -106,7 +106,7 @@ func (authController) UpdateAdminUser(ctx *gin.Context) {
 	err = service.AdminUser.UpdateAdminUser(id, data)
 	if err != nil {
 		log.Log.Errorln(err)
-		app.JsonResponse(ctx, errno.ErrUpdateUser, nil)
+		app.JsonResponse(ctx, errno.Api.ErrUpdateUser, nil)
 		return
 	}
 

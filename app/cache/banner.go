@@ -15,7 +15,7 @@ type bannerCache struct {
 
 func (bannerCache) cache() (cache.ICache, error) {
 	if cache.Redis == nil {
-		return nil, errno.ErrCacheIsClose
+		return nil, errno.Api.ErrCacheIsClose
 	}
 	return cache.Redis, nil
 }
@@ -52,7 +52,7 @@ func (b *bannerCache) GetList() ([]banner.Banner, error) {
 		return nil, err
 	}
 	if h <= 0 {
-		return nil, errno.ErrCacheIsNil
+		return nil, errno.Api.ErrCacheIsNil
 	}
 
 	v, err := c.Get(b.listKey())

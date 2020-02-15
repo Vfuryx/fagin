@@ -152,6 +152,12 @@ http://localhost:8080/swagger/index.html
  make doc 
 ```
 
+#### 生成应用的 key（会覆盖）
+
+```
+ make key:generate 
+```
+
 #### 生成jwt的secret 
 
 ```

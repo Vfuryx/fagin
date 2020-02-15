@@ -107,3 +107,11 @@ func Encrypt(source string) (string, error) {
 func Compare(hashedPassword, password string) error {
 	return bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(password))
 }
+
+// 布尔转数字
+func btoi(b bool) int {
+	if b {
+		return 1
+	}
+	return 0
+}

@@ -10,7 +10,7 @@ import (
 )
 
 type Response interface {
-	Serialize(*[]map[string]interface{}) *[]map[string]interface{}
+	Serialize() []map[string]interface{}
 	Handle() []map[string]interface{}
 	Item() map[string]interface{}
 	Collection() []map[string]interface{}
@@ -21,9 +21,7 @@ type Collect struct {
 }
 
 func (c Collect) Handle() []map[string]interface{} {
-	sm := make([]map[string]interface{}, 0, 20)
-	c.Serialize(&sm)
-	return sm
+	return c.Serialize()
 }
 
 func (c Collect) Item() map[string]interface{} {
@@ -77,11 +75,12 @@ func %[3]s(models ...M.m) *%[2]s {
 	return &res
 }
 
-func (res *%[2]s) Serialize(sm *[]map[string]interface{}) *[]map[string]interface{} {
+func (res *%[2]s) Serialize() []map[string]interface{} {
+	sm := make([]map[string]interface{}, 0, 20)
 	for _, model := range res.Ms {
 		m := map[string]interface{}{
 		}
-		*sm = append(*sm, m)
+		sm = append(sm, m)
 	}
 	return sm
 }

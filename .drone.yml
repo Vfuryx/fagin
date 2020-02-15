@@ -30,11 +30,10 @@ steps:
         - ls
         - git pull
         - cd ./resources/assets/admin
+        - npm i
         - npm run build:prod
         - cd ../../..
         - make pipeline
-        - sudo sh admin.sh restart fagin
-        - sudo sh ./admin.sh status fagin
   - name: notify
     image: drillster/drone-email
     when:

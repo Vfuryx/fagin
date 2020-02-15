@@ -18,7 +18,8 @@ func VideoList(models ...video_info.VideoInfo) *videoList {
 	return &res
 }
 
-func (res *videoList) Serialize(sm *[]map[string]interface{}) *[]map[string]interface{} {
+func (res *videoList) Serialize() []map[string]interface{} {
+	sm := make([]map[string]interface{}, 0, 20)
 	for _, model := range res.Ms {
 		m := map[string]interface{}{
 			"id":          model.ID,
@@ -27,7 +28,7 @@ func (res *videoList) Serialize(sm *[]map[string]interface{}) *[]map[string]inte
 			"path":        model.Path,
 			"description": model.Description,
 		}
-		*sm = append(*sm, m)
+		sm = append(sm, m)
 	}
 	return sm
 }

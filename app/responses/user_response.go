@@ -18,14 +18,15 @@ func UserResponse(users ...user.User) *userResponse {
 	return &ur
 }
 
-func (ur *userResponse) Serialize(sm *[]map[string]interface{}) *[]map[string]interface{} {
+func (ur *userResponse) Serialize() []map[string]interface{} {
+	sm := make([]map[string]interface{}, 0, 20)
 	for _, u := range ur.Users {
 		m := map[string]interface{}{
 			"id":       u.ID,
 			"username": u.Username,
 			"status":   u.Status,
 		}
-		*sm = append(*sm, m)
+		sm = append(sm, m)
 	}
 	return sm
 }

@@ -26,7 +26,7 @@ func (websiteConfigController) Info(ctx *gin.Context) {
 	wc, err := service.WebsiteConfigService.ShowInfo(1, column)
 	if err != nil {
 		log.Log.Errorln(err)
-		app.JsonResponse(ctx, errno.ErrWebsiteConfig, nil)
+		app.JsonResponse(ctx, errno.Api.ErrWebsiteConfig, nil)
 		return
 	}
 
@@ -38,7 +38,7 @@ func (websiteConfigController) Info(ctx *gin.Context) {
 func (websiteConfigController) UpdateInfo(ctx *gin.Context) {
 	var r admin_request.UpdateWebsiteConfig
 	if data, ok := r.Validate(ctx); !ok {
-		app.JsonResponse(ctx, errno.ErrBind, data)
+		app.JsonResponse(ctx, errno.Api.ErrBind, data)
 		return
 	}
 
@@ -61,7 +61,7 @@ func (websiteConfigController) UpdateInfo(ctx *gin.Context) {
 	err := service.WebsiteConfigService.UpdateInfo(1, data)
 	if err != nil {
 		log.Log.Errorln(err)
-		app.JsonResponse(ctx, errno.ErrUpdateWebsiteConfig, nil)
+		app.JsonResponse(ctx, errno.Api.ErrUpdateWebsiteConfig, nil)
 		return
 	}
 
@@ -73,7 +73,7 @@ func (websiteConfigController) UpdateInfo(ctx *gin.Context) {
 func (websiteConfigController) Upload(ctx *gin.Context) {
 	var r admin_request.UploadWebsiteConfigPic
 	if data, ok := r.Validate(ctx); !ok {
-		app.JsonResponseWithStatus(ctx, http.StatusBadRequest, errno.ErrBind, data)
+		app.JsonResponseWithStatus(ctx, http.StatusBadRequest, errno.Api.ErrBind, data)
 		return
 	}
 
@@ -90,7 +90,7 @@ func (websiteConfigController) Upload(ctx *gin.Context) {
 	err = ctx.SaveUploadedFile(r.File, config.App.PublicPath+filePath)
 	if err != nil {
 		log.Log.Errorln(err)
-		app.JsonResponse(ctx, errno.ErrUploadFile, nil)
+		app.JsonResponse(ctx, errno.Api.ErrUploadFile, nil)
 		return
 	}
 

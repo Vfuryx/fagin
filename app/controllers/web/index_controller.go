@@ -35,7 +35,7 @@ func (indexController) Index(ctx *gin.Context) {
 	banners, err := service.Banner.Index(params, columns, nil, &paginator)
 	if err != nil {
 		log.Log.Errorln(err)
-		app.JsonResponse(ctx, errno.ErrBannerList, nil)
+		app.JsonResponse(ctx, errno.Api.ErrBannerList, nil)
 		return
 	}
 	// 设置缓存

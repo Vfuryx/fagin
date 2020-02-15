@@ -32,7 +32,7 @@ func (bannerController) Index(ctx *gin.Context) {
 
 	banners, err := service.Banner.Index(params, columns, nil, &paginator)
 	if err != nil {
-		app.JsonResponse(ctx, errno.ErrBannerList, nil)
+		app.JsonResponse(ctx, errno.Api.ErrBannerList, nil)
 		return
 	}
 
@@ -48,14 +48,14 @@ func (bannerController) Index(ctx *gin.Context) {
 func (bannerController) Show(ctx *gin.Context) {
 	id, err := request.ShouldBindUriUintID(ctx)
 	if err != nil {
-		app.JsonResponse(ctx, errno.ErrBind, nil)
+		app.JsonResponse(ctx, errno.Api.ErrBind, nil)
 		return
 	}
 
 	columns := []string{"id", "title", "banner", "path", "sort", "status"}
 	b, err := service.Banner.Show(id, columns)
 	if err != nil {
-		app.JsonResponse(ctx, errno.ErrBanner, nil)
+		app.JsonResponse(ctx, errno.Api.ErrBanner, nil)
 		return
 	}
 
@@ -73,7 +73,7 @@ func (bannerController) Show(ctx *gin.Context) {
 func (bannerController) Store(ctx *gin.Context) {
 	var r admin_request.CreateBanner
 	if data, ok := r.Validate(ctx); !ok {
-		app.JsonResponse(ctx, errno.ErrBind, data)
+		app.JsonResponse(ctx, errno.Api.ErrBind, data)
 		return
 	}
 
@@ -87,7 +87,7 @@ func (bannerController) Store(ctx *gin.Context) {
 
 	err := service.Banner.Create(&b)
 	if err != nil {
-		app.JsonResponse(ctx, errno.ErrAddBanner, nil)
+		app.JsonResponse(ctx, errno.Api.ErrAddBanner, nil)
 		return
 	}
 
@@ -98,13 +98,13 @@ func (bannerController) Store(ctx *gin.Context) {
 func (bannerController) Update(ctx *gin.Context) {
 	id, err := request.ShouldBindUriUintID(ctx)
 	if err != nil {
-		app.JsonResponse(ctx, errno.ErrBind, nil)
+		app.JsonResponse(ctx, errno.Api.ErrBind, nil)
 		return
 	}
 
 	var r admin_request.UpdateBanner
 	if data, ok := r.Validate(ctx); !ok {
-		app.JsonResponse(ctx, errno.ErrBind, data)
+		app.JsonResponse(ctx, errno.Api.ErrBind, data)
 		return
 	}
 	data := map[string]interface{}{
@@ -116,7 +116,7 @@ func (bannerController) Update(ctx *gin.Context) {
 	}
 	err = service.Banner.Update(id, data)
 	if err != nil {
-		app.JsonResponse(ctx, errno.ErrUpdateBanner, nil)
+		app.JsonResponse(ctx, errno.Api.ErrUpdateBanner, nil)
 		return
 	}
 
@@ -128,7 +128,7 @@ func (bannerController) Update(ctx *gin.Context) {
 func (bannerController) Upload(ctx *gin.Context) {
 	var r admin_request.UploadBanner
 	if data, ok := r.Validate(ctx); !ok {
-		app.JsonResponseWithStatus(ctx, http.StatusBadRequest, errno.ErrBind, data)
+		app.JsonResponseWithStatus(ctx, http.StatusBadRequest, errno.Api.ErrBind, data)
 		return
 	}
 
@@ -144,7 +144,7 @@ func (bannerController) Upload(ctx *gin.Context) {
 	err = ctx.SaveUploadedFile(r.File, config.App.PublicPath+filePath)
 	if err != nil {
 		log.Log.Errorln(err)
-		app.JsonResponse(ctx, errno.ErrUploadFile, nil)
+		app.JsonResponse(ctx, errno.Api.ErrUploadFile, nil)
 		return
 	}
 

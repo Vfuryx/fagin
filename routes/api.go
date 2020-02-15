@@ -17,7 +17,7 @@ var Api = router.Group("api")
 func init() {
 	// 404
 	router.NoRoute(Api.BasePath(), func(ctx *gin.Context) {
-		app.JsonResponseWithStatus(ctx, http.StatusNotFound, errno.NotFound, gin.H{"m": "api 404"})
+		app.JsonResponseWithStatus(ctx, http.StatusNotFound, errno.Api.NotFound, gin.H{"m": "api 404"})
 	})
 
 	// 测试限流中间件

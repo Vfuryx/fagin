@@ -31,12 +31,12 @@ func (adminAuthService) Login(name string, password string) error {
 	}
 
 	if adminUser.Username != name {
-		return errno.ErrPasswordIncorrect
+		return errno.Api.ErrPasswordIncorrect
 	}
 
 	//匹配密码
 	if err := Compare(adminUser.Password, password); err != nil {
-		return errno.ErrPasswordIncorrect
+		return errno.Api.ErrPasswordIncorrect
 	}
 
 	return nil
@@ -81,7 +81,7 @@ func (auth adminAuthService) ParseRequest(ctx *gin.Context) (*context, error) {
 	head := ctx.Request.Header.Get("Authorization")
 
 	if len(head) == 0 {
-		return Login, errno.ErrTokenInvalid
+		return Login, errno.Api.ErrTokenInvalid
 	}
 
 	var token string
@@ -93,12 +93,12 @@ func (auth adminAuthService) ParseRequest(ctx *gin.Context) (*context, error) {
 func (auth adminAuthService) Parse(token string, secret string) (*context, error) {
 	ctx := Login
 	if token, err := jwt.Parse(token, auth.secretFunc(secret)); err != nil {
-		return ctx, errno.ErrTokenInvalid
+		return ctx, errno.Api.ErrTokenInvalid
 	} else if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
 		ctx.Name = claims["name"].(string)
 		return ctx, nil
 	} else {
-		return ctx, errno.ErrTokenInvalid
+		return ctx, errno.Api.ErrTokenInvalid
 	}
 }
 

@@ -18,7 +18,8 @@ func OperationLog(models ...aol.AdminOperationLog) *operationLog {
 	return &res
 }
 
-func (res *operationLog) Serialize(sm *[]map[string]interface{}) *[]map[string]interface{} {
+func (res *operationLog) Serialize() []map[string]interface{} {
+	sm := make([]map[string]interface{}, 0, 20)
 	for _, model := range res.Ms {
 		m := map[string]interface{}{
 			"id":         model.ID,
@@ -29,7 +30,7 @@ func (res *operationLog) Serialize(sm *[]map[string]interface{}) *[]map[string]i
 			"operation":  model.Operation,
 			"created_at": model.CreatedAt.Format("2006-01-02 15:04:05"),
 		}
-		*sm = append(*sm, m)
+		sm = append(sm, m)
 	}
 	return sm
 }

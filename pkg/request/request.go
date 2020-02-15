@@ -55,7 +55,7 @@ func (Validate) FileValidate(request Request, ctx *gin.Context, maxSize int64, t
 	// 检查上传文件的大小
 	if ok := ParseMultipartForm(ctx, maxSize); !ok {
 		// 一般要前端严格限定上传大小
-		return map[string]string{"file": errno.ErrUploadSizeExceeded.Message}, false
+		return map[string]string{"file": errno.Api.ErrUploadSizeExceeded.Message}, false
 	}
 
 	// 绑定

@@ -18,7 +18,8 @@ func BannerList(models ...banner.Banner) *bannerList {
 	return &res
 }
 
-func (res *bannerList) Serialize(sm *[]map[string]interface{}) *[]map[string]interface{} {
+func (res *bannerList) Serialize() []map[string]interface{} {
+	sm := make([]map[string]interface{}, 0, 20)
 	for _, model := range res.Ms {
 		m := map[string]interface{}{
 			"id":     model.ID,
@@ -28,7 +29,7 @@ func (res *bannerList) Serialize(sm *[]map[string]interface{}) *[]map[string]int
 			"sort":   model.Sort,
 			"status": model.Status,
 		}
-		*sm = append(*sm, m)
+		sm = append(sm, m)
 	}
 	return sm
 }

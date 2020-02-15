@@ -27,13 +27,10 @@ func Run() {
 		}
 	}()
 
-	// 获取路由配置
-	route := router.New()
-
 	// 设置服务
 	srv := &http.Server{
 		Addr:    ":" + config.App.Port,
-		Handler: route,
+		Handler: router.Engine,
 		//ReadTimeout:    setting.ReadTimeout,
 		//WriteTimeout:   setting.WriteTimeout,
 		MaxHeaderBytes: 32 << 20,

@@ -44,6 +44,9 @@ migrate\:rollback:
 build:
 	go build main.go
 
+key\:generate:
+	go run console/main.go key
+
 jwt-secret:
 	echo "jwt: \n  secret: `head -c 32 /dev/random | base64`" >> .env.yml
 

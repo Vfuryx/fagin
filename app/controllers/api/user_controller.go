@@ -27,7 +27,7 @@ func (userController) Register(ctx *gin.Context) {
 	var v api_request.AddUserRequest
 	msg, ok := v.Validate(ctx)
 	if !ok {
-		app.JsonResponse(ctx, errno.ErrBind, msg)
+		app.JsonResponse(ctx, errno.Api.ErrBind, msg)
 		return
 	}
 
@@ -38,7 +38,7 @@ func (userController) Register(ctx *gin.Context) {
 	}
 	err := service.User.AddUser(&u).Error
 	if err != nil {
-		app.JsonResponse(ctx, errno.ErrAddUser, nil)
+		app.JsonResponse(ctx, errno.Api.ErrAddUser, nil)
 		return
 	}
 
@@ -72,7 +72,7 @@ func (userController) UserList(ctx *gin.Context) {
 	columns := []string{"id", "username", "status"}
 	users, err := service.User.UserList(params, columns, nil, &p)
 	if err != nil {
-		app.JsonResponse(ctx, errno.ErrUserList, nil)
+		app.JsonResponse(ctx, errno.Api.ErrUserList, nil)
 		return
 	}
 	urs := responses.UserResponse(users...).Collection()
@@ -87,14 +87,14 @@ func (userController) ShowUser(ctx *gin.Context) {
 
 	id, err := strconv.ParseUint(i, 10, 64)
 	if err != nil || id <= 0 {
-		app.JsonResponse(ctx, errno.ErrBind, nil)
+		app.JsonResponse(ctx, errno.Api.ErrBind, nil)
 		return
 	}
 
 	columns := []string{"id", "username", "status"}
 	u, err := service.User.ShowUser(uint(id), columns)
 	if err != nil || u.Status == status.Disable {
-		app.JsonResponse(ctx, errno.ErrUserNotFound, nil)
+		app.JsonResponse(ctx, errno.Api.ErrUserNotFound, nil)
 		return
 	}
 	ru := responses.UserResponse(*u).Item()
@@ -104,14 +104,14 @@ func (userController) ShowUser(ctx *gin.Context) {
 func (userController) UpdateUser(ctx *gin.Context) {
 	id, err := request.ShouldBindUriUintID(ctx)
 	if err != nil {
-		app.JsonResponse(ctx, errno.ErrBind, nil)
+		app.JsonResponse(ctx, errno.Api.ErrBind, nil)
 		return
 	}
 
 	var r api_request.UpdateUserRequest
 	msg, ok := r.Validate(ctx)
 	if !ok {
-		app.JsonResponse(ctx, errno.ErrBind, msg)
+		app.JsonResponse(ctx, errno.Api.ErrBind, msg)
 		return
 	}
 
@@ -125,7 +125,7 @@ func (userController) UpdateUser(ctx *gin.Context) {
 
 	err = service.User.UpdateUser(id, data)
 	if err != nil {
-		app.JsonResponse(ctx, errno.ErrUpdateUser, nil)
+		app.JsonResponse(ctx, errno.Api.ErrUpdateUser, nil)
 		return
 	}
 
@@ -135,13 +135,13 @@ func (userController) UpdateUser(ctx *gin.Context) {
 func (userController) DestroyUser(ctx *gin.Context) {
 	id, err := request.ShouldBindUriUintID(ctx)
 	if err != nil {
-		app.JsonResponse(ctx, errno.ErrBind, nil)
+		app.JsonResponse(ctx, errno.Api.ErrBind, nil)
 		return
 	}
 
 	err = service.User.DestroyUser(id)
 	if err != nil {
-		app.JsonResponse(ctx, errno.ErrDeleteUser, nil)
+		app.JsonResponse(ctx, errno.Api.ErrDeleteUser, nil)
 		return
 	}
 

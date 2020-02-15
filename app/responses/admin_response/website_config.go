@@ -18,7 +18,8 @@ func WebsiteConfig(models ...website_config.WebsiteConfig) *websiteConfig {
 	return &res
 }
 
-func (res *websiteConfig) Serialize(sm *[]map[string]interface{}) *[]map[string]interface{} {
+func (res *websiteConfig) Serialize() []map[string]interface{} {
+	sm := make([]map[string]interface{}, 0, 20)
 	for _, model := range res.Ms {
 		m := map[string]interface{}{
 			"web_name":               model.WebName,
@@ -35,7 +36,7 @@ func (res *websiteConfig) Serialize(sm *[]map[string]interface{}) *[]map[string]
 			"web_logo":               model.WebLogo,
 			"qr_code":                model.QRCode,
 		}
-		*sm = append(*sm, m)
+		sm = append(sm, m)
 	}
 	return sm
 }
