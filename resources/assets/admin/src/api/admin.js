@@ -5,7 +5,7 @@ import request from '@/utils/request'
  */
 export function show() {
   return request({
-    url: '/v1/user/info',
+    url: '/v1/us/info',
     method: 'get'
   })
 }

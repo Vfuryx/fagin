@@ -107,33 +107,59 @@ export const constantRoutes = [
     },
     children: [
       {
-        path: 'update_user',
-        name: 'UpdateUser',
-        component: () => import('@/views/admin/update_user'),
-        meta: { title: '更新用户', roles: ['admin'] }
+        path: 'user',
+        name: 'user',
+        component: () => import('@/views/admin/user'),
+        meta: { title: '用户管理', icon: 'user', roles: ['admin'] }
+      },
+      {
+        path: 'menu',
+        name: 'Menu',
+        component: () => import('@/views/menu/index'),
+        meta: { title: '菜单管理', icon: 'tree-table', roles: ['admin', 'system:sysmenu:*'] }
+      },
+      {
+        path: 'role',
+        name: 'Role',
+        component: () => import('@/views/role/index'),
+        meta: { title: '角色管理', icon: 'peoples', roles: ['admin', 'system:sysmenu:*'] }
       },
       {
         path: 'login_log',
         name: 'LoginLog',
         component: () => import('@/views/admin/login_log'),
-        meta: { title: '登录日志', roles: ['admin'] }
+        meta: { title: '登录日志', icon: 'log', roles: ['admin'] }
       },
       {
         path: 'operation_log',
         name: 'OperationLog',
         component: () => import('@/views/admin/operation_log'),
-        meta: { title: '操作日志', roles: ['admin'] }
+        meta: { title: '操作日志', icon: 'log', roles: ['admin'] }
+      },
+      {
+        path: 'operlog',
+        name: 'operlog',
+        component: () => import('@/views/operlog/index'),
+        meta: { title: '操作日志2', icon: 'log', roles: ['admin'] }
       },
       {
         path: 'website',
         name: 'WebsitesSetup',
         component: () => import('@/views/admin/website'),
-        meta: { title: '网站设置', roles: ['admin'] }
+        meta: { title: '网站设置', icon: 'component', roles: ['admin'] }
       }
     ]
   },
   // 404 page must be placed at the end !!!
   { path: '*', redirect: '/404', hidden: true }
+]
+
+/**
+ * asyncRoutes
+ * the routes that need to be dynamically loaded based on user roles
+ */
+export const asyncRoutes = [
+
 ]
 
 const createRouter = () => new Router({

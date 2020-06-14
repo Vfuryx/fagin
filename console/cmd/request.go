@@ -6,7 +6,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// requestCmd represents the request command
 var requestCmd = &cobra.Command{
 	Use:   "request",
 	Short: "",

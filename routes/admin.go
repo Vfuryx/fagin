@@ -14,9 +14,7 @@ var Admin = router.Group("admin")
 
 func init() {
 	// 记录操作日志中间件
-	var log = middleware.AdminOperationLog.Log
-	// 初始化操作日志中间件
-	Admin.Use(middleware.AdminOperationLog.Operation())
+	Admin.Use(middleware.AdminOperationLog.LoggerToDB())
 
 	router.NoRoute(Admin.BasePath(), func(ctx *gin.Context) {
 		ctx.JSON(http.StatusNotFound, gin.H{"m": "admin 404"})
@@ -37,7 +35,10 @@ func init() {
 	api := Admin.Group("/api")
 	{
 		// 登录
-		api.POST("/login", admin.AuthController.Login, log("后台登录"))
+		api.POST("/login", admin.AuthController.Login)
+		// 获取验证码
+		api.POST("/captcha", admin.AuthController.GetCaptcha)
+
 		// 播放视频
 		api.GET("/play/av:id", admin.VideoController.PlayVideo)
 
@@ -45,11 +46,71 @@ func init() {
 		apiV1 := api.Group("/v1", middleware.AdminAuth.IsLogin())
 		{
 			// 获取用户信息
-			apiV1.GET("/user/info", admin.AuthController.Info)
+			apiV1.GET("/us/info", admin.AuthController.Info)
+			// 获取角色菜单
+			apiV1.GET("/us/menurole", admin.AuthController.MenuRole)
 			// 修改用户信息
-			apiV1.PUT("/user/:id", admin.AuthController.UpdateAdminUser, log("修改用户信息"))
+			//apiV1.PUT("/user/:id", admin.AuthController.UpdateAdminUser)
 			// 登出
 			apiV1.POST("/user/logout", admin.AuthController.Logout)
+
+			// 用户管理
+			user := apiV1.Group("/user")
+			{
+				// 用户列表
+				user.GET("/", admin.UserController.Index)
+				// 展示用户
+				user.GET("/:id", admin.UserController.Show)
+				// 新增用户
+				user.POST("/", admin.UserController.Store)
+				// 更新用户
+				user.PUT("/:id", admin.UserController.Update)
+				// 用户更新状态
+				user.PUT("/:id/status/", admin.UserController.UpdateStatus)
+				// 用户更新密码
+				user.PUT("/:id/reset/", admin.UserController.Reset)
+				// 删除用户
+				user.DELETE("/:id", admin.UserController.Del)
+				// 批量删除用户
+				user.DELETE("/", admin.UserController.Dels)
+			}
+
+			// 菜单管理
+			menu := apiV1.Group("/menu")
+			{
+				// 菜单列表
+				menu.GET("/", admin.MenuController.Index)
+				// 菜单展示
+				menu.GET("/:id", admin.MenuController.Show)
+				// 菜单新增
+				menu.POST("/", admin.MenuController.Store)
+				// 菜单更新
+				menu.PUT("/:id", admin.MenuController.Update)
+				// 菜单删除
+				menu.DELETE("/:id", admin.MenuController.Del)
+			}
+
+			// 角色管理
+			role := apiV1.Group("/role")
+			{
+				// 角色列表
+				role.GET("/", admin.RoleController.Index)
+				// 角色列表
+				role.POST("/list", admin.RoleController.Roles)
+				// 角色展示
+				role.GET("/:id", admin.RoleController.Show)
+				// 角色新增
+				role.POST("/", admin.RoleController.Store)
+				// 角色更新
+				role.PUT("/:id", admin.RoleController.Update)
+				// 角色更新状态
+				role.PUT("/:id/status/", admin.RoleController.UpdateStatus)
+				// 角色删除
+				role.DELETE("/:id", admin.RoleController.Del)
+				// 角色组删除
+				role.DELETE("/", admin.RoleController.Dels)
+
+			}
 
 			// 操作日志列表
 			logs := apiV1.Group("/operation/logs")
@@ -66,11 +127,11 @@ func init() {
 				// 轮播图列表
 				banner.GET("/", admin.BannerController.Index)
 				// 创建轮播图
-				banner.POST("/", admin.BannerController.Store, log("创建轮播图"))
+				banner.POST("/", admin.BannerController.Store)
 				// 轮播图详情
 				banner.GET("/:id", admin.BannerController.Show)
 				// 更新轮播图
-				banner.PUT("/:id", admin.BannerController.Update, log("更新轮播图"))
+				banner.PUT("/:id", admin.BannerController.Update)
 				// 上传轮播图
 				banner.POST("/upload", admin.BannerController.Upload)
 			}
@@ -81,11 +142,11 @@ func init() {
 				// 视频列表
 				video.GET("/list", admin.VideoController.VideoList)
 				// 创建视频
-				video.POST("/", admin.VideoController.CreateVideo, log("创建视频"))
+				video.POST("/", admin.VideoController.CreateVideo)
 				// 更新视频
-				video.PUT("/:id", admin.VideoController.UpdateVideo, log("更新视频"))
+				video.PUT("/:id", admin.VideoController.UpdateVideo)
 				// 删除视频
-				video.DELETE("/:id", admin.VideoController.DeleteVideo, log("删除视频"))
+				video.DELETE("/:id", admin.VideoController.DeleteVideo)
 				// 上传视频
 				video.POST("/upload", admin.VideoController.UploadVideo)
 			}
@@ -96,7 +157,7 @@ func init() {
 				// 查看网站设置
 				website.GET("/info", admin.WebsiteConfigController.Info)
 				// 更新网站设置
-				website.PUT("/info", admin.WebsiteConfigController.UpdateInfo, log("更新网站设置"))
+				website.PUT("/info", admin.WebsiteConfigController.UpdateInfo)
 				// 上传图片
 				website.POST("/upload", admin.WebsiteConfigController.Upload)
 			}
@@ -107,7 +168,7 @@ func init() {
 				// 查看公司介绍
 				company.GET("/introduction", admin.CompanyIntroductionController.ShowCompanyIntroduction)
 				// 更新公司介绍
-				company.PUT("/introduction", admin.CompanyIntroductionController.UpdateCompanyIntroduction, log("更新公司介绍"))
+				company.PUT("/introduction", admin.CompanyIntroductionController.UpdateCompanyIntroduction)
 				// 上传图片
 				company.POST("/upload", admin.CompanyIntroductionController.Upload)
 			}

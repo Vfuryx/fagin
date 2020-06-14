@@ -94,7 +94,7 @@ func Rollback() {
 		log.Fatalf("Could not migrate: %v", err)
 	}
 
-	log.Printf("Migration did run successfully")
+	log.Printf("Migration rollback run successfully")
 }
 
 // 重置数据库
@@ -107,5 +107,5 @@ func Reset() {
 		}
 	}
 
-	log.Printf("Migration did run successfully")
+	log.Printf("Migration reset run successfully")
 }

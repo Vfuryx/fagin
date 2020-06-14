@@ -9,6 +9,8 @@ type api struct {
 	ErrOpenFile,
 	ErrCacheIsClose,
 	ErrCacheIsNil,
+	ErrGetCaptcha,
+	ErrVerifyCaptcha,
 
 	// 用户错误 *Errno
 	ErrEncrypt,
@@ -22,6 +24,7 @@ type api struct {
 	ErrUpdateUser,
 	ErrDeleteUser,
 	ErrUserList,
+	ErrUserShow,
 
 	// video err *Errno
 	ErrAddVideo,
@@ -42,7 +45,24 @@ type api struct {
 
 	// 公司介绍 err *Errno
 	ErrUpdateCompanyIntroduction,
-	ErrCompanyIntroduction *Errno
+	ErrCompanyIntroduction,
+
+	// 后台菜单
+	ErrAddAdminMenu,
+	ErrUpdateAdminMenu,
+	ErrDeleteAdminMenu,
+	ErrAdminMenuList,
+	ErrAdminMenu,
+
+	// 后台角色
+	ErrAddAdminRole,
+	ErrUpdateAdminRole,
+	ErrDeleteAdminRole,
+	ErrAdminRoleList,
+	ErrAdminRole,
+
+	//结束
+	end *Errno
 }
 
 var Api = api{
@@ -54,6 +74,8 @@ var Api = api{
 	ErrOpenFile:           &Errno{Code: 10004, Message: "打开文件失败"},
 	ErrCacheIsClose:       &Errno{Code: 10005, Message: "缓存服务未开启"},
 	ErrCacheIsNil:         &Errno{Code: 10006, Message: "缓存不存在"},
+	ErrGetCaptcha:         &Errno{Code: 10007, Message: "获取验证码失败"},
+	ErrVerifyCaptcha:      &Errno{Code: 10008, Message: "验证码验证失败"},
 
 	// 用户错误
 	ErrEncrypt:           &Errno{Code: 20101, Message: "密码加密异常"},
@@ -67,6 +89,7 @@ var Api = api{
 	ErrUpdateUser:        &Errno{Code: 20109, Message: "更新用户失败"},
 	ErrDeleteUser:        &Errno{Code: 20109, Message: "删除用户失败"},
 	ErrUserList:          &Errno{Code: 20110, Message: "获取用户列表失败"},
+	ErrUserShow:          &Errno{Code: 20111, Message: "获取用户信息失败"},
 
 	// video err
 	ErrAddVideo:    &Errno{Code: 20201, Message: "创建视频失败"},
@@ -83,9 +106,23 @@ var Api = api{
 
 	// 网站设置 err
 	ErrUpdateWebsiteConfig: &Errno{Code: 20221, Message: "更新网站配置失败"},
-	ErrWebsiteConfig:       &Errno{Code: 20221, Message: "获取网站配置失败"},
+	ErrWebsiteConfig:       &Errno{Code: 20222, Message: "获取网站配置失败"},
 
 	// 公司介绍 err
 	ErrUpdateCompanyIntroduction: &Errno{Code: 20231, Message: "更新公司介绍失败"},
-	ErrCompanyIntroduction:       &Errno{Code: 20231, Message: "获取公司介绍失败"},
+	ErrCompanyIntroduction:       &Errno{Code: 20232, Message: "获取公司介绍失败"},
+
+	// 后台菜单
+	ErrAddAdminMenu:    &Errno{Code: 20241, Message: "创建后台菜单失败"},
+	ErrUpdateAdminMenu: &Errno{Code: 20212, Message: "更新后台菜单失败"},
+	ErrDeleteAdminMenu: &Errno{Code: 20213, Message: "删除后台菜单失败"},
+	ErrAdminMenuList:   &Errno{Code: 20214, Message: "获取后台菜单列表失败"},
+	ErrAdminMenu:       &Errno{Code: 20215, Message: "获取后台菜单失败"},
+
+	// 后台菜单
+	ErrAddAdminRole:    &Errno{Code: 20341, Message: "创建后台角色失败"},
+	ErrUpdateAdminRole: &Errno{Code: 20312, Message: "更新后台角色失败"},
+	ErrDeleteAdminRole: &Errno{Code: 20313, Message: "删除后台角色失败"},
+	ErrAdminRoleList:   &Errno{Code: 20314, Message: "获取后台角色列表失败"},
+	ErrAdminRole:       &Errno{Code: 20315, Message: "获取后台角色失败"},
 }

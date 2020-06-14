@@ -52,7 +52,7 @@ func createAppKey(filePath string) {
 
 var keyCmd = &cobra.Command{
 	Use:   "key",
-	Short: "A brief description of your command",
+	Short: "生成 key",
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
 		createAppKey(config.App.RootPath + `/.env`)

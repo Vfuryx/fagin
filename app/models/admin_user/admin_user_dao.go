@@ -46,3 +46,8 @@ func (d *dao) Query(params map[string]interface{}, columns []string, with map[st
 	d.DB = model
 	return d
 }
+
+func (d *dao) Deletes(ids []uint) error {
+	var menu AdminUser
+	return db.ORM.Where("id in (?)", ids).Delete(&menu).Error
+}

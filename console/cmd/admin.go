@@ -28,14 +28,9 @@ import (
 // adminCmd represents the admin command
 var adminCmd = &cobra.Command{
 	Use:   "admin",
-	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
-
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
-
+	Short: "生成一个超级管理员账户",
+	Long: `详细说明`,
+	Example: "例子",
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("admin called")
 
@@ -59,7 +54,7 @@ to quickly create a Cobra application.`,
 		service.Canbin.AddPolicyForRole("admin", "/*", "|")
 
 		// 设置超级管理员角色
-		service.Canbin.AddUserRole(strconv.Itoa(int(u.ID)), r.Name)
+		_, _ = service.Canbin.AddUserRole(strconv.Itoa(int(u.ID)), r.Name)
 
 		db.ORM.Close()
 	},

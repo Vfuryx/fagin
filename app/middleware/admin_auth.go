@@ -25,6 +25,7 @@ func (adminAuth) IsLogin() gin.HandlerFunc {
 		}
 
 		ctx.Set("user_name", c.Name)
+		ctx.Set("admin_user_id", c.UserID)
 
 		ctx.Next()
 	}

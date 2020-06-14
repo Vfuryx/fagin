@@ -6,7 +6,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// responseCmd represents the response command
 var responseCmd = &cobra.Command{
 	Use:   "response",
 	Short: "",
