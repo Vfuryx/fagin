@@ -15,46 +15,67 @@
 package cmd
 
 import (
-	"fagin/app/models/role"
-	"fagin/app/models/user"
+	"fagin/app"
+	"fagin/app/models/admin_role"
+	"fagin/app/models/admin_user"
 	"fagin/app/service"
 	"fagin/pkg/db"
 	"fmt"
-	"strconv"
-
 	"github.com/spf13/cobra"
+	"strconv"
 )
 
 // adminCmd represents the admin command
 var adminCmd = &cobra.Command{
-	Use:   "admin",
-	Short: "生成一个超级管理员账户",
-	Long: `详细说明`,
+	Use:     "admin",
+	Short:   "生成一个超级管理员账户",
+	Long:    `详细说明`,
 	Example: "例子",
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("admin called")
-
-		u := user.User{
+		pwd, _ := app.Encrypt("12345678")
+		u := admin_user.AdminUser{
+			ID:       1,
 			Username: "admin",
-			Email:    "admin@admin.com",
-			Password: "123456",
+			NickName: "admin",
+			Password: pwd,
+			Avatar:   "http://qiniu.furyx.cn/photo.jpg",
+			Status:   1,
+			RoleID:   1,
 		}
 
 		// 添加超级管理员账号
-		err := user.Dao().Create(&u)
+		err := db.ORM.FirstOrCreate(&u).Error
 		if err != nil {
 			fmt.Println("创建超级管理员失败")
 			return
 		}
 		// 添加角色
-		r := role.Role{Name: "admin", Sort: 9999}
-		_ = role.Dao().Create(&r)
+		r := admin_role.AdminRole{
+			ID:     1,
+			Name:   "admin",
+			Key:    "admin",
+			Remark: "admin",
+		}
+		err = db.ORM.FirstOrCreate(&r).Error
+		if err != nil {
+			fmt.Println("创建角色失败")
+			return
+		}
 
 		// 设置角色权限
-		service.Canbin.AddPolicyForRole("admin", "/*", "|")
+		ok, err := service.Canbin.AddPolicyForRole("admin", "/*", "|")
+		if err != nil || !ok {
+			fmt.Println("设置角色权限失败", err)
+			return
+		}
 
 		// 设置超级管理员角色
-		_, _ = service.Canbin.AddUserRole(strconv.Itoa(int(u.ID)), r.Name)
+		ok, err = service.Canbin.AddUserRole(strconv.Itoa(int(u.ID)), r.Name)
+		if err != nil || !ok {
+			fmt.Println("设置超级管理员角色失败", err)
+			return
+		}
 
 		db.ORM.Close()
 	},

@@ -46,6 +46,11 @@ func (d *dao) Query(params map[string]interface{}, columns []string, with map[st
 		model = model.Where("id = ?", v)
 	}
 
+	if v, ok = params["in_id"]; ok {
+		model = model.Where("id in (?)", v)
+	}
+
+
 	if v, ok = params["like_name"]; ok && v.(string) != "" {
 		model = model.Where("`name` LIKE ?", v)
 	}

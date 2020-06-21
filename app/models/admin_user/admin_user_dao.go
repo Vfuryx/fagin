@@ -43,6 +43,14 @@ func (d *dao) Query(params map[string]interface{}, columns []string, with map[st
 		model = model.Where("id = ?", v)
 	}
 
+	if v, ok = params["username"]; ok {
+		model = model.Where("username = ?", v)
+	}
+
+	if v, ok = params["status"]; ok {
+		model = model.Where("status = ?", v)
+	}
+
 	d.DB = model
 	return d
 }

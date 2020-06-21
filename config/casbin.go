@@ -2,8 +2,7 @@ package config
 
 import (
 	"fagin/pkg/conf"
-	"github.com/casbin/casbin"
-	"github.com/casbin/casbin/model"
+	"github.com/casbin/casbin/v2/model"
 	"strconv"
 )
 
@@ -11,8 +10,7 @@ import (
 var Casbin model.Model
 
 func init() {
-	Casbin = casbin.NewModel()
-
+	Casbin = model.NewModel()
 	m := conf.GetStringMapStringSlice("casbin.model", map[string][]string{})
 
 	mLen := len(m)

@@ -25,6 +25,7 @@ type api struct {
 	ErrDeleteUser,
 	ErrUserList,
 	ErrUserShow,
+	ErrAuthCheckRole,
 
 	// video err *Errno
 	ErrAddVideo,
@@ -90,6 +91,7 @@ var Api = api{
 	ErrDeleteUser:        &Errno{Code: 20109, Message: "删除用户失败"},
 	ErrUserList:          &Errno{Code: 20110, Message: "获取用户列表失败"},
 	ErrUserShow:          &Errno{Code: 20111, Message: "获取用户信息失败"},
+	ErrAuthCheckRole:     &Errno{Code: 20112, Message: "对不起，您没有该接口访问权限，请联系管理员"},
 
 	// video err
 	ErrAddVideo:    &Errno{Code: 20201, Message: "创建视频失败"},

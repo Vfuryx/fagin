@@ -4,20 +4,20 @@ import "fagin/pkg/constant"
 
 const (
 	// 主目录类型
-	TypeMain int = 0
+	TypeMain uint8 = 0
 	// 菜单类型
-	TypeMenu int = 1
+	TypeMenu uint8 = 1
 	// 接口类型
-	TypeApi int = 2
+	TypeApi uint8 = 2
 	// 按钮类型
-	TypeButton int = 3
+	TypeButton uint8 = 3
 )
 
 type adminMenuType struct {
-	TypeMain   int
-	TypeMenu   int
-	TypeApi    int
-	TypeButton int
+	TypeMain   uint8
+	TypeMenu   uint8
+	TypeApi    uint8
+	TypeButton uint8
 	constant.Constant
 }
 

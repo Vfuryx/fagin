@@ -43,7 +43,7 @@ func init() {
 		api.GET("/play/av:id", admin.VideoController.PlayVideo)
 
 		// v1 													// 权限验证
-		apiV1 := api.Group("/v1", middleware.AdminAuth.IsLogin())
+		apiV1 := api.Group("/v1", middleware.AdminAuth.IsLogin(), middleware.AdminAuth.AuthCheckRole())
 		{
 			// 获取用户信息
 			apiV1.GET("/us/info", admin.AuthController.Info)

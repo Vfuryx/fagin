@@ -179,8 +179,8 @@
                 <el-radio
                   v-for="(item, index) in visibleOptions"
                   :key="index"
-                  :label="index"
-                >{{ item }}</el-radio>
+                  :label="item.value"
+                >{{ item.label }}</el-radio>
               </el-radio-group>
             </el-form-item>
           </el-col>

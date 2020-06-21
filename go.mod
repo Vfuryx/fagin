@@ -4,8 +4,8 @@ go 1.13
 
 require (
 	github.com/alecthomas/template v0.0.0-20190718012654-fb15b899a751
-	github.com/casbin/casbin v1.9.1
-	github.com/casbin/gorm-adapter v1.0.0
+	github.com/casbin/casbin/v2 v2.7.1
+	github.com/casbin/gorm-adapter/v2 v2.1.0
 	github.com/davecgh/go-spew v1.1.1
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/fastly/go-utils v0.0.0-20180712184237-d95a45783239 // indirect

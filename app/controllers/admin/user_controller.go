@@ -158,7 +158,7 @@ func (userController) Store(ctx *gin.Context) {
 		RoleID:   r.RoleID,
 	}
 
-	err = service.AdminUserService.Create(&user)
+	err = service.AdminUserService.Create(&user, &role)
 	if err != nil {
 		app.JsonResponse(ctx, errno.Api.ErrAddUser, err)
 		return
@@ -188,12 +188,6 @@ func (userController) Update(ctx *gin.Context) {
 		return
 	}
 
-	//pw, err := app.Encrypt(r.Password)
-	//if err != nil {
-	//	app.JsonResponse(ctx, errno.Api.ErrBind, nil)
-	//	return
-	//}
-
 	data := map[string]interface{}{
 		"status":    *r.Status,
 		"remark":    r.Remark,
@@ -205,7 +199,7 @@ func (userController) Update(ctx *gin.Context) {
 		"sex":     *r.Sex,
 		"role_id": r.RoleID,
 	}
-	err = service.AdminUserService.Update(id, data)
+	err = service.AdminUserService.Update(id, data, &role)
 	if err != nil {
 		log.Log.Errorln(err)
 		app.JsonResponse(ctx, errno.Api.ErrUpdateUser, nil)
@@ -270,7 +264,7 @@ func (userController) Reset(ctx *gin.Context) {
 	data := map[string]interface{}{
 		"password": pw,
 	}
-	err = service.AdminUserService.Update(id, data)
+	err = service.AdminUserService.Update(id, data, nil)
 	if err != nil {
 		log.Log.Errorln(err)
 		app.JsonResponse(ctx, errno.Api.ErrUpdateUser, nil)

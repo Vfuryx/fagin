@@ -79,7 +79,7 @@ func EnvFloat64(name string, def float64) float64 {
 }
 
 func GetStringMapStringSlice(key string, def map[string][]string) map[string][]string {
-	v := viper.GetStringMapStringSlice("casbin.model")
+	v := viper.GetStringMapStringSlice(key)
 	if len(v) == 0 {
 		return def
 	}

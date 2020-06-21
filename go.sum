@@ -42,10 +42,11 @@ github.com/bketelsen/crypt v0.0.3-0.20200106085610-5cbc8cc4026c/go.mod h1:MKsuJm
 github.com/boj/redistore v0.0.0-20180917114910-cd5dcc76aeff/go.mod h1:+RTT1BOk5P97fT2CiHkbFQwkK3mjsFAP6zCYV2aXtjw=
 github.com/bradfitz/gomemcache v0.0.0-20190329173943-551aad21a668/go.mod h1:H0wQNHz2YrLsuXOZozoeDmnHXkNCRmMW0gwFWDfEZDA=
 github.com/bradleypeabody/gorilla-sessions-memcache v0.0.0-20181103040241-659414f458e1/go.mod h1:dkChI7Tbtx7H1Tj7TqGSZMOeGpMP5gLHtjroHd4agiI=
-github.com/casbin/casbin v1.9.1 h1:ucjbS5zTrmSLtH4XogqOG920Poe6QatdXtz1FEbApeM=
-github.com/casbin/casbin v1.9.1/go.mod h1:z8uPsfBJGUsnkagrt3G8QvjgTKFMBJ32UP8HpZllfog=
-github.com/casbin/gorm-adapter v1.0.0 h1:s6U2gJQ4reenRde0L85YsrwNt8k0bv6iUAfRigi1/cM=
-github.com/casbin/gorm-adapter v1.0.0/go.mod h1:1E0t3/djAo+vIvDfNPGigJjLMyoh2XNesXMW69R3ykA=
+github.com/casbin/casbin/v2 v2.2.2/go.mod h1:XXtYGrs/0zlOsJMeRteEdVi/FsB0ph7KgNfjoCoJUD8=
+github.com/casbin/casbin/v2 v2.7.1 h1:M6g/r9gI1bhqfci1Ty29hr8GEeeeo3ZQ/c9ugPOmlmM=
+github.com/casbin/casbin/v2 v2.7.1/go.mod h1:XXtYGrs/0zlOsJMeRteEdVi/FsB0ph7KgNfjoCoJUD8=
+github.com/casbin/gorm-adapter/v2 v2.1.0 h1:wBimcRJ4V/Dq5o95OIBzeM6vvxNfjzCV235biWoSO4I=
+github.com/casbin/gorm-adapter/v2 v2.1.0/go.mod h1:Sy5LYivXiUVRvPZFasa6puLle0RaxNpV2TJ7yzlQkZc=
 github.com/cespare/xxhash v1.1.0/go.mod h1:XrSqR1VqqWfGrhpAt58auRo0WTKS1nRRg3ghfAqPWnc=
 github.com/client9/misspell v0.3.4/go.mod h1:qj6jICC3Q7zFZvVWo7KLAzC3yx5G7kyvSDkc90ppPyw=
 github.com/coreos/bbolt v1.3.2/go.mod h1:iRUV2dpdMOn7Bo10OQBFzIJO9kkE559Wcmn+qkEiiKk=

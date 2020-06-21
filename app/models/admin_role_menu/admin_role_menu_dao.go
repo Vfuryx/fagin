@@ -42,6 +42,9 @@ func (d *dao) Query(params map[string]interface{}, columns []string, with map[st
 	if v, ok = params["id"]; ok {
 		model = model.Where("id = ?", v)
 	}
+	if v, ok = params["menu_id"]; ok {
+		model = model.Where("menu_id = ?", v)
+	}
 
 	d.DB = model
 	return d
