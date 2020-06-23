@@ -516,7 +516,7 @@ export default {
         type: 'warning'
       }).then(() => {
         this.downloadLoading = true
-        import('@/vendor/Export2Excel').then(excel => {
+        import('@/export/Export2Excel').then(excel => {
           const tHeader = ['角色编号', '角色名称', '权限字符', '显示顺序', '状态', '创建时间']
           const filterVal = ['id', 'name', 'key', 'sort', 'status', 'created_at']
           const list = this.roleList

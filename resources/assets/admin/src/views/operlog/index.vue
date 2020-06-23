@@ -263,7 +263,7 @@ export default {
       //   type: 'warning'
       // }).then(() => {
       //   this.downloadLoading = true
-      //   import('@/vendor/Export2Excel').then(excel => {
+      //   import('@/export/Export2Excel').then(excel => {
       //     const tHeader = ['日志编号', '系统模块', '操作类型', '请求方式', '操作人员', '主机', '操作地点', '操作状态', '操作url', '操作日期']
       //     const filterVal = ['operId', 'title', 'businessType', 'method', 'operName', 'operIp', 'operLocation', 'status', 'operUrl', 'operTime']
       //     const list = this.list
