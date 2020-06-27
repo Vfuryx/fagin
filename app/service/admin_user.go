@@ -2,12 +2,15 @@ package service
 
 import (
 	"fagin/app"
+	"fagin/app/constants/admin_menu_type"
 	"fagin/app/constants/status"
 	"fagin/app/errno"
+	"fagin/app/models/admin_menu"
 	"fagin/app/models/admin_role"
 	"fagin/app/models/admin_user"
 	"fagin/pkg/db"
 	"github.com/gin-gonic/gin"
+	"github.com/jinzhu/gorm"
 	"strconv"
 )
 
@@ -131,4 +134,53 @@ func (adminUserService) CheckPassword(id uint, old string) error {
 		return errno.Api.ErrPasswordIncorrect
 	}
 	return nil
+}
+
+func (adminUserService) GetRoutes(userID uint) ([]admin_menu.AdminMenu, error) {
+	// 获取用户角色id
+	user := admin_user.New()
+	err := user.Dao().FindById(userID, []string{"id", "role_id"})
+	if err != nil {
+		return nil, err
+	}
+
+	var menus []admin_menu.AdminMenu
+	// 判断是否超级管理员
+	if user.RoleID == 1 {
+		// 获取展示
+		params := gin.H{
+			"in_type": []int{int(admin_menu_type.TypeMenu), int(admin_menu_type.TypeMain)},
+			"visible": status.Active,
+			"sort":    "sort desc, id asc",
+		}
+		columns := []string{"*"}
+		err = admin_menu.Dao().Query(params, columns, nil).Find(&menus)
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		// 根据角色id获取菜单
+		params := gin.H{"id": user.RoleID}
+		with := gin.H{
+			"Menus": func(db *gorm.DB) *gorm.DB {
+				return db.
+					Where("type in (?)", []uint{uint(admin_menu_type.TypeMenu), uint(admin_menu_type.TypeMain)}).
+					Where("visible = ?", status.Active).
+					Order("sort desc, id asc")
+			},
+		}
+		columns := []string{"*"}
+		role := admin_role.New()
+		err = role.Dao().Query(params, columns, with).First(role)
+		if err != nil {
+			return nil, err
+		}
+
+		menus = role.Menus
+	}
+
+	//组合菜单
+	menus = getMenuTree(menus, 0)
+
+	return menus, nil
 }

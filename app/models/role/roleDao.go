@@ -31,16 +31,16 @@ func (dao) All(columns []string) (*[]Role, error) {
 }
 
 func (d *dao) Query(params map[string]interface{}, columns []string, with map[string]interface{}) db.IDao {
-	query := db.ORM.Select(columns)
+	model := db.ORM.Select(columns)
 
 	var (
 		v  interface{}
 		ok bool
 	)
 	if v, ok = params["id"]; ok {
-		query = query.Where("id = ?", v)
+		model = model.Where("id = ?", v)
 	}
 
-	d.DB = query
+	d.DB = d.With(model, with)
 	return d
 }

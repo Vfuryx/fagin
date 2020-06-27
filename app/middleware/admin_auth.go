@@ -46,7 +46,7 @@ func (adminAuth) AuthCheckRole() gin.HandlerFunc {
 			return
 		}
 
-		ok, err := service.Canbin.CheckRoles(roles, c.Request.URL.Path, c.Request.Method)
+		ok, err := service.Canbin.CheckRoles(roles, c.FullPath(), c.Request.Method)
 		if ok && err == nil {
 			c.Next()
 		} else {

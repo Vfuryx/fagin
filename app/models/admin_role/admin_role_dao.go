@@ -50,7 +50,6 @@ func (d *dao) Query(params map[string]interface{}, columns []string, with map[st
 		model = model.Where("id in (?)", v)
 	}
 
-
 	if v, ok = params["like_name"]; ok && v.(string) != "" {
 		model = model.Where("`name` LIKE ?", v)
 	}
@@ -67,11 +66,7 @@ func (d *dao) Query(params map[string]interface{}, columns []string, with map[st
 		model = model.Order(v)
 	}
 
-	for index, value := range with {
-		model = model.Preload(index, value)
-	}
-
-	d.DB = model
+	d.DB = d.With(model, with)
 	return d
 }
 
@@ -96,7 +91,7 @@ func (d *dao) Update(id uint, data map[string]interface{}) error {
 		}
 	}
 
-	return db.ORM.Model(&AdminRole{ID:id}).Association("Menus").Replace(menus).Error
+	return db.ORM.Model(&AdminRole{ID: id}).Association("Menus").Replace(menus).Error
 }
 
 func (d *dao) Delete(id uint) error {

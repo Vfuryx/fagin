@@ -48,7 +48,7 @@ func init() {
 			// 获取用户信息
 			apiV1.GET("/us/info", admin.AuthController.Info)
 			// 获取角色菜单
-			apiV1.GET("/us/menurole", admin.AuthController.MenuRole)
+			apiV1.GET("/us/routes", admin.AuthController.Routes)
 			// 修改用户信息
 			//apiV1.PUT("/user/:id", admin.AuthController.UpdateAdminUser)
 			// 登出

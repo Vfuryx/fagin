@@ -47,6 +47,6 @@ func (d *dao) Query(params map[string]interface{}, columns []string, with map[st
 		model = model.Order(v)
 	}
 
-	d.DB = model
+	d.DB = d.With(model, with)
 	return d
 }

@@ -16,7 +16,7 @@ NProgress.configure({
 
 const whiteList = ['/login'] // no redirect whitelist
 
-router.beforeEach(async(to, from, next) => {
+router.beforeEach(async (to, from, next) => {
   // start progress bar
   NProgress.start()
 
@@ -34,8 +34,9 @@ router.beforeEach(async(to, from, next) => {
       })
       NProgress.done()
     } else {
-      const hasGetUserInfo = store.getters.name
-      if (hasGetUserInfo) {
+      // const hasGetUserInfo = store.getters.name.length
+      const hasRoles = store.getters.roles && store.getters.roles.length > 0
+      if (hasRoles) {
         next()
       } else {
         try {
@@ -44,11 +45,10 @@ router.beforeEach(async(to, from, next) => {
 
           // 获取菜单
           const accessRoutes = await store.dispatch('permission/generateRoutes', roles)
-
           // 提交菜单
           router.addRoutes(accessRoutes)
 
-          next()
+          next({ ...to, replace: true })
         } catch (error) {
           // remove token and go to login page to re-login
           await store.dispatch('user/resetToken')
@@ -60,7 +60,6 @@ router.beforeEach(async(to, from, next) => {
     }
   } else {
     /* has no token*/
-
     if (whiteList.indexOf(to.path) !== -1) {
       // in the free login whitelist, go directly
       next()

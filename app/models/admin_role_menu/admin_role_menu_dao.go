@@ -46,6 +46,6 @@ func (d *dao) Query(params map[string]interface{}, columns []string, with map[st
 		model = model.Where("menu_id = ?", v)
 	}
 
-	d.DB = model
+	d.DB = d.With(model, with)
 	return d
 }

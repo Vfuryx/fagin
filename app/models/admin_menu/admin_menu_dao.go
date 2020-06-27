@@ -49,6 +49,10 @@ func (d *dao) Query(params map[string]interface{}, columns []string, with map[st
 		model = model.Where("id in (?)", v)
 	}
 
+	if v, ok = params["in_type"]; ok {
+		model = model.Where("type in (?)", v)
+	}
+
 	if v, ok = params["like_title"]; ok && v.(string) != "" {
 		model = model.Where("`title` LIKE ?", v)
 	}
@@ -61,11 +65,7 @@ func (d *dao) Query(params map[string]interface{}, columns []string, with map[st
 		model = model.Order(v)
 	}
 
-	for index, value := range with {
-		model = model.Preload(index, value)
-	}
-
-	d.DB = model
+	d.DB = d.With(model, with)
 	return d
 }
 

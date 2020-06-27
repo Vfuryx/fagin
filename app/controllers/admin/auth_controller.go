@@ -3,11 +3,11 @@ package admin
 import (
 	"fagin/app"
 	"fagin/app/errno"
+	"fagin/app/responses/admin_response"
 	"fagin/app/service"
 	"fagin/app/service/admin_auth"
 	"fagin/app/utils"
 	"fagin/pkg/log"
-	"fmt"
 	"github.com/gin-gonic/gin"
 )
 
@@ -136,10 +136,18 @@ func (authController) GetCaptcha(ctx *gin.Context) {
 	})
 }
 
-func (authController) MenuRole(ctx *gin.Context) {
-	fmt.Println(ctx.GetInt64("admin_user_id"))
-	app.JsonResponse(ctx, errno.OK, gin.H{
-		"menu": "123",
-	})
+//动态获取路由
+func (authController) Routes(ctx *gin.Context) {
+	// 获取userID
+	userID := ctx.GetInt64("admin_user_id")
+	menus, err := service.AdminUserService.GetRoutes(uint(userID))
+	if err != nil {
+		app.JsonResponse(ctx, errno.Api.ErrBind, nil)
+		return
+	}
+
+	data := admin_response.AdminMenusList(menus...).Collection()
+
+	app.JsonResponse(ctx, errno.OK, data)
 
 }

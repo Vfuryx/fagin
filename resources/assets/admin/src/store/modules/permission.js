@@ -1,17 +1,8 @@
-import {
-  asyncRoutes,
-  constantRoutes
-} from '@/router'
-
-import {
-  getRoutes
-} from '@/api/role'
-
-import {
-  Message
-} from 'element-ui'
-
+import { asyncRoutes, constantRoutes } from '@/router'
+import { getRoutes } from '@/api/role'
 import Layout from '@/layout'
+import { Message } from 'element-ui'
+
 // import sysuserindex from '@/views/sysuser/index'
 
 /**
@@ -46,12 +37,13 @@ function hasPathPermission(paths, route) {
  */
 export function generaMenu(routes, data) {
   data.forEach(item => {
+    // console.log(item)
     const menu = {
       path: item.path,
       component: item.component === 'Layout' ? Layout : loadView(item.component),
-      hidden: item.visible !== '0',
+      hidden: item.visible !== 1,
       children: [],
-      name: item.menuName,
+      name: item.name,
       meta: {
         title: item.title,
         icon: item.icon,
@@ -67,7 +59,7 @@ export function generaMenu(routes, data) {
 
 export const loadView = (view) => { // 路由懒加载
   return (resolve) => require(['@/views' + view], resolve)
-  // return () => import(`@/views${view}`)
+  // return () => import('@/views' + view)
 }
 
 /**
@@ -129,28 +121,23 @@ const mutations = {
 }
 
 const actions = {
-  generateRoutes({
-    commit
-  }, roles) {
+  generateRoutes({ commit }, roles) {
     return new Promise(resolve => {
       const loadMenuData = []
 
       getRoutes().then(response => {
         let data = response
         if (response.code !== 0) {
-          Message.error(response.message)
+          Message({
+            message: '菜单数据加载异常',
+            type: 0
+          })
         } else {
           data = response.data
           Object.assign(loadMenuData, data)
 
-          console.log(1111, response)
-
           generaMenu(asyncRoutes, loadMenuData)
-          asyncRoutes.push({
-            path: '*',
-            redirect: '/404',
-            hidden: true
-          })
+          asyncRoutes.push({ path: '*', redirect: '/404', hidden: true })
           commit('SET_ROUTES', asyncRoutes)
           resolve(asyncRoutes)
         }

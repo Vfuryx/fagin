@@ -81,9 +81,12 @@ export function getListrole(id) {
   })
 }
 
+/**
+ * 获取动态路由
+ */
 export function getRoutes() {
   return request({
-    url: '/v1/us/menurole',
+    url: '/v1/us/routes',
     method: 'get'
   })
 }

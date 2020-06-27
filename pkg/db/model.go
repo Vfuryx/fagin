@@ -57,6 +57,25 @@ func (d *Dao) Destroy(id uint) error {
 	return ORM.Where("id = ?", id).Delete(d.M).Error
 }
 
+func (d *Dao) With(db *gorm.DB, with map[string]interface{}) *gorm.DB {
+	for index, value := range with {
+		if value != nil {
+			switch value.(type) {
+			case gin.H:
+				for k, v := range value.(gin.H) {
+					db = db.Preload(index, k, v)
+				}
+			case func(db *gorm.DB) *gorm.DB:
+				db = db.Preload(index, value)
+			}
+
+		} else {
+			db = db.Preload(index)
+		}
+	}
+	return db
+}
+
 // 分页管理器
 type Paginator struct {
 	CurrentPage int `json:"current_page"` // 当前页
