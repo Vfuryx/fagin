@@ -46,13 +46,25 @@ func (adminAuth) AuthCheckRole() gin.HandlerFunc {
 			return
 		}
 
-		ok, err := service.Canbin.CheckRoles(roles, c.FullPath(), c.Request.Method)
-		if ok && err == nil {
+		isAdmin := false
+		for _, r := range roles {
+			if r == "admin" {
+				isAdmin = true
+			}
+		}
+		// 是超级管理员
+		if isAdmin {
 			c.Next()
 		} else {
-			app.JsonResponse(c, errno.Api.ErrAuthCheckRole, nil)
-			c.Abort()
-			return
+			ok, err := service.Canbin.CheckRoles(roles, c.FullPath(), c.Request.Method)
+			if ok && err == nil {
+				c.Next()
+			} else {
+				app.JsonResponse(c, errno.Api.ErrAuthCheckRole, nil)
+				c.Abort()
+				return
+			}
 		}
+
 	}
 }

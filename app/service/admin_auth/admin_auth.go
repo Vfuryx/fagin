@@ -27,7 +27,7 @@ func (adminAuthService) Login(name string, password string) (uint, error) {
 	columns := []string{"id", "username", "password", "status"}
 	adminUser := admin_user.New()
 	if err := adminUser.Dao().Query(params, columns, nil).First(&adminUser); err != nil {
-		return 0, errno.InternalServerError
+		return 0, errno.Api.ErrUserNotFound
 	}
 
 	if adminUser.Username != name {

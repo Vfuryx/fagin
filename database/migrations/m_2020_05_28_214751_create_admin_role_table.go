@@ -19,7 +19,21 @@ func init() {
 	migration.Migrations = append(migration.Migrations, &gormigrate.Migration{
 		ID: "m_2020_05_28_214751_create_admin_role_table",
 		Migrate: func(tx *gorm.DB) error {
-			return tx.AutoMigrate(&AdminRole{}).Error
+			err := tx.AutoMigrate(&AdminRole{}).Error
+			if err != nil {
+				return err
+			}
+			err = tx.Create(&AdminRole{
+				Name:   "admin",
+				Key:    "admin",
+				Remark: "admin",
+				Sort:   0,
+				Status: 1,
+			}).Error
+			if err != nil {
+				return err
+			}
+			return nil
 		},
 		Rollback: func(tx *gorm.DB) error {
 			return tx.DropTableIfExists(&AdminRole{}).Error

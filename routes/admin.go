@@ -112,12 +112,12 @@ func init() {
 
 			}
 
-			// 操作日志列表
+			// 操作日志管理
 			logs := apiV1.Group("/operation/logs")
 			{
-				// 查看操作日志列表
+				// 操作日志列表
 				logs.GET("/", admin.OperationLogController.Index)
-				// 查看操作日志
+				// 操作日志详情
 				logs.GET("/:id", admin.OperationLogController.Show)
 			}
 

@@ -32,21 +32,22 @@
       row-key="id"
       :tree-props="{children: 'children', hasChildren: 'hasChildren'}"
     >
-      <el-table-column prop="title" label="菜单名称" :show-overflow-tooltip="true" width="180px" />
-      <el-table-column prop="icon" label="图标" align="center" width="100px">
+      <el-table-column prop="title" label="菜单名称" :show-overflow-tooltip="true" width="190px" />
+      <el-table-column prop="icon" label="图标" align="center" width="65px">
         <template slot-scope="scope">
           <svg-icon :icon-class="scope.row.icon" />
         </template>
       </el-table-column>
       <el-table-column prop="sort" label="排序" width="60px" />
-      <el-table-column prop="permission" label="权限标识" :show-overflow-tooltip="true" />
+      <el-table-column prop="permission" label="权限标识" width="100px" :show-overflow-tooltip="true" />
+      <el-table-column prop="action" label="方式" width="90px" :show-overflow-tooltip="true" />
       <el-table-column prop="path" label="路径" :show-overflow-tooltip="true">
         <template slot-scope="scope">
-          <span v-if="scope.row.type=='3'">{{ scope.row.path }}</span>
+          <span v-if="scope.row.type=='2'">{{ scope.row.path }}</span>
           <span v-else>{{ scope.row.component }}</span>
         </template>
       </el-table-column>
-      <el-table-column prop="visible" label="可见" :formatter="visibleFormat" width="80">
+      <el-table-column prop="visible" label="可见" :formatter="visibleFormat" width="60">
         <template slot-scope="scope">
           <el-tag
             :type="scope.row.visible === 0 ? 'danger' : 'success'"
