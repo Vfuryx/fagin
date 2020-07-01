@@ -1094,6 +1094,22 @@ func init() {
 					Visible:    0,
 					IsLink:     0,
 				},
+				{
+					ID:         68,
+					ParentId:   50,
+					Paths:      "0-6-7-50-68",
+					Name:       "",
+					Title:      "批量删除视频",
+					Icon:       "example",
+					Type:       2,
+					Path:       "/admin/api/v1/video/",
+					Component:  "",
+					Action:     "DELETE",
+					Permission: "",
+					Sort:       0,
+					Visible:    0,
+					IsLink:     0,
+				},
 			}
 
 			for _, m := range menus {

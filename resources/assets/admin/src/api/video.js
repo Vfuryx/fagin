@@ -30,3 +30,14 @@ export function deleteVideo(id) {
     method: 'delete'
   })
 }
+
+// 删除角色组
+export function deleteVideos(ids) {
+  return request({
+    url: '/v1/video/',
+    method: 'delete',
+    data: {
+      ids: ids
+    }
+  })
+}

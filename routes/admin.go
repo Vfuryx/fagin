@@ -147,6 +147,8 @@ func init() {
 				video.PUT("/:id", admin.VideoController.UpdateVideo)
 				// 删除视频
 				video.DELETE("/:id", admin.VideoController.DeleteVideo)
+				// 批量删除视频
+				video.DELETE("/", admin.VideoController.DeleteVideos)
 				// 上传视频
 				video.POST("/upload", admin.VideoController.UploadVideo)
 			}

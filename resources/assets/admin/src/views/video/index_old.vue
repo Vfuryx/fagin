@@ -1,68 +1,45 @@
 <template>
-  <div class="app-container">
-    <el-row :gutter="10" class="mb8">
-      <el-col :span="1.5">
-        <el-button type="primary" icon="el-icon-plus" size="mini" @click="handleCreate">新增</el-button>
-      </el-col>
-      <el-col :span="1.5">
-        <el-button
-          type="danger"
-          icon="el-icon-delete"
-          size="mini"
-          :disabled="multiple"
-          @click="handleDelete"
-        >删除</el-button>
-      </el-col>
-      <!-- <el-col :span="1.5">
-        <el-button
-          type="warning"
-          icon="el-icon-download"
-          size="mini"
-          @click="handleExport"
-        >导出</el-button>
-      </el-col>-->
-    </el-row>
-
+  <div class="container">
+    <div class="filter-container clearfix">
+      <el-button
+        class="filter-item"
+        style="margin-left: 10px;"
+        type="primary"
+        icon="el-icon-edit"
+        @click="handleCreate"
+      >添加</el-button>
+    </div>
     <el-table
       v-loading="listLoading"
       :data="list"
-      element-loading-text="拼命加载中"
+      border
       fit
       highlight-current-row
-      @selection-change="handleSelectionChange"
+      style="width: 100%"
     >
-      <el-table-column type="selection" width="55" align="center" />
-      <el-table-column align="center" label="ID" width="60">
-        <template slot-scope="scope">{{ scope.row.id }}</template>
+      <el-table-column align="center" label="ID" width="80">
+        <template slot-scope="scope">
+          <span>{{ scope.row.id }}</span>
+        </template>
       </el-table-column>
-      <el-table-column align="center" label="标题">
-        <template slot-scope="scope">{{ scope.row.title }}</template>
+
+      <el-table-column min-width="120px" label="标题">
+        <template slot-scope="scope">
+          <span>{{ scope.row.title }}</span>
+        </template>
       </el-table-column>
-      <el-table-column align="center" label="状态">
+
+      <el-table-column align="center" label="状态" width="80">
         <template slot-scope="scope">
           <el-tag>{{ scope.row.status ? '开启' : '关闭' }}</el-tag>
         </template>
       </el-table-column>
-      <el-table-column align="center" label="操作">
+
+      <el-table-column align="center" label="操作" width="250">
         <template slot-scope="scope">
-          <el-button
-            size="mini"
-            type="text"
-            icon="el-icon-edit"
-            @click="handleShowVideo(scope.row)"
-          >查看</el-button>
-          <el-button
-            size="mini"
-            type="text"
-            icon="el-icon-edit"
-            @click="handleUpdateVideo(scope.row)"
-          >修改</el-button>
-          <el-button
-            size="mini"
-            type="text"
-            icon="el-icon-delete"
-            @click="handleDelete(scope.row)"
-          >删除</el-button>
+          <el-button size="mini" type="success" @click="handleShowVideo(scope.row)">查看</el-button>
+          <el-button size="mini" type="primary" @click="handleUpdateVideo(scope.row)">编辑</el-button>
+          <el-button size="mini" type="danger" @click="handleDelete(scope.row)">删除</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -72,7 +49,7 @@
       :total="total"
       :page.sync="listQuery.page"
       :limit.sync="listQuery.limit"
-      @pagination="fetchData"
+      @pagination="getData"
     />
 
     <el-dialog title="创建视频" :visible.sync="dialogFormVisible">
@@ -97,16 +74,16 @@
             :multiple="false"
             :headers="headers"
           >
-            <i class="el-icon-upload" />
+            <i class="el-icon-upload"></i>
             <div class="el-upload__text">
               将文件拖到此处，或
               <em>点击上传</em>
             </div>
-            <div slot="tip" class="el-upload__tip">只能上传video/mp4文件，且不超过32mb</div>
+            <div class="el-upload__tip" slot="tip">只能上传video/mp4文件，且不超过32mb</div>
           </el-upload>
         </el-form-item>
         <el-form-item label="描述" prop="description">
-          <el-input v-model="temp.description" type="textarea" />
+          <el-input type="textarea" v-model="temp.description" />
         </el-form-item>
         <el-form-item label="状态">
           <el-switch v-model="temp.status" :active-value="1" :inactive-value="0" />
@@ -114,7 +91,8 @@
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button @click="dialogFormVisible = false">取消</el-button>
-        <el-button type="primary" @click="submitCreateForm()">提交</el-button>
+        <el-button type="primary" @click="createData()">提交</el-button>
+        <!-- <el-button type="primary" @click="dialogStatus==='create'?createData():updateData()">提交</el-button> -->
       </div>
     </el-dialog>
 
@@ -126,8 +104,8 @@
     >
       <h1>{{ temp.title }}</h1>
       <video-player
-        ref="videoPlayer"
         class="video-player-box"
+        ref="videoPlayer"
         :options="playerOptions"
         :playsinline="true"
       />
@@ -159,11 +137,11 @@
               将文件拖到此处，或
               <em>点击上传</em>
             </div>
-            <div slot="tip" class="el-upload__tip">只能上传video/mp4文件，且不超过32mb</div>
+            <div class="el-upload__tip" slot="tip">只能上传video/mp4文件，且不超过32mb</div>
           </el-upload>
         </el-form-item>
         <el-form-item label="描述" prop="description">
-          <el-input v-model="temp.description" type="textarea" />
+          <el-input type="textarea" v-model="temp.description" />
         </el-form-item>
         <el-form-item label="状态">
           <el-switch v-model="temp.status" :active-value="1" :inactive-value="0" />
@@ -171,39 +149,43 @@
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button @click="dialogUpdateVisible = false">取消</el-button>
-        <el-button type="primary" @click="submitUpdateForm()">提交</el-button>
+        <el-button type="primary" @click="UpdateData()">提交</el-button>
       </div>
     </el-dialog>
   </div>
 </template>
 
 <script>
-import { getList, deleteVideo, createVideo, updateVideo, deleteVideos } from '@/api/video'
+import { getToken } from '@/utils/auth'
+import { getList, deleteVideo, createVideo, updateVideo } from '@/api/video'
 import Pagination from '@/components/Pagination' // Secondary package based on el-pagination
 import 'video.js/dist/video-js.css'
 import { videoPlayer } from 'vue-video-player'
-import { getToken } from '@/utils/auth'
 
 export default {
   name: 'Index',
-  components: {
-    Pagination, videoPlayer
-  },
-  // eslint-disable-next-line vue/order-in-components
+  components: { Pagination, videoPlayer },
   data() {
     return {
-      baseApi: process.env.VUE_APP_BASE_API,
-      baseURL: process.env.VUE_APP_SERVER_PUBLIC_PATH,
       uploadAction: process.env.VUE_APP_BASE_API + '/v1/video/upload',
       playAction: process.env.VUE_APP_BASE_API + '/play/av',
       headers: {
         'Authorization': `Bearer ${getToken()}`
       },
-      listLoading: true,
+      list: [
+        {}
+      ],
+      listLoading: false,
       dialogFormVisible: false,
       dialogShowVisible: false,
       dialogUpdateVisible: false,
-      list: [],
+      temp: {
+        id: 0,
+        title: '',
+        status: 1,
+        path: '',
+        description: ''
+      },
       total: 0,
       listQuery: {
         page: 1,
@@ -213,28 +195,22 @@ export default {
         type: undefined,
         sort: '+id'
       },
-      temp: {
-        id: 0,
-        title: '',
-        status: 1,
-        path: '',
-        description: ''
+      rules: {
+        // type: [{ required: true, message: 'type is required', trigger: 'change' }],
+        // timestamp: [{ type: 'date', required: true, message: 'timestamp is required', trigger: 'change' }],
+        // title: [{ required: true, message: 'title is required', trigger: 'blur' }]
       },
-      // 选中数组
-      ids: [],
-      // 非单个禁用
-      single: true,
-      // 非多个禁用
-      multiple: true,
-      rules: {},
       playerOptions: {}
     }
   },
   created() {
-    this.fetchData()
+    this.getData()
   },
   methods: {
-    fetchData() {
+    handleAvatarSuccess(res, file) {
+      this.temp.path = res.data.path
+    },
+    getData() {
       this.listLoading = true
       getList(this.listQuery).then(response => {
         this.list = response.data.videos
@@ -242,26 +218,31 @@ export default {
         this.total = total_count
         this.listQuery.page = current_page
         this.listQuery.limit = page_size
-        this.listLoading = false
+        setTimeout(() => {
+          this.listLoading = false
+        }, 1.5 * 1000)
       })
-      this.listLoading = false
     },
-    resetTemp() {
-      this.temp = {
-        title: '',
-        status: 1,
-        path: '',
-        description: ''
-      }
+    handleDelete(row) {
+      deleteVideo(row.id).then(response => {
+        this.$notify({
+          title: '成功',
+          message: '删除成功',
+          type: 'success',
+          duration: 2000
+        })
+        const index = this.list.indexOf(row)
+        this.list.splice(index, 1)
+      })
     },
     handleCreate() {
       this.resetTemp()
       this.dialogFormVisible = true
     },
-    submitCreateForm() {
-      this.$refs['dataForm'].validate(valid => {
+    createData() {
+      this.$refs['dataForm'].validate((valid) => {
         if (valid) {
-          createVideo(this.temp).then(res => {
+          createVideo(this.temp).then(() => {
             this.dialogFormVisible = false
             this.$notify({
               title: '成功',
@@ -269,52 +250,26 @@ export default {
               type: 'success',
               duration: 2000
             })
-            this.fetchData()
-            // 关闭页面 跳转回列表页面
-            // this.$store.dispatch('UpdateUser', this.$route)
-            // this.$router.push({ name: 'UpdateUser' })
+            this.getData()
           })
         }
       })
     },
-    handleUpdateVideo(row) {
-      this.dialogUpdateVisible = true
-      this.temp = {
-        id: row.id,
-        title: row.title,
-        status: row.status,
-        path: row.path,
-        description: row.description
-      }
-    },
-    submitUpdateForm(id) {
-      this.$refs['updateForm'].validate(valid => {
+    UpdateData() {
+      this.$refs['updateForm'].validate((valid) => {
         if (valid) {
-          updateVideo(this.temp.id, this.temp).then(res => {
+          updateVideo(this.temp.id, this.temp).then(() => {
             this.dialogUpdateVisible = false
-            this.fetchData()
-
-            // 提示信息
             this.$notify({
               title: '成功',
-              message: '修改成功',
+              message: '创建成功',
               type: 'success',
               duration: 2000
             })
-            // 关闭页面 跳转回列表页面
-            // this.$store.dispatch('UpdateUser', this.$route)
-            // this.$router.push({ name: 'UpdateUser' })
+            this.getData()
           })
         }
       })
-    },
-    showDialogClose(done) {
-      // 关闭视频
-      this.$refs.videoPlayer.player.pause()
-      done()
-    },
-    handleAvatarSuccess(res, file) {
-      this.temp.path = res.data.path
     },
     handleShowVideo(row) {
       this.dialogShowVisible = true
@@ -351,45 +306,41 @@ export default {
         }
       }
     },
-    /** 删除按钮操作 */
-    handleDelete(row) {
-      const roleIds = row.id || this.ids
-      this.$confirm('是否确认删除角色编号为"' + roleIds + '"的数据项?', '警告', {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        type: 'warning'
-      }).then(function() {
-        if (isNaN(roleIds)) {
-          return deleteVideos(roleIds)
-        } else {
-          return deleteVideo(roleIds)
-        }
-      }).then(() => {
-        this.fetchData()
-        // 提示信息
-        this.$notify({
-          title: '成功',
-          message: '删除成功',
-          type: 'success',
-          duration: 2000
-        })
-      }).catch(function() { })
+    handleUpdateVideo(row) {
+      this.dialogUpdateVisible = true
+      this.temp = {
+        id: row.id,
+        title: row.title,
+        status: row.status,
+        path: row.path,
+        description: row.description
+      }
     },
-    // 多选框选中数据
-    handleSelectionChange(selection) {
-      this.ids = selection.map(item => item.id)
-      this.single = selection.length !== 1
-      this.multiple = !selection.length
+    resetTemp() {
+      this.temp = {
+        title: '',
+        status: 1,
+        path: '',
+        description: ''
+      }
+    },
+    showDialogClose(done) {
+      // 关闭视频
+      this.$refs.videoPlayer.player.pause()
+      done()
     }
   }
 }
 </script>
 
 <style lang="scss" scoped>
-.el-row {
-  margin-bottom: 20px;
-  &:last-child {
-    margin-bottom: 0;
+.container {
+  padding: 20px;
+  .filter-container {
+    padding-bottom: 10px;
+    .filter-item {
+      float: right;
+    }
   }
 }
 .clearfix:after {
