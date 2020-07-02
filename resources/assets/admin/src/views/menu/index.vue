@@ -47,7 +47,7 @@
           <span v-else>{{ scope.row.component }}</span>
         </template>
       </el-table-column>
-      <el-table-column prop="visible" label="可见" :formatter="visibleFormat" width="60">
+      <el-table-column prop="visible" label="可见" :formatter="visibleFormat" width="75">
         <template slot-scope="scope">
           <el-tag
             :type="scope.row.visible === 0 ? 'danger' : 'success'"
