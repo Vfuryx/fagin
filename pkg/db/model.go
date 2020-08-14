@@ -2,7 +2,7 @@ package db
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/jinzhu/gorm"
+	"gorm.io/gorm"
 	"math"
 	"strconv"
 )
@@ -50,11 +50,30 @@ func (d *Dao) Update(id uint, data map[string]interface{}) error {
 	if err != nil {
 		return err
 	}
-	return ORM.Model(d.M).Where("id = ?", id).Update(data).Error
+	return ORM.Model(d.M).Where("id = ?", id).Updates(data).Error
 }
 
 func (d *Dao) Destroy(id uint) error {
 	return ORM.Where("id = ?", id).Delete(d.M).Error
+}
+
+func (d *Dao) With(db *gorm.DB, with map[string]interface{}) *gorm.DB {
+	for index, value := range with {
+		if value != nil {
+			switch value.(type) {
+			case gin.H:
+				for k, v := range value.(gin.H) {
+					db = db.Preload(index, k, v)
+				}
+			case func(db *gorm.DB) *gorm.DB:
+				db = db.Preload(index, value)
+			}
+
+		} else {
+			db = db.Preload(index)
+		}
+	}
+	return db
 }
 
 // 分页管理器
@@ -62,7 +81,7 @@ type Paginator struct {
 	CurrentPage int `json:"current_page"` // 当前页
 	PageSize    int `json:"page_size"`    // 每页数量
 	TotalPage   int `json:"total_page"`   // 总页数
-	TotalCount  int `json:"total_count"`  // 总数量
+	TotalCount  int64 `json:"total_count"`  // 总数量
 }
 
 // 新建一个分页管理器
@@ -91,14 +110,14 @@ func (d *Dao) Paginator(model interface{}, p *Paginator) error {
 	var (
 		err   error
 		query *gorm.DB
-		count int
+		count int64
 	)
 
 	if query = d.DB; query == nil {
 		query = ORM
 	}
 
-	if err = query.Model(model).Count(&count).Error; err != nil {
+	if err = query.Model(model).Select([]string{}).Count(&count).Error; err != nil {
 		return err
 	}
 

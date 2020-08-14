@@ -47,6 +47,10 @@ func (d *dao) Query(params map[string]interface{}, columns []string, with map[st
 		model = model.Order(v)
 	}
 
-	d.DB = model
+	d.DB = d.With(model, with)
 	return d
+}
+
+func (d *dao) Deletes(ids []uint) error {
+	return db.ORM.Where("id in (?)", ids).Delete(d.M).Error
 }

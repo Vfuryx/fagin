@@ -1,27 +1,77 @@
 <template>
   <div class="app-container">
-    <!-- $t is vue-i18n global function to translate lang -->
-    <el-row>
-      <!-- <el-select v-model="wechatID" placeholder="请选择" @change="getUserlist">
-        <el-option
-          v-for="item in wechatList"
-          :key="item.app_id"
-          :label="item.app_id"
-          :value="item.id"
-        ></el-option>
-      </el-select>
-      <el-button type="primary" @click="syncUserList">同步微信公众号用户列表</el-button>
-      <el-button type="primary" @click="syncUserInfo">同步微信公众号用户信息</el-button>-->
+    <el-form ref="queryForm" :model="queryParams" :inline="true" label-width="68px">
+      <el-form-item label="系统模块" prop="title">
+        <el-input
+          v-model="queryParams.title"
+          placeholder="请输入系统模块"
+          clearable
+          style="width: 240px;"
+          size="small"
+          @keyup.enter.native="handleQuery"
+        />
+      </el-form-item>
+      <el-form-item label="操作人员" prop="operName">
+        <el-input
+          v-model="queryParams.operName"
+          placeholder="请输入操作人员"
+          clearable
+          style="width: 240px;"
+          size="small"
+          @keyup.enter.native="handleQuery"
+        />
+      </el-form-item>
+      <el-form-item label="类型" prop="businessType">
+        <el-select
+          v-model="queryParams.businessType"
+          placeholder="操作类型"
+          clearable
+          size="small"
+          style="width: 240px"
+        >
+          <el-option
+            v-for="dict in typeOptions"
+            :key="dict.dictValue"
+            :label="dict.dictLabel"
+            :value="dict.dictValue"
+          />
+        </el-select>
+      </el-form-item>
+      <el-form-item label="状态" prop="status">
+        <el-select
+          v-model="queryParams.status"
+          placeholder="操作状态"
+          clearable
+          size="small"
+          style="width: 240px"
+        >
+          <el-option
+            v-for="dict in statusOptions"
+            :key="dict.dictValue"
+            :label="dict.dictLabel"
+            :value="dict.dictValue"
+          />
+        </el-select>
+      </el-form-item>
+      <el-form-item>
+        <el-button type="primary" icon="el-icon-search" size="mini" @click="handleQuery">搜索</el-button>
+        <el-button icon="el-icon-refresh" size="mini" @click="resetQuery">重置</el-button>
+      </el-form-item>
+    </el-form>
+
+    <el-row :gutter="10" class="mb8">
+      <el-col :span="1.5">
+        <el-button
+          v-permisaction="['system:sysoperlog:export']"
+          type="warning"
+          icon="el-icon-download"
+          size="mini"
+          @click="handleExport"
+        >导出</el-button>
+      </el-col>
     </el-row>
 
-    <el-table
-      v-loading="listLoading"
-      :data="list"
-      element-loading-text="拼命加载中"
-      border
-      fit
-      highlight-current-row
-    >
+    <el-table v-loading="listLoading" :data="list" element-loading-text="拼命加载中">
       <el-table-column align="center" label="ID" width="60">
         <template slot-scope="scope">{{ scope.row.id }}</template>
       </el-table-column>
@@ -45,7 +95,12 @@
       </el-table-column>
       <el-table-column align="center" label="操作">
         <template slot-scope="scope">
-          <el-button size="mini" type="success" @click="handleShowLog(scope.row.id)">查看</el-button>
+          <el-button
+            size="mini"
+            type="text"
+            icon="el-icon-view"
+            @click="handleShowLog(scope.row.id)"
+          >查看</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -73,7 +128,7 @@
           <el-input v-model="temp.ip" disabled />
         </el-form-item>
         <el-form-item label="输入" prop="input">
-          <el-input type="textarea" :rows="10" v-model="temp.input" disabled />
+          <el-input v-model="temp.input" type="textarea" :rows="10" disabled />
         </el-form-item>
       </el-form>
     </el-dialog>
@@ -111,6 +166,15 @@ export default {
         ip: '',
         operation: '',
         input: ''
+      },
+      // 查询参数
+      queryParams: {
+        pageIndex: 1,
+        pageSize: 10,
+        title: undefined,
+        operName: undefined,
+        businessType: undefined,
+        status: undefined
       }
     }
   },

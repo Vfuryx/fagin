@@ -35,29 +35,29 @@ func (dao) All(columns []string) (*[]User, error) {
 }
 
 func (d *dao) Query(params map[string]interface{}, columns []string, with map[string]interface{}) db.IDao {
-	query := db.ORM.Select(columns)
+	model := db.ORM.Select(columns)
 
 	var (
 		v  interface{}
 		ok bool
 	)
 	if v, ok = params["id"]; ok {
-		query = query.Where("id = ?", v)
+		model = model.Where("id = ?", v)
 	}
 
 	if v, ok = params["username"]; ok {
-		query = query.Where("username = ?", v)
+		model = model.Where("username = ?", v)
 	}
 
 	if v, ok = params["status"]; ok {
-		query = query.Where("status = ?", v)
+		model = model.Where("status = ?", v)
 	}
 
 	if v, ok = params["email"]; ok {
-		query = query.Where("email = ?", v)
+		model = model.Where("email = ?", v)
 	}
 
-	d.DB = query
+	d.DB = d.With(model, with)
 	return d
 }
 

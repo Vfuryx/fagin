@@ -118,6 +118,29 @@ func (videoController) DeleteVideo(ctx *gin.Context) {
 	app.JsonResponse(ctx, errno.OK, nil)
 }
 
+type VideoIDs struct {
+	IDs []uint `form:"ids" json:"ids" binding:"required"`
+}
+
+// 批量删除视频
+func (videoController) DeleteVideos(ctx *gin.Context) {
+	var ids VideoIDs
+	err := ctx.ShouldBind(&ids)
+	if err != nil {
+		app.JsonResponse(ctx, errno.Api.ErrBind, nil)
+		return
+	}
+
+	err = service.VideoInfo.DeleteVideos(ids.IDs)
+	if err != nil {
+		log.Log.Errorln(err)
+		app.JsonResponse(ctx, errno.Api.ErrDeleteVideo, err)
+		return
+	}
+
+	app.JsonResponse(ctx, errno.OK, nil)
+}
+
 // 上传视频
 func (videoController) UploadVideo(ctx *gin.Context) {
 	var r admin_request.UploadVideo

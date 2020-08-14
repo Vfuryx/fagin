@@ -33,6 +33,10 @@ func (videoInfoService) DeleteVideo(id uint) error {
 	return video_info.Dao().Destroy(id)
 }
 
+func (videoInfoService) DeleteVideos(ids []uint) error {
+	return video_info.Dao().Deletes(ids)
+}
+
 func (videoInfoService) Query(params map[string]interface{}, columns []string, with map[string]interface{}) db.IDao {
 	return video_info.Dao().Query(params, columns, with)
 }

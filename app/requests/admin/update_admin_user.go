@@ -6,38 +6,64 @@ import (
 )
 
 type UpdateAdminUser struct {
-	Email       string `form:"email" json:"email" binding:"required,email"`
-	OldPassword string `form:"old_password" json:"old_password" binding:"required_with=NewPassword,omitempty,min=8"`
-	// 跳过空值验证
-	NewPassword string `form:"new_password" json:"new_password" binding:"required_with=OldPassword,omitempty,min=8"`
+	NickName string `form:"nick_name" json:"nick_name" binding:"required,max=64"`
+	Phone    string `form:"phone" json:"phone" binding:"required,max=64"`
+	Email    string `form:"email" json:"email" binding:"required,max=64"`
+	Username string `form:"username" json:"username" binding:"required,max=64"`
+	Sex      *uint8 `form:"sex" json:"sex" binding:"required,oneof=0 1 2"`
+	Remark   string `form:"remark" json:"remark" binding:"required,max=255"`
+	RoleID   uint   `form:"role_id" json:"role_id" binding:"required,min=1"`
+	Status   *uint8 `form:"status" json:"status" binding:"required,oneof=0 1"`
 }
 
 var _ request.Request = &UpdateAdminUser{}
 
 func (UpdateAdminUser) FieldMap() map[string]string {
 	return map[string]string{
-		"Email":       "email",
-		"OldPassword": "old_password",
-		"NewPassword": "new_password",
+		"NickName": "nick_name",
+		"Phone":    "phone",
+		"Email":    "email",
+		"Username": "username",
+		"Sex":      "sex",
+		"Remark":   "remark",
+		"RoleID":   "role_id",
+		"Status":   "status",
+		"Password": "password",
 	}
 }
 
 func (UpdateAdminUser) Message() map[string]string {
 	return map[string]string{
-		"Email.required":            "邮件不能为空",
-		"Email.email":               "邮件格式不正确",
-		"OldPassword.required_with": "旧密码不能为空",
-		"OldPassword.min":           "旧密码不能小于8位",
-		"NewPassword.required_with": "新密码不能为空",
-		"NewPassword.min":           "新密码不能小于8位",
+		"NickName.required": "昵称不能为空",
+		"NickName.max":      "昵称不能大于64位",
+		"Phone.required":    "手机号码不能为空",
+		"Phone.max":         "手机号码不能大于64位",
+		"Email.required":    "邮箱不能为空",
+		"Email.max":         "邮箱不能大于64位",
+		"Username.required": "用户名不能为空",
+		"Username.max":      "用户名不能大于64位",
+		"Sex.required":      "性别不能为空",
+		"Sex.oneof":         "性别参数不正确",
+		"Remark.required":   "备注不能为空",
+		"Remark.max":        "备注不能大于255位",
+		"RoleID.required":   "角色ID不能为空",
+		"RoleID.min":        "角色ID不能小于1",
+		"Status.required":   "状态不能为空",
+		"Status.oneof":      "状态参数不正确",
 	}
 }
 
 func (UpdateAdminUser) Attributes() map[string]string {
 	return map[string]string{
-		"Email":       "邮件",
-		"OldPassword": "旧密码",
-		"NewPassword": "新密码",
+		"NickName": "昵称",
+		"Phone":    "电话",
+		"Email":    "邮箱",
+		"Username": "用户名",
+		"Sex":      "性别",
+		"Remark":   "备注",
+		"RoleID":   "角色ID",
+		"Status":   "状态",
+		"Password": "密码",
 	}
 }
 

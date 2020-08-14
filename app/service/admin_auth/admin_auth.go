@@ -19,7 +19,7 @@ var AdminAuth adminAuthService
 /**
  * 登录
  */
-func (adminAuthService) Login(name string, password string) error {
+func (adminAuthService) Login(name string, password string) (uint, error) {
 	params := map[string]interface{}{
 		"username": name,
 		"status":   status.Active,
@@ -27,19 +27,19 @@ func (adminAuthService) Login(name string, password string) error {
 	columns := []string{"id", "username", "password", "status"}
 	adminUser := admin_user.New()
 	if err := adminUser.Dao().Query(params, columns, nil).First(&adminUser); err != nil {
-		return errno.InternalServerError
+		return 0, errno.Api.ErrUserNotFound
 	}
 
 	if adminUser.Username != name {
-		return errno.Api.ErrPasswordIncorrect
+		return 0, errno.Api.ErrPasswordIncorrect
 	}
 
 	//匹配密码
 	if err := Compare(adminUser.Password, password); err != nil {
-		return errno.Api.ErrPasswordIncorrect
+		return 0, errno.Api.ErrPasswordIncorrect
 	}
 
-	return nil
+	return adminUser.ID, nil
 }
 
 // Encrypt encrypts the plain text with bcrypt.
@@ -54,7 +54,7 @@ func Compare(hashedPassword, password string) error {
 }
 
 // Sign signs the context with the specified secret.
-func (adminAuthService) Sign(AdminUser, secret string) (tokenString string, err error) {
+func (adminAuthService) Sign(UserID uint, AdminUser, secret string) (tokenString string, err error) {
 	// Load the jwt secret from the Gin config if the secret isn't specified.
 	if secret == "" {
 		secret = config.App.Key
@@ -62,6 +62,7 @@ func (adminAuthService) Sign(AdminUser, secret string) (tokenString string, err 
 	// The token content.
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"name": AdminUser,
+		"id":   UserID,
 		"nbf":  time.Now().Unix(),
 		"iat":  time.Now().Unix(),
 	})
@@ -72,7 +73,8 @@ func (adminAuthService) Sign(AdminUser, secret string) (tokenString string, err 
 }
 
 type context struct {
-	Name string `json:"name"`
+	UserID int64   `json:"user_id"`
+	Name   string `json:"name"`
 }
 
 var Login = &context{}
@@ -96,6 +98,7 @@ func (auth adminAuthService) Parse(token string, secret string) (*context, error
 		return ctx, errno.Api.ErrTokenInvalid
 	} else if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
 		ctx.Name = claims["name"].(string)
+		ctx.UserID = int64(claims["id"].(float64))
 		return ctx, nil
 	} else {
 		return ctx, errno.Api.ErrTokenInvalid

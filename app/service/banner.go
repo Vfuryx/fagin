@@ -29,3 +29,11 @@ func (bannerService) Create(m *banner.Banner) error {
 func (bannerService) Update(id uint, data gin.H) error {
 	return banner.Dao().Update(id, data)
 }
+
+func (bannerService) Delete(id uint) error {
+	return banner.Dao().Destroy(id)
+}
+
+func (bannerService) DeleteBanners(ids []uint) error {
+	return banner.Dao().Deletes(ids)
+}

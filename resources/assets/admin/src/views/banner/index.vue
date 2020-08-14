@@ -1,34 +1,42 @@
 <template>
   <div class="app-container">
-    <!-- $t is vue-i18n global function to translate lang -->
-    <el-row>
-      <!-- <el-select v-model="wechatID" placeholder="请选择" @change="getUserlist">
-        <el-option
-          v-for="item in wechatList"
-          :key="item.app_id"
-          :label="item.app_id"
-          :value="item.id"
-        ></el-option>
-      </el-select>
-      <el-button type="primary" @click="syncUserList">同步微信公众号用户列表</el-button>
-      <el-button type="primary" @click="syncUserInfo">同步微信公众号用户信息</el-button>-->
-      <el-button
-        class="filter-item"
-        style="margin-left: 10px;"
-        type="primary"
-        icon="el-icon-edit"
-        @click="handleCreate"
-      >添加</el-button>
+    <el-row :gutter="10" class="mb8">
+      <el-col :span="1.5">
+        <el-button
+          type="primary"
+          icon="el-icon-plus"
+          size="mini"
+          @click="handleCreate"
+        >新增</el-button>
+      </el-col>
+      <el-col :span="1.5">
+        <el-button
+          type="danger"
+          icon="el-icon-delete"
+          size="mini"
+          :disabled="multiple"
+          @click="handleDelete"
+        >删除</el-button>
+      </el-col>
+      <el-col :span="1.5">
+        <el-button
+          type="warning"
+          icon="el-icon-download"
+          size="mini"
+          @click="handleExport"
+        >导出</el-button>
+      </el-col>
     </el-row>
 
     <el-table
       v-loading="listLoading"
       :data="list"
       element-loading-text="拼命加载中"
-      border
       fit
       highlight-current-row
+      @selection-change="handleSelectionChange"
     >
+      <el-table-column type="selection" width="55" align="center" />
       <el-table-column align="center" label="ID" width="60">
         <template slot-scope="scope">{{ scope.row.id }}</template>
       </el-table-column>
@@ -37,7 +45,7 @@
       </el-table-column>
       <el-table-column align="center" label="轮播图">
         <template slot-scope="scope">
-          <img style="width: 100px; height: 100px" :src="baseURL + scope.row.banner" />
+          <img style="width: 50px; height: 50px" :src="baseURL + scope.row.banner">
         </template>
       </el-table-column>
       <el-table-column align="center" label="路径">
@@ -53,7 +61,20 @@
       </el-table-column>
       <el-table-column align="center" label="操作">
         <template slot-scope="scope">
-          <el-button size="mini" type="primary" @click="handleUpdateVideo(scope.row)">编辑</el-button>
+          <el-button
+            v-permisaction="['system:syspost:edit']"
+            size="mini"
+            type="text"
+            icon="el-icon-edit"
+            @click="handleUpdateVideo(scope.row)"
+          >修改</el-button>
+          <el-button
+            v-permisaction="['system:syspost:remove']"
+            size="mini"
+            type="text"
+            icon="el-icon-delete"
+            @click="handleDelete(scope.row)"
+          >删除</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -141,13 +162,12 @@
 
 <script>
 import Upload from '@/components/Upload/singleImage4'
-import { list, show, create, update } from '@/api/banner'
-import Pagination from '@/components/Pagination' // Secondary package based on el-pagination
+import { list, show, create, update, del, delBanners } from '@/api/banner'
 
 export default {
   name: 'BannerIndex',
   components: {
-    Pagination, Upload
+    Upload
   },
   // eslint-disable-next-line vue/order-in-components
   data() {
@@ -168,6 +188,12 @@ export default {
         type: undefined,
         sort: '+id'
       },
+      // 选中数组
+      ids: [],
+      // 非单个禁用
+      single: true,
+      // 非多个禁用
+      multiple: true,
       temp: {
         id: 0,
         title: '',
@@ -251,7 +277,7 @@ export default {
             // 提示信息
             this.$notify({
               title: '成功',
-              message: '修改成功',
+              message: '新增成功',
               type: 'success',
               duration: 2000
             })
@@ -314,6 +340,35 @@ export default {
         this.$message.error('上传图片大小不能超过 20MB!222')
       }
       return isJPG && isLt2M
+    },
+    /** 删除按钮操作 */
+    handleDelete(row) {
+      const ids = row.id || this.ids
+      this.$confirm('是否确认删除名称为"' + ids + '"的数据项?', '警告', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(function() {
+        if (isNaN(ids)) {
+          return delBanners(ids)
+        } else {
+          return del(ids)
+        }
+      }).then(() => {
+        this.fetchData()
+        this.$notify({
+          title: '成功',
+          message: '删除成功',
+          type: 'success',
+          duration: 2000
+        })
+      }).catch(function() { })
+    },
+    // 多选框选中数据
+    handleSelectionChange(selection) {
+      this.ids = selection.map(item => item.id)
+      this.single = selection.length !== 1
+      this.multiple = !selection.length
     }
   }
 }

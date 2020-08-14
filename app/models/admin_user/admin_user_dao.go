@@ -43,6 +43,19 @@ func (d *dao) Query(params map[string]interface{}, columns []string, with map[st
 		model = model.Where("id = ?", v)
 	}
 
-	d.DB = model
+	if v, ok = params["username"]; ok {
+		model = model.Where("username = ?", v)
+	}
+
+	if v, ok = params["status"]; ok {
+		model = model.Where("status = ?", v)
+	}
+
+	d.DB = d.With(model, with)
 	return d
+}
+
+func (d *dao) Deletes(ids []uint) error {
+	var menu AdminUser
+	return db.ORM.Where("id in (?)", ids).Delete(&menu).Error
 }

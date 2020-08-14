@@ -3,11 +3,11 @@ package admin
 import (
 	"fagin/app"
 	"fagin/app/errno"
-	"fagin/app/requests/admin"
+	"fagin/app/responses/admin_response"
 	"fagin/app/service"
 	"fagin/app/service/admin_auth"
+	"fagin/app/utils"
 	"fagin/pkg/log"
-	"fagin/pkg/request"
 	"github.com/gin-gonic/gin"
 )
 
@@ -18,6 +18,8 @@ var AuthController authController
 type LoginRequest struct {
 	Name     string `form:"username" json:"username" binding:"required"`
 	Password string `form:"password" json:"password" binding:"required"`
+	ID       string `form:"id" json:"id" binding:"required"`
+	Code     string `form:"code" json:"code" binding:"required"`
 }
 
 // 后台登录
@@ -30,13 +32,19 @@ func (authController) Login(ctx *gin.Context) {
 		return
 	}
 
-	err := admin_auth.AdminAuth.Login(r.Name, r.Password)
+	// 验证验证码
+	if !utils.VerifyCaptcha(r.ID, r.Code, true) {
+		app.JsonResponse(ctx, errno.Api.ErrVerifyCaptcha, nil)
+		return
+	}
+
+	userID, err := admin_auth.AdminAuth.Login(r.Name, r.Password)
 	if err != nil {
 		log.Log.Errorln(err)
 		app.JsonResponse(ctx, err, nil)
 		return
 	}
-	token, err := admin_auth.AdminAuth.Sign(r.Name, "")
+	token, err := admin_auth.AdminAuth.Sign(userID, r.Name, "")
 	if err != nil {
 		log.Log.Errorln(err)
 		app.JsonResponse(ctx, errno.Api.ErrToken, nil)
@@ -56,7 +64,7 @@ func (authController) Logout(ctx *gin.Context) {
 // 获取管理员信息
 func (authController) Info(ctx *gin.Context) {
 	name := ctx.GetString("user_name")
-	adminUser, err := service.AdminUser.UserInfo(name, []string{"id", "username", "email", "avatar", "status"})
+	adminUser, err := service.AdminUserService.UserInfo(name, []string{"id", "username", "email", "avatar", "status"})
 	if err != nil {
 		log.Log.Errorln(err)
 		app.JsonResponse(ctx, err, nil)
@@ -66,49 +74,80 @@ func (authController) Info(ctx *gin.Context) {
 		"name":   adminUser.Username,
 		"email":  adminUser.Email,
 		"avatar": adminUser.Avatar,
+		"roles":  []string{"admin"},
 	})
 }
 
 //更新用户信息
 func (authController) UpdateAdminUser(ctx *gin.Context) {
-	id, err := request.ShouldBindUriUintID(ctx)
+	//id, err := request.ShouldBindUriUintID(ctx)
+	//if err != nil {
+	//	log.Log.Errorln(err)
+	//	app.JsonResponse(ctx, errno.Api.ErrBind, nil)
+	//	return
+	//}
+	//r := new(admin_request.UpdateAdminUser)
+	//if data, ok := r.Validate(ctx); !ok {
+	//	app.JsonResponse(ctx, errno.Api.ErrBind, data)
+	//	return
+	//}
+	//
+	//data := map[string]interface{}{
+	//	"email": r.Email,
+	//}
+	//
+	//if r.OldPassword != "" {
+	//	err := service.AdminUserService.CheckPassword(id, r.OldPassword)
+	//	if err != nil {
+	//		log.Log.Errorln(err)
+	//		app.JsonResponse(ctx, err, nil)
+	//		return
+	//	}
+	//	password, err := app.Encrypt(r.NewPassword)
+	//	if err != nil {
+	//		log.Log.Errorln(err)
+	//		app.JsonResponse(ctx, err, nil)
+	//		return
+	//	}
+	//	data["password"] = password
+	//}
+	//
+	//err = service.AdminUserService.UpdateAdminUser(id, data)
+	//if err != nil {
+	//	log.Log.Errorln(err)
+	//	app.JsonResponse(ctx, errno.Api.ErrUpdateUser, nil)
+	//	return
+	//}
+	//
+	//app.JsonResponse(ctx, errno.OK, nil)
+}
+
+// 获取验证码
+func (authController) GetCaptcha(ctx *gin.Context) {
+	id, b64s, err := utils.NewCaptcha()
+
 	if err != nil {
-		log.Log.Errorln(err)
+		app.JsonResponse(ctx, errno.Api.ErrGetCaptcha, nil)
+	}
+
+	app.JsonResponse(ctx, errno.OK, gin.H{
+		"data": b64s,
+		"id":   id,
+	})
+}
+
+//动态获取路由
+func (authController) Routes(ctx *gin.Context) {
+	// 获取userID
+	userID := ctx.GetInt64("admin_user_id")
+	menus, err := service.AdminUserService.GetRoutes(uint(userID))
+	if err != nil {
 		app.JsonResponse(ctx, errno.Api.ErrBind, nil)
 		return
 	}
-	r := new(admin_request.UpdateAdminUser)
-	if data, ok := r.Validate(ctx); !ok {
-		app.JsonResponse(ctx, errno.Api.ErrBind, data)
-		return
-	}
 
-	data := map[string]interface{}{
-		"email": r.Email,
-	}
+	data := admin_response.AdminMenusList(menus...).Collection()
 
-	if r.OldPassword != "" {
-		err := service.AdminUser.CheckPassword(id, r.OldPassword)
-		if err != nil {
-			log.Log.Errorln(err)
-			app.JsonResponse(ctx, err, nil)
-			return
-		}
-		password, err := app.Encrypt(r.NewPassword)
-		if err != nil {
-			log.Log.Errorln(err)
-			app.JsonResponse(ctx, err, nil)
-			return
-		}
-		data["password"] = password
-	}
+	app.JsonResponse(ctx, errno.OK, data)
 
-	err = service.AdminUser.UpdateAdminUser(id, data)
-	if err != nil {
-		log.Log.Errorln(err)
-		app.JsonResponse(ctx, errno.Api.ErrUpdateUser, nil)
-		return
-	}
-
-	app.JsonResponse(ctx, errno.OK, nil)
 }
