@@ -152,3 +152,45 @@ func (bannerController) Upload(ctx *gin.Context) {
 
 	return
 }
+
+
+func (bannerController) Del(ctx *gin.Context) {
+	id, err := request.ShouldBindUriUintID(ctx)
+	if err != nil {
+		app.JsonResponse(ctx, errno.Api.ErrBind, nil)
+		return
+	}
+
+	err = service.Banner.Delete(id)
+	if err != nil {
+		log.Log.Errorln(err)
+		app.JsonResponse(ctx, errno.Api.ErrDeleteBanner, err)
+		return
+	}
+
+	app.JsonResponse(ctx, errno.OK, nil)
+	return
+}
+
+type BannerIDs struct {
+	IDs []uint `form:"ids" json:"ids" binding:"required"`
+}
+
+// 批量删除轮播图
+func (bannerController) DeleteBanners(ctx *gin.Context) {
+	var ids BannerIDs
+	err := ctx.ShouldBind(&ids)
+	if err != nil {
+		app.JsonResponse(ctx, errno.Api.ErrBind, nil)
+		return
+	}
+
+	err = service.Banner.DeleteBanners(ids.IDs)
+	if err != nil {
+		log.Log.Errorln(err)
+		app.JsonResponse(ctx, errno.Api.ErrDeleteBanner, err)
+		return
+	}
+
+	app.JsonResponse(ctx, errno.OK, nil)
+}

@@ -42,7 +42,7 @@ func Create(name string) {
 
 import (
 	"%s/pkg/migrate/migration"
-	"github.com/jinzhu/gorm"
+	"gorm.io/gorm"
 	"gopkg.in/gormigrate.v1"
 )
 

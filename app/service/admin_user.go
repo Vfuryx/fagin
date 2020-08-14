@@ -10,7 +10,7 @@ import (
 	"fagin/app/models/admin_user"
 	"fagin/pkg/db"
 	"github.com/gin-gonic/gin"
-	"github.com/jinzhu/gorm"
+	"gorm.io/gorm"
 	"strconv"
 )
 

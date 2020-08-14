@@ -3,7 +3,7 @@ package migrations
 import (
 	"fagin/app"
 	"fagin/pkg/migrate/migration"
-	"github.com/jinzhu/gorm"
+	"gorm.io/gorm"
 	"gopkg.in/gormigrate.v1"
 	"time"
 )

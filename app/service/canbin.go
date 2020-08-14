@@ -4,8 +4,8 @@ import (
 	"fagin/config"
 	"fagin/pkg/db"
 	"github.com/casbin/casbin/v2"
-	gormadapter "github.com/casbin/gorm-adapter/v2"
-	"github.com/jinzhu/gorm"
+	gormadapter "github.com/casbin/gorm-adapter/v3"
+	"gorm.io/gorm"
 )
 
 // 权限服务

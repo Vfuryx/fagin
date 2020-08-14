@@ -1,7 +1,7 @@
 pipeline {
   agent any
   environment { // 定义环境变量 一般服务器配置的环境变量都用不了 需要重新在下方定义
-    GOPROXY     = 'https://goproxy.io'
+    GOPROXY     = 'https://goproxy.cn,direct'
     GO111MODULE = 'on'
     GOROOT = '/usr/local/go'
     GOPATH = '/home/mygo'

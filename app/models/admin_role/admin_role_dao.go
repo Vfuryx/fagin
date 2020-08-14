@@ -77,7 +77,7 @@ func (d *dao) Show(id uint, columns []string) (*AdminRole, error) {
 }
 
 func (d *dao) Update(id uint, data map[string]interface{}) error {
-	err := db.ORM.Model(d.M).Where("id = ?", id).Update(data).Error
+	err := db.ORM.Model(d.M).Where("id = ?", id).Updates(data).Error
 	if err != nil {
 		return err
 	}
@@ -91,7 +91,7 @@ func (d *dao) Update(id uint, data map[string]interface{}) error {
 		}
 	}
 
-	return db.ORM.Model(&AdminRole{ID: id}).Association("Menus").Replace(menus).Error
+	return db.ORM.Model(&AdminRole{ID: id}).Association("Menus").Replace(menus)
 }
 
 func (d *dao) Delete(id uint) error {

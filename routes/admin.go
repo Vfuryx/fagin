@@ -134,6 +134,10 @@ func init() {
 				banner.PUT("/:id", admin.BannerController.Update)
 				// 上传轮播图
 				banner.POST("/upload", admin.BannerController.Upload)
+				// 轮播图删除
+				banner.DELETE("/:id", admin.BannerController.Del)
+				// 批量删除轮播图
+				banner.DELETE("/", admin.BannerController.DeleteBanners)
 			}
 
 			// 视频管理

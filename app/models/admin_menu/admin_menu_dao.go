@@ -93,7 +93,7 @@ func (d *dao) Update(id uint, data map[string]interface{}) error {
 			}
 			for i := range mm {
 				mm[i].Paths = strings.Replace(mm[i].Paths, m.Paths, paths, -1)
-				err = db.ORM.Model(&AdminMenu{}).Where("id = ?", mm[i].ID).Update(mm[i]).Error
+				err = db.ORM.Model(&AdminMenu{}).Where("id = ?", mm[i].ID).Updates(mm[i]).Error
 				if err != nil {
 					return err
 				}
@@ -101,7 +101,7 @@ func (d *dao) Update(id uint, data map[string]interface{}) error {
 		}
 	}
 
-	return db.ORM.Model(d.M).Where("id = ?", id).Update(data).Error
+	return db.ORM.Model(d.M).Where("id = ?", id).Updates(data).Error
 }
 
 func (d *dao) Delete(id uint) error {

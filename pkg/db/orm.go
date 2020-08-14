@@ -3,8 +3,8 @@ package db
 import (
 	"fagin/config"
 	"fmt"
-	_ "github.com/go-sql-driver/mysql"
-	"github.com/jinzhu/gorm"
+	"gorm.io/driver/mysql"
+	"gorm.io/gorm"
 )
 
 var (
@@ -12,10 +12,10 @@ var (
 	Err error
 )
 
-func init()  {
+func init() {
 	link := config.DB.GetConnectLink()
 
-	ORM, Err = gorm.Open("mysql", link)
+	ORM, Err = gorm.Open(mysql.Open(link), &gorm.Config{})
 
 	if Err != nil {
 		panic(fmt.Errorf("mysql connect exception %v \n", Err))
@@ -26,9 +26,14 @@ func init()  {
 	}
 }
 
-func Close() {
-	Err = ORM.Close()
-	if Err != nil {
-		panic(Err)
+func Close() error {
+	db, err := ORM.DB()
+	if err != nil {
+		return err
 	}
+	err = db.Close()
+	if err != nil {
+		panic(err)
+	}
+	return err
 }
