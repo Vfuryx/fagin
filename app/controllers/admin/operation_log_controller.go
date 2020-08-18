@@ -21,7 +21,7 @@ func (operationLogController) Index(ctx *gin.Context) {
 	params := gin.H{
 		"sort": "id desc",
 	}
-	columns := []string{"id", "user", "method", "path", "ip", "operation", "created_at"}
+	columns := []string{"id", "user", "method", "path", "ip", "operation", "created_at", "module"}
 
 	logs, err := service.AdminOperationLog.List(params, columns, nil, &paginator)
 	if err != nil {
@@ -45,7 +45,7 @@ func (operationLogController) Show(ctx *gin.Context) {
 		return
 	}
 
-	columns := []string{"id", "user", "method", "path", "ip", "operation", "input"}
+	columns := []string{"id", "user", "method", "path", "ip", "operation", "input", "module"}
 	l, err := service.AdminOperationLog.ShowLog(id, columns)
 	if err != nil {
 		log.Log.Errorln(err)
@@ -60,6 +60,7 @@ func (operationLogController) Show(ctx *gin.Context) {
 		"ip":        l.IP,
 		"operation": l.Operation,
 		"input":     l.Input,
+		"module":    l.Module,
 	})
 	return
 }

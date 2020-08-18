@@ -100,7 +100,7 @@
         prop="businessType"
         :formatter="typeFormat"
       />
-      <el-table-column label="请求方式" width="80" align="center" prop="requestMethod" />
+      <el-table-column label="请求方式" width="50" align="center" prop="requestMethod" />
       <el-table-column label="操作人员" align="center" prop="operName" />
       <el-table-column
         label="主机"

@@ -90,19 +90,19 @@ func (adminMenuService) Update(id uint, data gin.H) error {
 			path = p2
 		}
 	}
-	// 获取action
-	action := menu.Action
-	v, ok = data["action"]
+	// 获取method
+	method := menu.Method
+	v, ok = data["method"]
 	if ok {
 		ac, ok := v.(string)
 		if ok {
-			action = ac
+			method = ac
 		}
 	}
 	// 判断是否api
 	if menu.Type == admin_menu_type.TypeApi {
 		// 是否有改变
-		if  path != menu.Path || action != menu.Action {
+		if path != menu.Path || method != menu.Method {
 			// 获取关联角色
 			var rms []admin_role_menu.AdminRoleMenu
 			err = admin_role_menu.Dao().Query(gin.H{"menu_id": id}, []string{"*"}, nil).Find(&rms)
@@ -124,13 +124,13 @@ func (adminMenuService) Update(id uint, data gin.H) error {
 				for _, r := range roles {
 
 					// 删除原来的角色权限
-					_, err = Canbin.RemovePolicy(r.Key, menu.Path, menu.Action)
+					_, err = Canbin.RemovePolicy(r.Key, menu.Path, menu.Method)
 					if err != nil {
 						return err
 					}
 
 					// 新增角色权限
-					_, err = Canbin.AddPolicyForRole(r.Key, path, action)
+					_, err = Canbin.AddPolicyForRole(r.Key, path, method)
 					if err != nil {
 						return err
 					}
@@ -144,4 +144,12 @@ func (adminMenuService) Update(id uint, data gin.H) error {
 
 func (adminMenuService) Delete(id uint) error {
 	return admin_menu.Dao().Delete(id)
+}
+
+func (adminMenuService) FindByPath(method, path string, column []string) (admin_menu.AdminMenu, error) {
+	var m admin_menu.AdminMenu
+	err := admin_menu.Dao().Query(gin.H{
+		"path": path, "method": method,
+	}, column, nil).First(&m)
+	return m, err
 }

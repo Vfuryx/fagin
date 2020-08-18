@@ -13,7 +13,7 @@ type CreateAdminMenu struct {
 	Type       *uint8 `form:"type" json:"type" binding:"required,oneof=0 1 2 3"`
 	Path       string `form:"path" json:"path" binding:"max=128"`
 	Component  string `form:"component" json:"component" binding:"max=64"`
-	Action     string `form:"action" json:"action" binding:"max=16"`
+	Method     string `form:"method" json:"method" binding:"max=16"`
 	Permission string `form:"permission" json:"permission" binding:"max=32"`
 	Visible    *uint8 `form:"visible" json:"visible" binding:"required"`
 	IsLink     *uint8 `form:"is_link" json:"is_link" binding:"required"`
@@ -31,7 +31,7 @@ func (CreateAdminMenu) FieldMap() map[string]string {
 		"Type":       "type",
 		"Path":       "path",
 		"Component":  "component",
-		"Action":     "action",
+		"Method":     "method",
 		"Permission": "permission",
 		"Visible":    "visible",
 		"IsLink":     "is_link",
@@ -52,7 +52,7 @@ func (CreateAdminMenu) Message() map[string]string {
 		"Path.max":           "路径不能大于128位",
 		"component.required": "组件路径不能为空",
 		"component.max":      "组件路径不能大于64位",
-		"Action.max":         "菜单请求方法不能大于16位",
+		"Method.max":         "菜单请求方法不能大于16位",
 		"Permission.max":     "菜单请求方法不能大于32位",
 		"Visible.required":   "状态不能为空",
 		"IsLink.required":    "是否外链不能为空",
@@ -70,7 +70,7 @@ func (CreateAdminMenu) Attributes() map[string]string {
 		"Path":       "路径",
 		"Sort":       "排序",
 		"Component":  "组件路径",
-		"Action":     "菜单请求方法",
+		"Method":     "菜单请求方法",
 		"Permission": "权限",
 		"Visible":    "状态",
 		"IsLink":     "是否外链",

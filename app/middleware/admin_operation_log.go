@@ -1,11 +1,14 @@
 package middleware
 
 import (
+	"bytes"
 	"encoding/json"
 	"fagin/app"
 	"fagin/app/models/admin_operation_log"
+	"fagin/app/service"
 	"fagin/pkg/log"
 	"github.com/gin-gonic/gin"
+	"io/ioutil"
 	"time"
 )
 
@@ -17,13 +20,13 @@ var AdminOperationLog adminOperationLog
 func (adminOperationLog) LoggerToDB() func(*gin.Context) {
 	return func(ctx *gin.Context) {
 		// 获取body
-		//data, _ := ctx.GetRawData()
-		// 恢复body
-		//ctx.Request.Body = ioutil.NopCloser(bytes.NewBuffer(data)) // 关键点
-
-		data ,err := json.Marshal(ctx.Request.Form)
+		data, _ := ctx.GetRawData()
+		//恢复body
+		ctx.Request.Body = ioutil.NopCloser(bytes.NewBuffer(data)) // 关键点
+		var j gin.H
+		err := json.Unmarshal(data, &j)
 		if err != nil {
-			data = []byte("null")
+			j = gin.H{}
 		}
 
 		// 开始时间
@@ -78,7 +81,17 @@ func (adminOperationLog) LoggerToDB() func(*gin.Context) {
 				}
 
 				// 模块
-				logger.Module = ""
+				path := ctx.FullPath()
+				m, err := service.AdminMenuService.FindByPath(reqMethod, path, []string{"title"})
+				if err != nil {
+					logger.Module = ""
+				}else{
+					logger.Module = m.Title
+				}
+				data, err = json.Marshal(j)
+				if err != nil {
+					data = []byte("null")
+				}
 				logger.Input = string(data)
 			}
 

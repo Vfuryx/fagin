@@ -77,7 +77,7 @@ var adminCmd = &cobra.Command{
 			return
 		}
 
-		db.ORM.Close()
+		//db.ORM.Close()
 	},
 }
 

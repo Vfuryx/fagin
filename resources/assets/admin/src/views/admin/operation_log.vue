@@ -75,25 +75,28 @@
       <el-table-column align="center" label="ID" width="60">
         <template slot-scope="scope">{{ scope.row.id }}</template>
       </el-table-column>
-      <el-table-column align="center" label="方法">
+      <el-table-column align="center" label="方法" width="90">
         <template slot-scope="scope">{{ scope.row.method }}</template>
       </el-table-column>
-      <el-table-column align="center" label="操作">
+      <el-table-column align="center" label="操作" width="70">
         <template slot-scope="scope">{{ scope.row.operation }}</template>
+      </el-table-column>
+      <el-table-column align="center" label="模块" width="120">
+        <template slot-scope="scope">{{ scope.row.module }}</template>
       </el-table-column>
       <el-table-column align="center" label="路径">
         <template slot-scope="scope">{{ scope.row.path }}</template>
       </el-table-column>
-      <el-table-column align="center" label="IP">
+      <el-table-column align="center" label="IP" width="150">
         <template slot-scope="scope">{{ scope.row.ip }}</template>
       </el-table-column>
-      <el-table-column align="center" label="用户">
+      <el-table-column align="center" label="用户" width="150">
         <template slot-scope="scope">{{ scope.row.user }}</template>
       </el-table-column>
-      <el-table-column align="center" label="操作时间">
+      <el-table-column align="center" label="操作时间" width="180">
         <template slot-scope="scope">{{ scope.row.created_at }}</template>
       </el-table-column>
-      <el-table-column align="center" label="操作">
+      <el-table-column align="center" label="操作" width="100">
         <template slot-scope="scope">
           <el-button
             size="mini"
@@ -117,6 +120,9 @@
       <el-form label-position="left" label-width="70px" style="width: 400px; margin-left:50px;">
         <el-form-item label="操作" prop="operation">
           <el-input v-model="temp.operation" disabled />
+        </el-form-item>
+        <el-form-item label="模块" prop="module">
+          <el-input v-model="temp.module" disabled />
         </el-form-item>
         <el-form-item label="用户" prop="user">
           <el-input v-model="temp.user" disabled />

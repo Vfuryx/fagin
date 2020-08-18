@@ -73,7 +73,7 @@ func addPolicies(role *admin_role.AdminRole) error {
 	rules := make([][]string, 0, 20)
 	for _, m := range role.Menus {
 		if admin_menu_type.TypeApi == m.Type {
-			rules = append(rules, []string{role.Key, m.Path, m.Action})
+			rules = append(rules, []string{role.Key, m.Path, m.Method})
 		}
 	}
 	_, err := Canbin.AddPolicies(rules)

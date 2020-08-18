@@ -17,7 +17,7 @@ type AdminMenu struct {
 	Type       uint8                  `gorm:"type:tinyint(4) unsigned;not null;default:1;comment:'菜单类型';column:type;"`
 	Path       string                 `gorm:"type:varchar(128);not null;default:'';comment:'路由地址';column:path;"`
 	Component  string                 `gorm:"type:varchar(64);not null;default:'';comment:'组件路径';column:component;"`
-	Action     string                 `gorm:"type:varchar(16);not null;default:'';comment:'菜单请求方法';column:action;"`
+	Method     string                 `gorm:"type:varchar(16);not null;default:'';comment:'菜单请求方法';column:method;"`
 	Permission string                 `gorm:"type:varchar(32);not null;default:'';comment:'权限';column:permission;"`
 	Sort       uint                   `gorm:"not null;default:100;comment:'排序，数字越大越靠前';column:sort"`
 	Visible    uint8                  `gorm:"type:tinyint(4) unsigned;not null;default:1;comment:'状态: 0=>关闭 1=>开启';column:visible;"`

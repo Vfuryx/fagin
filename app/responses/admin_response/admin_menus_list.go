@@ -40,7 +40,7 @@ func getMenuTree(data []admin_menu.AdminMenu) []map[string]interface{} {
 		m["type"] = menu.Type
 		m["path"] = menu.Path
 		m["component"] = menu.Component
-		m["action"] = menu.Action
+		m["method"] = menu.Method
 		m["permission"] = menu.Permission
 		m["sort"] = menu.Sort
 		m["visible"] = menu.Visible
