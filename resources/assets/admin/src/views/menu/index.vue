@@ -40,7 +40,7 @@
       </el-table-column>
       <el-table-column prop="sort" label="排序" width="60px" />
       <el-table-column prop="permission" label="权限标识" width="100px" :show-overflow-tooltip="true" />
-      <el-table-column prop="action" label="方式" width="90px" :show-overflow-tooltip="true" />
+      <el-table-column prop="method" label="方式" width="90px" :show-overflow-tooltip="true" />
       <el-table-column prop="path" label="路径" :show-overflow-tooltip="true">
         <template slot-scope="scope">
           <span v-if="scope.row.type=='2'">{{ scope.row.path }}</span>
@@ -112,7 +112,7 @@
           </el-col>
           <el-col :span="24">
             <el-form-item v-if="form.type == '2'" label="请求方式">
-              <el-radio-group v-model="form.action">
+              <el-radio-group v-model="form.method">
                 <el-radio label="GET">GET</el-radio>
                 <el-radio label="POST">POST</el-radio>
                 <el-radio label="PUT">PUT</el-radio>
@@ -308,7 +308,7 @@ export default {
         icon: undefined,
         type: 0,
         sort: 0,
-        action: this.form.type === 2 ? this.form.action : '',
+        method: this.form.type === 2 ? this.form.method : '',
         is_link: 0,
         visible: 1
       }

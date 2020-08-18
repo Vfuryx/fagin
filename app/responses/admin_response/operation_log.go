@@ -28,6 +28,7 @@ func (res *operationLog) Serialize() []map[string]interface{} {
 			"path":       model.Path,
 			"ip":         model.IP,
 			"operation":  model.Operation,
+			"module":     model.Module,
 			"created_at": model.CreatedAt.Format("2006-01-02 15:04:05"),
 		}
 		sm = append(sm, m)

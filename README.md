@@ -8,7 +8,7 @@ gin 构建的 api 项目
  ---|--- 
  gin | gin 
  gorm | orm 
- gormigrate | 数据迁移 
+ sql-migrate | 数据迁移 
  spf13/viper | 配置 
  spf13/cobra  | cli 
  swaggo/gin-swagger | 自动生成RESTful API文档的gin中间件 

@@ -37,9 +37,9 @@ func (menuController) Index(ctx *gin.Context) {
 	}
 
 	columns := []string{
-		"id", "parent_id", "paths", "title", "icon", "type",
-		"path", "component", "action", "permission", "sort", "visible",
-		"is_link", "created_at",
+		"id", "parent_id", "paths", "title", "icon", "type", "path",
+		"component", "method", "permission", "sort", "visible", "is_link",
+		"created_at",
 	}
 
 	menus, err := service.AdminMenuService.Index(params, columns, nil)
@@ -79,7 +79,7 @@ func (menuController) Show(ctx *gin.Context) {
 		"type":       m.Type,
 		"path":       m.Path,
 		"component":  m.Component,
-		"action":     m.Action,
+		"method":     m.Method,
 		"permission": m.Permission,
 		"sort":       m.Sort,
 		"visible":    m.Visible,
@@ -122,7 +122,7 @@ func (menuController) Store(ctx *gin.Context) {
 		Type:       *r.Type,
 		Path:       r.Path,
 		Component:  r.Component,
-		Action:     r.Action,
+		Method:     r.Method,
 		Permission: r.Permission,
 		Sort:       r.Sort,
 		Visible:    *r.Visible,
@@ -166,7 +166,7 @@ func (menuController) Update(ctx *gin.Context) {
 		"type":       *r.Type,
 		"path":       r.Path,
 		"component":  r.Component,
-		"action":     r.Action,
+		"method":     r.Method,
 		"permission": r.Permission,
 		"sort":       r.Sort,
 		"visible":    *r.Visible,

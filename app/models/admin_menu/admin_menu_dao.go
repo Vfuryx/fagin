@@ -61,6 +61,14 @@ func (d *dao) Query(params map[string]interface{}, columns []string, with map[st
 		model = model.Where("visible = ?", v)
 	}
 
+	if v, ok = params["path"]; ok {
+		model = model.Where("path = ?", v)
+	}
+
+	if v, ok = params["method"]; ok {
+		model = model.Where("method = ?", v)
+	}
+
 	if v, ok = params["sort"]; ok {
 		model = model.Order(v)
 	}
