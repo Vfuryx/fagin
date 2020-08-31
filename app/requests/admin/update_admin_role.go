@@ -14,22 +14,13 @@ type UpdateAdminRole struct {
 
 var _ request.Request = &UpdateAdminRole{}
 
-func (UpdateAdminRole) FieldMap() map[string]string {
-	return map[string]string{
-		"Remark":  "remark",
-		"Sort":    "sort",
-		"Status":  "status",
-		"MenuIDs": "menu_ids",
-	}
-}
-
 func (UpdateAdminRole) Message() map[string]string {
 	return map[string]string{
-		"Remark.required": "角色备注不能为空",
-		"Remark.max":      "角色备注不能大于128位",
-		"Sort.required":   "排序不能为空",
-		"Status.required": "状态不能为空",
-		"Status.oneof":    "状态参数不正确",
+		//"Remark.required": "角色备注不能为空",
+		//"Remark.max":      "角色备注不能大于128位",
+		//"Sort.required":   "排序不能为空",
+		//"Status.required": "状态不能为空",
+		//"Status.oneof":    "状态参数不正确",
 	}
 }
 

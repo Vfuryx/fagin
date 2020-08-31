@@ -12,17 +12,10 @@ type AddUserRequest struct {
 
 var _ request.Request = &AddUserRequest{}
 
-func (AddUserRequest) FieldMap() map[string]string {
-	return map[string]string{
-		"UserName": "username",
-		"Password": "password",
-	}
-}
-
 func (AddUserRequest) Message() map[string]string {
 	return map[string]string{
-		"UserName.required": "用户名不能为空",
-		"Password.required": "密码不能为空",
+		//"UserName.required": "用户名不能为空",
+		//"Password.required": "密码不能为空",
 	}
 }
 

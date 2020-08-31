@@ -11,16 +11,10 @@ type ResetAdminUser struct {
 
 var _ request.Request = &ResetAdminUser{}
 
-func (ResetAdminUser) FieldMap() map[string]string {
-	return map[string]string{
-		"Password": "password",
-	}
-}
-
 func (ResetAdminUser) Message() map[string]string {
 	return map[string]string{
-		"Password.required": "密码不能为空",
-		"Password.min":      "密码不能小于8位",
+		//"Password.required": "密码不能为空",
+		//"Password.min":      "密码不能小于8位",
 	}
 }
 

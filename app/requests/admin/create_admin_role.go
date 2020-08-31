@@ -16,28 +16,17 @@ type CreateAdminRole struct {
 
 var _ request.Request = &CreateAdminRole{}
 
-func (CreateAdminRole) FieldMap() map[string]string {
-	return map[string]string{
-		"Name":    "name",
-		"Key":     "key",
-		"Remark":  "remark",
-		"Sort":    "sort",
-		"Status":  "status",
-		"MenuIDs": "menu_ids",
-	}
-}
-
 func (CreateAdminRole) Message() map[string]string {
 	return map[string]string{
-		"Name.required":   "角色名称不能为空",
-		"Name.max":        "角色名称不能大于128位",
-		"Key.required":    "角色关键字不能为空",
-		"Key.max":         "角色关键字不能大于128位",
-		"Remark.required": "角色备注不能为空",
-		"Remark.max":      "角色备注不能大于128位",
-		"Sort.required":   "排序不能为空",
-		"Status.required": "状态不能为空",
-		"Status.oneof":    "状态参数不正确",
+		//"Name.required":   "角色名称不能为空",
+		//"Name.max":        "角色名称不能大于128位",
+		//"Key.required":    "角色关键字不能为空",
+		//"Key.max":         "角色关键字不能大于128位",
+		//"Remark.required": "角色备注不能为空",
+		//"Remark.max":      "角色备注不能大于128位",
+		//"Sort.required":   "排序不能为空",
+		//"Status.required": "状态不能为空",
+		//"Status.oneof":    "状态参数不正确",
 	}
 }
 

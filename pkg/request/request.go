@@ -6,16 +6,22 @@ import (
 	"fagin/config"
 	"fmt"
 	"github.com/gin-gonic/gin"
-	"gopkg.in/go-playground/validator.v9"
+	"github.com/gin-gonic/gin/binding"
+	"github.com/go-playground/locales/en"
+	"github.com/go-playground/locales/zh"
+	ut "github.com/go-playground/universal-translator"
+	"github.com/go-playground/validator/v10"
+	enTranslations "github.com/go-playground/validator/v10/translations/en"
+	zhTranslations "github.com/go-playground/validator/v10/translations/zh"
 	"log"
 	"net/http"
 	"os"
+	"reflect"
 	"strings"
 )
 
 type Request interface {
 	Validate(*gin.Context) (map[string]string, bool)
-	FieldMap() map[string]string
 	Message() map[string]string
 	Attributes() map[string]string
 }
@@ -36,9 +42,17 @@ func validate(err error, request Request) map[string]string {
 	if err != nil {
 		switch err.(type) {
 		case validator.ValidationErrors:
-			for _, value := range err.(validator.ValidationErrors) {
-				name := request.FieldMap()[value.Field()]
-				data[name] = request.Message()[value.Field()+`.`+value.Tag()]
+			errs := err.(validator.ValidationErrors)
+			// 获取翻译数据
+			ts := errs.Translate(trans)
+			for _, value := range errs {
+				// 查询自定义的message
+				msg, ok := request.Message()[value.StructField()+`.`+value.Tag()]
+				if !ok { // 没有
+					// 使用翻译的
+					msg = strings.Replace(ts[value.Namespace()], value.Field(), request.Attributes()[value.StructField()], 1)
+				}
+				data[value.Field()] = msg
 			}
 		default:
 			data["error"] = err.Error()
@@ -77,9 +91,17 @@ func fileValidate(err error, request Request) map[string]string {
 	if err != nil {
 		switch err.(type) {
 		case validator.ValidationErrors:
-			for _, value := range err.(validator.ValidationErrors) {
-				name := request.FieldMap()[value.Field()]
-				data[name] = request.Message()[value.Field()+`.`+value.Tag()]
+			errs := err.(validator.ValidationErrors)
+			// 获取翻译数据
+			ts := errs.Translate(trans)
+			for _, value := range errs {
+				// 查询自定义的message
+				msg, ok := request.Message()[value.StructField()+`.`+value.Tag()]
+				if !ok { // 没有
+					// 使用翻译的
+					msg = strings.Replace(ts[value.Namespace()], value.Field(), request.Attributes()[value.StructField()], 1)
+				}
+				data[value.Field()] = msg
 			}
 		default:
 			// default
@@ -146,11 +168,6 @@ type %[2]s struct {}
 
 var _ request.Request = &%[2]s{}
 
-func (%[2]s) FieldMap() map[string]string {
-	return map[string]string{
-	}
-}
-
 func (%[2]s) Message() map[string]string {
 	return map[string]string{
 	}
@@ -177,4 +194,50 @@ func (r *%[2]s) Validate(ctx *gin.Context) (map[string]string, bool) {
 	}
 
 	log.Printf("request create run successfully")
+}
+
+// 定义一个全局翻译器T
+var trans ut.Translator
+
+// 翻译
+func InitTrans(locale string) (err error) {
+	v, ok := binding.Validator.Engine().(*validator.Validate)
+	if !ok {
+		return
+	}
+	// 注册一个获取json tag的自定义方法
+	v.RegisterTagNameFunc(func(fld reflect.StructField) string {
+		name := strings.SplitN(fld.Tag.Get("json"), ",", 2)[0]
+		if name == "-" {
+			return ""
+		}
+		return name
+	})
+
+	zhT := zh.New() // 中文翻译器
+	enT := en.New() // 英文翻译器
+
+	// 第一个参数是备用（fallback）的语言环境
+	// 后面的参数是应该支持的语言环境（支持多个）
+	// uni := ut.New(zhT, zhT) 也是可以的
+	uni := ut.New(enT, zhT, enT)
+
+	// locale 通常取决于 http 请求头的 'Accept-Language'
+
+	// 也可以使用 uni.FindTranslator(...) 传入多个locale进行查找
+	trans, ok = uni.GetTranslator(locale)
+	if !ok {
+		return fmt.Errorf("uni.GetTranslator(%s) failed", locale)
+	}
+
+	// 注册翻译器
+	switch locale {
+	case "en":
+		err = enTranslations.RegisterDefaultTranslations(v, trans)
+	case "zh":
+		err = zhTranslations.RegisterDefaultTranslations(v, trans)
+	default:
+		err = enTranslations.RegisterDefaultTranslations(v, trans)
+	}
+	return
 }

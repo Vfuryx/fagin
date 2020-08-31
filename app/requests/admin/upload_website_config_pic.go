@@ -13,12 +13,6 @@ type UploadWebsiteConfigPic struct {
 
 var _ request.Request = &UploadWebsiteConfigPic{}
 
-func (UploadWebsiteConfigPic) FieldMap() map[string]string {
-	return map[string]string{
-		"File": "required",
-	}
-}
-
 func (UploadWebsiteConfigPic) Message() map[string]string {
 	return map[string]string{
 		"File.required": "文件不能为空",

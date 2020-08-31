@@ -22,41 +22,24 @@ type CreateAdminMenu struct {
 
 var _ request.Request = &CreateAdminMenu{}
 
-func (CreateAdminMenu) FieldMap() map[string]string {
-	return map[string]string{
-		"ParentId":   "parent_id",
-		"Name":       "name",
-		"Title":      "title",
-		"Icon":       "icon",
-		"Type":       "type",
-		"Path":       "path",
-		"Component":  "component",
-		"Method":     "method",
-		"Permission": "permission",
-		"Visible":    "visible",
-		"IsLink":     "is_link",
-		"Sort":       "sort",
-	}
-}
-
 func (CreateAdminMenu) Message() map[string]string {
 	return map[string]string{
-		"Name.max":           "名称不能大于32位",
-		"Title.required":     "标题不能为空",
-		"Title.max":          "标题不能大于32位",
-		"Icon.required":      "图标不能为空",
-		"Icon.max":           "图标不能大于128位",
-		"Type.required":      "类型不能为空",
-		"Type.oneof":         "类型参数不正确",
-		"Path.required":      "路径不能为空",
-		"Path.max":           "路径不能大于128位",
-		"component.required": "组件路径不能为空",
-		"component.max":      "组件路径不能大于64位",
-		"Method.max":         "菜单请求方法不能大于16位",
-		"Permission.max":     "菜单请求方法不能大于32位",
-		"Visible.required":   "状态不能为空",
-		"IsLink.required":    "是否外链不能为空",
-		"Sort.required":      "排序不能为空",
+		//"Name.max":           "名称不能大于32位",
+		//"Title.required":     "标题不能为空",
+		//"Title.max":          "标题不能大于32位",
+		//"Icon.required":      "图标不能为空",
+		//"Icon.max":           "图标不能大于128位",
+		//"Type.required":      "类型不能为空",
+		//"Type.oneof":         "类型参数不正确",
+		//"Path.required":      "路径不能为空",
+		//"Path.max":           "路径不能大于128位",
+		//"component.required": "组件路径不能为空",
+		//"component.max":      "组件路径不能大于64位",
+		//"Method.max":         "菜单请求方法不能大于16位",
+		//"Permission.max":     "菜单请求方法不能大于32位",
+		//"Visible.required":   "状态不能为空",
+		//"IsLink.required":    "是否外链不能为空",
+		//"Sort.required":      "排序不能为空",
 	}
 }
 

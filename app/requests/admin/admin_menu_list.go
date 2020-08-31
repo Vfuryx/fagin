@@ -12,17 +12,10 @@ type AdminMenuList struct {
 
 var _ request.Request = &AdminMenuList{}
 
-func (AdminMenuList) FieldMap() map[string]string {
-	return map[string]string{
-		"Title":  "title",
-		"Visible": "visible",
-	}
-}
-
 func (AdminMenuList) Message() map[string]string {
 	return map[string]string{
-		"Title.max":    "名称不能大于128位",
-		"Visible.oneof": "状态参数不正确",
+		//"Title.max":    "名称不能大于128位",
+		//"Visible.oneof": "状态参数不正确",
 	}
 }
 

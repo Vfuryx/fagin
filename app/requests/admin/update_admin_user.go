@@ -18,38 +18,24 @@ type UpdateAdminUser struct {
 
 var _ request.Request = &UpdateAdminUser{}
 
-func (UpdateAdminUser) FieldMap() map[string]string {
-	return map[string]string{
-		"NickName": "nick_name",
-		"Phone":    "phone",
-		"Email":    "email",
-		"Username": "username",
-		"Sex":      "sex",
-		"Remark":   "remark",
-		"RoleID":   "role_id",
-		"Status":   "status",
-		"Password": "password",
-	}
-}
-
 func (UpdateAdminUser) Message() map[string]string {
 	return map[string]string{
-		"NickName.required": "昵称不能为空",
-		"NickName.max":      "昵称不能大于64位",
-		"Phone.required":    "手机号码不能为空",
-		"Phone.max":         "手机号码不能大于64位",
-		"Email.required":    "邮箱不能为空",
-		"Email.max":         "邮箱不能大于64位",
-		"Username.required": "用户名不能为空",
-		"Username.max":      "用户名不能大于64位",
-		"Sex.required":      "性别不能为空",
-		"Sex.oneof":         "性别参数不正确",
-		"Remark.required":   "备注不能为空",
-		"Remark.max":        "备注不能大于255位",
-		"RoleID.required":   "角色ID不能为空",
-		"RoleID.min":        "角色ID不能小于1",
-		"Status.required":   "状态不能为空",
-		"Status.oneof":      "状态参数不正确",
+		//"NickName.required": "昵称不能为空",
+		//"NickName.max":      "昵称不能大于64位",
+		//"Phone.required":    "手机号码不能为空",
+		//"Phone.max":         "手机号码不能大于64位",
+		//"Email.required":    "邮箱不能为空",
+		//"Email.max":         "邮箱不能大于64位",
+		//"Username.required": "用户名不能为空",
+		//"Username.max":      "用户名不能大于64位",
+		//"Sex.required":      "性别不能为空",
+		//"Sex.oneof":         "性别参数不正确",
+		//"Remark.required":   "备注不能为空",
+		//"Remark.max":        "备注不能大于255位",
+		//"RoleID.required":   "角色ID不能为空",
+		//"RoleID.min":        "角色ID不能小于1",
+		//"Status.required":   "状态不能为空",
+		//"Status.oneof":      "状态参数不正确",
 	}
 }
 

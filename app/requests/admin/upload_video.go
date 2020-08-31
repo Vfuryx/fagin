@@ -13,12 +13,6 @@ type UploadVideo struct {
 
 var _ request.Request = &UploadVideo{}
 
-func (UploadVideo) FieldMap() map[string]string {
-	return map[string]string{
-		"File": "required",
-	}
-}
-
 func (UploadVideo) Message() map[string]string {
 	return map[string]string{
 		"File.required": "文件不能为空",

@@ -13,18 +13,10 @@ type AdminUserList struct {
 
 var _ request.Request = &AdminUserList{}
 
-func (AdminUserList) FieldMap() map[string]string {
-	return map[string]string{
-		"Username": "username",
-		"Phone":    "phone",
-		"Status":   "status",
-	}
-}
-
 func (AdminUserList) Message() map[string]string {
 	return map[string]string{
-		"Username.max": "用户名称不能大于128位",
-		"Phone.max":    "手机号码不能大于128位",
+		//"Username.max": "用户名称不能大于128位",
+		//"Phone.max":    "手机号码不能大于128位",
 	}
 }
 
