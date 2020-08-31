@@ -13,17 +13,10 @@ type UpdateUserRequest struct {
 
 var _ request.Request = &UpdateUserRequest{}
 
-func (UpdateUserRequest) FieldMap() map[string]string {
-	return map[string]string{
-		"Password": "password",
-		"Status":   "status",
-	}
-}
-
 func (UpdateUserRequest) Message() map[string]string {
 	return map[string]string{
-		"Status.min": "状态参数错误",
-		"Status.max": "状态参数错误",
+		//"Status.min": "状态参数错误",
+		//"Status.max": "状态参数错误",
 	}
 }
 

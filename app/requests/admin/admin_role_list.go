@@ -13,19 +13,11 @@ type AdminRoleList struct {
 
 var _ request.Request = &AdminRoleList{}
 
-func (AdminRoleList) FieldMap() map[string]string {
-	return map[string]string{
-		"Name":   "name",
-		"Key":    "key",
-		"Status": "status",
-	}
-}
-
 func (AdminRoleList) Message() map[string]string {
 	return map[string]string{
-		"Name.max":     "角色名称不能大于128位",
-		"Key.max":      "角色关键字不能大于128位",
-		"Status.oneof": "状态参数不正确",
+		//"Name.max":     "角色名称不能大于128位",
+		//"Key.max":      "角色关键字不能大于128位",
+		//"Status.oneof": "状态参数不正确",
 	}
 }
 

@@ -6,6 +6,7 @@ import (
 	"fagin/config"
 	"fagin/pkg/cache"
 	"fagin/pkg/db"
+	"fagin/pkg/request"
 	"fagin/pkg/router"
 	_ "fagin/routes" // 预先载入路由
 	"fmt"
@@ -26,6 +27,12 @@ func Run() {
 			cache.Redis.Close()
 		}
 	}()
+
+	// 翻译器
+	if err := request.InitTrans(config.App.Locale); err != nil {
+		fmt.Printf("init trans failed, err:%v\n", err)
+		return
+	}
 
 	// 设置服务
 	srv := &http.Server{

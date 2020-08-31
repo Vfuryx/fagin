@@ -12,17 +12,10 @@ type IndexRequest struct {
 
 var _ request.Request = &IndexRequest{}
 
-func (IndexRequest) FieldMap() map[string]string {
-	return map[string]string{
-		"Name": "name",
-		"Age":  "age",
-	}
-}
-
 func (IndexRequest) Message() map[string]string {
 	return map[string]string{
-		"Name.required": "名称不能为空",
-		"Age.required":  "年龄不能为空",
+		//"Name.required": "名称不能为空",
+		//"Age.required":  "年龄不能为空",
 	}
 }
 

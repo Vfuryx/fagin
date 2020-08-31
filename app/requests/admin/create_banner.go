@@ -15,27 +15,17 @@ type CreateBanner struct {
 
 var _ request.Request = &CreateBanner{}
 
-func (CreateBanner) FieldMap() map[string]string {
-	return map[string]string{
-		"Title":  "title",
-		"Banner": "banner",
-		"Path":   "path",
-		"Sort":   "sort",
-		"Status": "status",
-	}
-}
-
 func (CreateBanner) Message() map[string]string {
 	return map[string]string{
-		"Title.required":  "标题不能为空",
-		"Title.max":       "标题不能大于32位",
-		"Banner.required": "轮播图不能为空",
-		"Banner.max":      "轮播图不能大于255位",
-		"Path.required":   "路径不能为空",
-		"Path.max":        "路径不能大于255位",
-		"Sort.required":   "排序不能为空",
-		"Status.required": "状态不能为空",
-		"Status.oneof":    "状态参数不正确",
+		//"Title.required":  "标题不能为空",
+		//"Title.max":       "标题不能大于32位",
+		//"Banner.required": "轮播图不能为空",
+		//"Banner.max":      "轮播图不能大于255位",
+		//"Path.required":   "路径不能为空",
+		//"Path.max":        "路径不能大于255位",
+		//"Sort.required":   "排序不能为空",
+		//"Status.required": "状态不能为空",
+		//"Status.oneof":    "状态参数不正确",
 	}
 }
 

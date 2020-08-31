@@ -13,15 +13,10 @@ type UploadBanner struct {
 
 var _ request.Request = &UploadBanner{}
 
-func (UploadBanner) FieldMap() map[string]string {
-	return map[string]string{
-		"File": "required",
-	}
-}
 
 func (UploadBanner) Message() map[string]string {
 	return map[string]string{
-		"File.required": "文件不能为空",
+		//"File.required": "文件不能为空",
 	}
 }
 

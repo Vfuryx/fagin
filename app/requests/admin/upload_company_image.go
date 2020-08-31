@@ -13,12 +13,6 @@ type UploadCompanyImage struct {
 
 var _ request.Request = &UploadCompanyImage{}
 
-func (UploadCompanyImage) FieldMap() map[string]string {
-	return map[string]string{
-		"File": "required",
-	}
-}
-
 func (UploadCompanyImage) Message() map[string]string {
 	return map[string]string{
 		"File.required": "文件不能为空",

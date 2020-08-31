@@ -14,22 +14,13 @@ type CreateVideo struct {
 
 var _ request.Request = &CreateVideo{}
 
-func (CreateVideo) FieldMap() map[string]string {
-	return map[string]string{
-		"Title":       "title",
-		"Path":        "path",
-		"Description": "description",
-		"Status":      "status",
-	}
-}
-
 func (CreateVideo) Message() map[string]string {
 	return map[string]string{
-		"Title.required":       "标题不能为空",
-		"Path.required":        "路径不能为空",
-		"Description.required": "详情不能为空",
-		"Status.min":           "状态不正确",
-		"Status.max":           "状态不正确",
+		//"Title.required":       "标题不能为空",
+		//"Path.required":        "路径不能为空",
+		//"Description.required": "详情不能为空",
+		//"Status.min":           "状态不正确",
+		//"Status.max":           "状态不正确",
 	}
 }
 

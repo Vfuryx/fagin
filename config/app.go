@@ -15,12 +15,13 @@ type app struct {
 	MigrationsPath string
 	ResourcePath   string
 
-	Name  string
-	Env   string
-	Port  string
-	Key   string
-	Debug bool
-	Url   string
+	Name   string
+	Env    string
+	Port   string
+	Key    string
+	Debug  bool
+	Url    string
+	Locale string
 }
 
 var App app
@@ -40,6 +41,7 @@ func init() {
 	App.Key = conf.Env("APP_KEY", "")
 	App.Url = conf.Env("APP_URL", "")
 	App.Debug = conf.EnvBool("APP_DEBUG")
+	App.Locale = conf.Env("APP_LOCALE", "zh")
 }
 
 func (app app) GetName() string {

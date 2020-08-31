@@ -15,7 +15,9 @@ require (
 	github.com/gin-gonic/gin v1.6.3
 	github.com/go-openapi/spec v0.19.9 // indirect
 	github.com/go-openapi/swag v0.19.9 // indirect
-	github.com/go-playground/validator/v10 v10.3.0 // indirect
+	github.com/go-playground/locales v0.13.0
+	github.com/go-playground/universal-translator v0.17.0
+	github.com/go-playground/validator/v10 v10.3.0
 	github.com/go-redis/redis/v7 v7.4.0
 	github.com/golang-migrate/migrate/v4 v4.12.2
 	github.com/gorilla/sessions v1.2.0 // indirect
@@ -49,7 +51,6 @@ require (
 	golang.org/x/sys v0.0.0-20200817155316-9781c653f443 // indirect
 	golang.org/x/tools v0.0.0-20200818005847-188abfa75333 // indirect
 	golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1 // indirect
-	gopkg.in/go-playground/validator.v9 v9.31.0
 	gopkg.in/ini.v1 v1.60.0 // indirect
 	gorm.io/driver/mysql v0.3.1
 	gorm.io/driver/sqlserver v0.2.7 // indirect
