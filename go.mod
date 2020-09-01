@@ -4,7 +4,7 @@ go 1.13
 
 require (
 	github.com/alecthomas/template v0.0.0-20190718012654-fb15b899a751
-	github.com/casbin/casbin/v2 v2.10.0
+	github.com/casbin/casbin/v2 v2.11.2
 	github.com/casbin/gorm-adapter/v3 v3.0.2
 	github.com/davecgh/go-spew v1.1.1
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
@@ -54,5 +54,5 @@ require (
 	gopkg.in/ini.v1 v1.60.0 // indirect
 	gorm.io/driver/mysql v0.3.1
 	gorm.io/driver/sqlserver v0.2.7 // indirect
-	gorm.io/gorm v0.2.31
+	gorm.io/gorm v1.20.0
 )
