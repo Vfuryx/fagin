@@ -28,7 +28,7 @@ func Run() {
 		}
 	}()
 
-	// 翻译器
+	// 初始化翻译器
 	if err := request.InitTrans(config.App.Locale); err != nil {
 		fmt.Printf("init trans failed, err:%v\n", err)
 		return
