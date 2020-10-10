@@ -18,7 +18,7 @@ require (
 	github.com/go-playground/locales v0.13.0
 	github.com/go-playground/universal-translator v0.17.0
 	github.com/go-playground/validator/v10 v10.3.0
-	github.com/go-redis/redis/v7 v7.4.0
+	github.com/go-redis/redis/v8 v8.3.0
 	github.com/golang-migrate/migrate/v4 v4.12.2
 	github.com/gorilla/sessions v1.2.1 // indirect
 	github.com/jackc/pgproto3/v2 v2.0.4 // indirect

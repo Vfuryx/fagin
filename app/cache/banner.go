@@ -2,7 +2,6 @@ package cache
 
 import (
 	"encoding/json"
-	"fagin/app/errno"
 	"fagin/app/models/banner"
 	"fagin/pkg/cache"
 	"time"
@@ -10,72 +9,38 @@ import (
 
 // 轮播图缓存管理
 type bannerCache struct {
-	Prefix string
-}
-
-func (bannerCache) cache() (cache.ICache, error) {
-	if cache.Redis == nil {
-		return nil, errno.Api.ErrCacheIsClose
-	}
-	return cache.Redis, nil
+	cache.SCache
+	Content func() ([]banner.Banner, error)
 }
 
 // 实例
 var Banner = NewBanner()
 
 func NewBanner() *bannerCache {
-	return &bannerCache{Prefix: "banner:"}
+	var b = new(bannerCache)
+	b.Prefix = "banner:"
+	b.LifeTime = 60 * time.Second
+	b.SetFunc(b)
+	return b
 }
 
-func (b *bannerCache) listKey() string {
-	return cache.Redis.Prefix + b.Prefix + "list"
+// 获取键名称
+func (b *bannerCache) Key(value string) string {
+	return b.Prefix + "list"
 }
-
-// 是否存在列表
-func (b *bannerCache) HasList() (int64, error) {
-	c, err := b.cache()
-	if err != nil {
-		return 0, err
-	}
-	return c.Exists(b.listKey())
+// 默认存在时间
+func (b *bannerCache) Lift() time.Duration {
+	return b.LifeTime
 }
-
-// 获取列表
-func (b *bannerCache) GetList() ([]banner.Banner, error) {
-	c, err := b.cache()
-	if err != nil {
-		return nil, err
-	}
-
-	h, err := b.HasList()
-	if err != nil {
-		return nil, err
-	}
-	if h <= 0 {
-		return nil, errno.Api.ErrCacheIsNil
-	}
-
-	v, err := c.Get(b.listKey())
-	if err != nil {
-		return nil, err
-	}
-	var data []banner.Banner
-	err = json.Unmarshal([]byte(v), &data)
-
-	return data, err
-}
-
-// 设置列表
-func (b *bannerCache) SetList(value []banner.Banner, expiration time.Duration) (string, error) {
-	c, err := b.cache()
+//获取数据
+func (b *bannerCache) GetContent(id string) (string, error) {
+	banners, err := b.Content()
 	if err != nil {
 		return "", err
 	}
-
-	data, err := json.Marshal(value)
+	data, err := json.Marshal(banners)
 	if err != nil {
 		return "", err
 	}
-
-	return c.Set(b.listKey(), data, expiration)
+	return string(data), nil
 }
