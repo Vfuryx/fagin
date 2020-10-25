@@ -1,78 +1,49 @@
 package cache
 
+import (
+	"encoding/json"
+	"fagin/app/models/website_config"
+	"fagin/pkg/cache"
+	"time"
+)
+
+// 网站配置缓存管理
 type websiteConfig struct {
-	Prefix string
+	cache.SCache
+	Content func() (*website_config.WebsiteConfig, error)
 }
 
-//func (websiteConfig) cache() (cache.ICache, error) {
-//	if cache.Redis == nil {
-//		return nil, errno.Api.ErrCacheIsClose
-//	}
-//	return cache.Redis, nil
-//}
-//
-//// 实例
-//var WebsiteConfig = NewWebsiteConfig()
-//
-//func NewWebsiteConfig() *websiteConfig {
-//	return &websiteConfig{Prefix: "website:config:"}
-//}
-//
-//func (b *websiteConfig) infoKey() string {
-//	return cache.Redis.Prefix + b.Prefix + "info"
-//}
 
-//// 是否存在
-//func (b *websiteConfig) HasInfo() (int64, error) {
-//	c, err := b.cache()
-//	if err != nil {
-//		return 0, err
-//	}
-//	return c.Exists(b.infoKey())
-//}
-//
-//// 获取
-//func (b *websiteConfig) GetInfo() (*website_config.WebsiteConfig, error) {
-//	c, err := b.cache()
-//	if err != nil {
-//		return nil, err
-//	}
-//	h, err := b.HasInfo()
-//	if err != nil {
-//		return nil, err
-//	}
-//	if h <= 0 {
-//		return nil, errno.Api.ErrCacheIsNil
-//	}
-//	v, err := c.Get(b.infoKey())
-//	if err != nil {
-//		return nil, err
-//	}
-//	var data website_config.WebsiteConfig
-//	err = json.Unmarshal([]byte(v), &data)
-//	return &data, err
-//}
-//
-//// 设置
-//func (b *websiteConfig) SetInfo(value *website_config.WebsiteConfig, expiration time.Duration) (string, error) {
-//	c, err := b.cache()
-//	if err != nil {
-//		return "", err
-//	}
-//
-//	data, err := json.Marshal(value)
-//	if err != nil {
-//		return "", err
-//	}
-//
-//	return c.Set(b.infoKey(), data, expiration)
-//}
-//
-//// 删除
-//func (b *websiteConfig) DelInfo() (int64, error) {
-//	c, err := b.cache()
-//	if err != nil {
-//		return 0, err
-//	}
-//	return c.Remove(b.infoKey())
-//}
+// 实例
+var WebsiteConfig = NewWebsiteConfig()
+
+func NewWebsiteConfig() *websiteConfig {
+	var c = new(websiteConfig)
+	c.Prefix = "website:config:"
+	c.LifeTime = 60 * time.Second
+	c.SetFunc(c)
+	return c
+}
+
+// 获取键名称
+func (c *websiteConfig) Key(value string) string {
+	return c.Prefix + value
+}
+
+// 默认存在时间
+func (c *websiteConfig) Lift() time.Duration {
+	return c.LifeTime
+}
+
+//获取数据
+func (c *websiteConfig) GetContent(id string) (string, error) {
+	str, err := c.Content()
+	if err != nil {
+		return "", err
+	}
+	data, err := json.Marshal(str)
+	if err != nil {
+		return "", err
+	}
+	return string(data), nil
+}

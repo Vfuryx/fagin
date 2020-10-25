@@ -1,8 +1,11 @@
 package admin
 
 import (
+	"encoding/json"
 	"fagin/app"
+	"fagin/app/cache"
 	"fagin/app/errno"
+	"fagin/app/models/website_config"
 	admin_request "fagin/app/requests/admin"
 	"fagin/app/responses/admin_response"
 	"fagin/app/service"
@@ -20,17 +23,24 @@ type websiteConfigController struct{}
 var WebsiteConfigController websiteConfigController
 
 func (websiteConfigController) Info(ctx *gin.Context) {
-	column := []string{"web_name", "web_en_name", "web_title", "keywords", "description", "company_name",
-		"contact_number", "company_address", "email", "icp", "public_security_record", "web_logo", "qr_code",
+	cache.WebsiteConfig.Content = func() (*website_config.WebsiteConfig, error) {
+		column := []string{"web_name", "web_en_name", "web_title", "keywords", "description", "company_name",
+			"contact_number", "company_address", "email", "icp", "public_security_record", "web_logo", "qr_code",
+		}
+		return service.WebsiteConfigService.ShowInfo(1, column)
 	}
-	wc, err := service.WebsiteConfigService.ShowInfo(1, column)
+
+	cach , err := cache.WebsiteConfig.Get("info")
 	if err != nil {
 		log.Log.Errorln(err)
 		app.JsonResponse(ctx, errno.Api.ErrWebsiteConfig, nil)
 		return
 	}
 
-	data := admin_response.WebsiteConfig(*wc).Item()
+	var res website_config.WebsiteConfig
+	err = json.Unmarshal([]byte(cach), &res)
+
+	data := admin_response.WebsiteConfig(res).Item()
 	app.JsonResponse(ctx, errno.OK, data)
 	return
 }

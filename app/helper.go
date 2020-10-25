@@ -4,7 +4,9 @@ import (
 	"encoding/json"
 	"fagin/app/errno"
 	"fagin/config"
+	"fagin/pkg/log"
 	"github.com/gin-gonic/gin"
+	"github.com/sirupsen/logrus"
 	"golang.org/x/crypto/bcrypt"
 	"io/ioutil"
 	"math/rand"
@@ -13,6 +15,8 @@ import (
 	"time"
 	"unicode"
 )
+// 默认时间格式
+var TimeFormat = config.App.TimeFormat
 
 // 是否正式环境
 func IsProd() bool {
@@ -67,6 +71,22 @@ func Camel(name string) string {
 	name = strings.Replace(name, "_", " ", -1)
 	name = strings.Title(name)
 	return strings.Replace(name, " ", "", -1)
+}
+
+// 首字母大写
+func UFirst(str string) string {
+	for _, v := range str {
+		return string(unicode.ToUpper(v)) + str[+1:]
+	}
+	return ""
+}
+
+// 首字母小写
+func LFirst(str string) string {
+	for _, v := range str {
+		return string(unicode.ToLower(v)) + str[+1:]
+	}
+	return ""
 }
 
 // 每分钟回源一次，一分钟更新一次
@@ -141,4 +161,12 @@ func GetLocation(ip string) string {
 		return "未知位置"
 	}
 	return m["province"] + "-" + m["city"]
+}
+
+// 日志模块
+func Log(opt ...string) *logrus.Logger {
+	if len(opt) <= 0 {
+		return log.Log
+	}
+	return log.New(opt[0])
 }

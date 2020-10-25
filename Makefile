@@ -26,6 +26,15 @@ response:
 model:
 	go run console/main.go model ${Name}
 
+cache:
+	go run console/main.go cache ${Name}
+
+controller:
+	go run console/main.go controller ${Name}
+
+service:
+	go run console/main.go service ${Name}
+
 create-admin:
 	go run console/main.go admin
 
@@ -113,4 +122,7 @@ help:
 	@echo "make request             - 生成 请求验证"
 	@echo "make response            - 生成 生成响应"
 	@echo "make model               - 生成 模型"
+	@echo "make cache               - 生成 缓存"
+	@echo "make controller          - 生成 控制器"
+	@echo "make service             - 生成 服务"
 	@echo "make pipeline            - 流水线"

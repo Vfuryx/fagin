@@ -9,24 +9,39 @@ import (
 	"time"
 )
 
-var Log *logrus.Logger
+const AdminModel = "admin"
 
-func init() {
-	Log = logrus.New()
+var Log *logrus.Logger = New("")
 
+func New(name string) *logrus.Logger {
+	log := logrus.New()
 	// 禁止 logrus 的输出
 	file, err := os.OpenFile(os.DevNull, os.O_APPEND|os.O_WRONLY, os.ModeAppend)
 	if err != nil {
 		panic(err)
 	}
-	Log.SetOutput(file)
+	log.SetOutput(file)
 
 	// 设置LfHook
-	lfHook, err := NewLfHook(config.App.StoragePath+`/logs/server.log.%Y-%m-%d.log`, config.App.RootPath+`/server.log`)
+	var lfHook *lfshook.LfsHook
+	var path = config.App.StoragePath + `/logs/server` // 默认路径
+	var link = config.App.RootPath + `/server.log`
+	if name != "" { // 重置路径
+		path = config.App.StoragePath + "/logs/" + name + ``
+		link = ""
+	}
+	// 创建文件夹 可以多层
+	err = os.MkdirAll(path, os.ModePerm)
 	if err != nil {
 		panic(err)
 	}
-	Log.AddHook(lfHook)
+
+	lfHook, err = NewLfHook(path+"/%Y-%m-%d.log", link)
+	if err != nil {
+		panic(err)
+	}
+	log.AddHook(lfHook)
+	return log
 }
 
 // path 日志文件路径
@@ -34,9 +49,9 @@ func init() {
 func NewLfHook(path, linkName string) (*lfshook.LfsHook, error) {
 	logWriter, err := rotatelogs.New(
 		path,
-		rotatelogs.WithLinkName(linkName), // 生成软链，指向最新日志文件
-		rotatelogs.WithMaxAge(7*24*time.Hour),     // 文件最大保存时间
-		rotatelogs.WithRotationTime(24*time.Hour), // 日志切割时间间隔
+		rotatelogs.WithMaxAge(7 * 24 * time.Hour),   // 文件最大保存时间
+		rotatelogs.WithRotationTime(24 * time.Hour), // 日志切割时间间隔
+		rotatelogs.WithLinkName(linkName),           // 生成软链，指向最新日志文件
 	)
 	if err != nil {
 		return nil, err

@@ -10,27 +10,11 @@ var WebsiteConfigService websiteConfigService
 
 // 获取网站信息
 func (websiteConfigService) ShowInfo(id uint, columns []string) (*website_config.WebsiteConfig, error) {
-	// 获取缓存
-	//wc, err := cache.WebsiteConfig.GetInfo()
-	//if err != nil {
-	//	log.Log.Errorln(err)
-	//}
-
-	//if wc == nil {
-		wc := website_config.New()
-		err := wc.Dao().FindById(id, columns)
-		if err != nil {
-			return nil, err
-		}
-		// 设置缓存
-		//go func() {
-		//	_, err = cache.WebsiteConfig.SetInfo(wc, 10*time.Minute)
-		//	if err != nil {
-		//		log.Log.Errorln(err)
-		//	}
-		//}()
-	//}
-
+	wc := website_config.New()
+	err := wc.Dao().FindById(id, columns)
+	if err != nil {
+		return nil, err
+	}
 	return wc, err
 }
 

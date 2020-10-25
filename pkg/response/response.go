@@ -79,6 +79,7 @@ func (res *%[2]s) Serialize() []map[string]interface{} {
 	sm := make([]map[string]interface{}, 0, 20)
 	for _, model := range res.Ms {
 		m := map[string]interface{}{
+			"id": model.ID,
 		}
 		sm = append(sm, m)
 	}

@@ -114,6 +114,24 @@ gin 构建的 api 项目
  make model name=testModel	// 或者 test_model
 ```
 
+#### 生成缓存模版 「 name 为文件路径加名称」
+
+```
+ make cache name=testCache	// 或者 test_cache
+```
+
+#### 生成控制器模版 「 name 为文件路径加名称」
+
+```
+ make controller name=admin/testController	// 或者 admin/test_controller
+```
+
+#### 生成服务模版 「 name 为文件路径加名称」
+
+```
+ make service name=test	// 或者 admin/test
+```
+
 #### 数据迁移
 
 ```

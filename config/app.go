@@ -22,6 +22,9 @@ type app struct {
 	Debug  bool
 	Url    string
 	Locale string
+
+	TimeFormat string
+	Timezone string
 }
 
 var App app
@@ -42,6 +45,11 @@ func init() {
 	App.Url = conf.Env("APP_URL", "")
 	App.Debug = conf.EnvBool("APP_DEBUG")
 	App.Locale = conf.Env("APP_LOCALE", "zh")
+
+	// 默认时间格式
+	App.TimeFormat = "2006-01-02 15:04:05"
+	// 默认时区
+	App.Timezone = "PRC"
 }
 
 func (app app) GetName() string {
