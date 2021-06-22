@@ -2,94 +2,41 @@ package app
 
 import (
 	"encoding/json"
-	"fagin/app/errno"
 	"fagin/config"
-	"fagin/pkg/log"
+	"fagin/pkg/logger"
+	"fagin/pkg/response"
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/crypto/bcrypt"
-	"io/ioutil"
-	"math/rand"
+	"io"
 	"net/http"
-	"strings"
 	"time"
-	"unicode"
 )
-// 默认时间格式
+
+// TimeFormat 默认时间格式
 var TimeFormat = config.App.TimeFormat
 
-// 是否正式环境
+// IsProd 是否正式环境
 func IsProd() bool {
 	return config.App.Env == "prod"
 }
 
-type Response struct {
-	Code    int         `json:"code"`
-	Message string      `json:"message"`
-	Data    interface{} `json:"data,omitempty"`
+func ResponseJsonOK(ctx *gin.Context, data interface{}) {
+	response.JsonOK(ctx, data)
+}
+func ResponseJsonErr(ctx *gin.Context, err error, errors interface{}) {
+	response.JsonErr(ctx, err, errors)
 }
 
-func JsonResponse(ctx *gin.Context, err error, data interface{}) {
-	code, msg := errno.DecodeErr(err)
-	ctx.JSON(http.StatusOK, Response{
-		Code:    code,
-		Message: msg,
-		Data:    data,
-	})
+func ResponseJsonWithStatus(ctx *gin.Context, statusCode int, err error, data interface{}, errors interface{}) {
+	response.JsonWithStatus(ctx, statusCode, err, data, errors)
 }
 
-func JsonResponseWithStatus(ctx *gin.Context, statusCode int, err error, data interface{}) {
-	code, msg := errno.DecodeErr(err)
-	ctx.JSON(statusCode, Response{
-		Code:    code,
-		Message: msg,
-		Data:    data,
-	})
+func ResponseJson(ctx *gin.Context, err error, data interface{}, errors interface{}, statusCode int) {
+	response.Json(ctx, err, data, errors, statusCode)
 }
 
-// 驼峰式写法转为下划线写法
-//将大写转成 _a 的形式
-func Underscore(str string) string {
-	var buf strings.Builder
-	for index, value := range str {
-		// value >= 'A' && value <= 'Z'
-		if unicode.IsUpper(value) {
-			if index != 0 {
-				buf.WriteByte('_')
-			}
-			// byte(value + 'a' - 'A')
-			buf.WriteRune(unicode.ToLower(value))
-			continue
-		}
-		buf.WriteRune(value)
-	}
-	return buf.String()
-}
-
-// 下划线写法转为驼峰写法
-func Camel(name string) string {
-	name = strings.Replace(name, "_", " ", -1)
-	name = strings.Title(name)
-	return strings.Replace(name, " ", "", -1)
-}
-
-// 首字母大写
-func UFirst(str string) string {
-	for _, v := range str {
-		return string(unicode.ToUpper(v)) + str[+1:]
-	}
-	return ""
-}
-
-// 首字母小写
-func LFirst(str string) string {
-	for _, v := range str {
-		return string(unicode.ToLower(v)) + str[+1:]
-	}
-	return ""
-}
-
-// 每分钟回源一次，一分钟更新一次
+// WebAsset 每分钟回源一次，一分钟更新一次
 func WebAsset(path string) string {
 	// 是否正式环境
 	if ok := IsProd(); !ok {
@@ -106,39 +53,28 @@ func ViewWithStatus(ctx *gin.Context, statusCode int, path string, obj interface
 	ctx.HTML(statusCode, path, obj)
 }
 
-const letterBytes = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
-
-func RandString(n int) string {
-	rand.Seed(time.Now().UnixNano())
-	b := make([]byte, n)
-	for i := range b {
-		b[i] = letterBytes[rand.Int63()%int64(len(letterBytes))]
-	}
-	return string(b)
-}
-
-// 加密密码
+// Encrypt 加密密码
 // Encrypt encrypts the plain text with bcrypt.
 func Encrypt(source string) (string, error) {
 	hashedBytes, err := bcrypt.GenerateFromPassword([]byte(source), bcrypt.DefaultCost)
 	return string(hashedBytes), err
 }
 
-// 匹配密码
+// Compare 匹配密码
 // Compare compares the encrypted text with the plain text if it's the same.
 func Compare(hashedPassword, password string) error {
 	return bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(password))
 }
 
-// 布尔转数字
-func btoi(b bool) int {
+// Btoi 布尔转数字
+func Btoi(b bool) int {
 	if b {
 		return 1
 	}
 	return 0
 }
 
-// 根基IP获取地址信息
+// GetLocation 根基IP获取地址信息
 func GetLocation(ip string) string {
 	if ip == "127.0.0.1" || ip == "localhost" {
 		return "内部IP"
@@ -146,13 +82,11 @@ func GetLocation(ip string) string {
 	resp, err := http.Get("https://restapi.amap.com/v3/ip?ip=" + ip + "&key=3fabc36c20379fbb9300c79b19d5d05e")
 	if err != nil {
 		panic(err)
-
 	}
 	defer resp.Body.Close()
-	s, err := ioutil.ReadAll(resp.Body)
 
+	s, err := io.ReadAll(resp.Body)
 	m := make(map[string]string)
-
 	err = json.Unmarshal(s, &m)
 	if err != nil {
 		return "未知位置"
@@ -163,10 +97,10 @@ func GetLocation(ip string) string {
 	return m["province"] + "-" + m["city"]
 }
 
-// 日志模块
+// Log 日志模块
 func Log(opt ...string) *logrus.Logger {
 	if len(opt) <= 0 {
-		return log.Log
+		return logger.Log
 	}
-	return log.New(opt[0])
+	return logger.New(opt[0])
 }

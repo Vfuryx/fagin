@@ -1,183 +1,225 @@
 package admin
 
 import (
-	"fagin/app"
 	"fagin/app/errno"
 	"fagin/app/models/admin_menu"
 	"fagin/app/requests/admin"
-	"fagin/app/responses/admin_response"
+	response "fagin/app/responses/admin"
 	"fagin/app/service"
-	"fagin/pkg/log"
 	"fagin/pkg/request"
-	"github.com/davecgh/go-spew/spew"
 	"github.com/gin-gonic/gin"
 	"time"
 )
 
-type menuController struct{}
+type menuController struct {
+	BaseController
+}
 
 var MenuController menuController
 
-func (menuController) Index(ctx *gin.Context) {
-	var r admin_request.AdminMenuList
+func (mc *menuController) Index(ctx *gin.Context) {
+	var r  = admin_request.NewAdminMenuList()
 	if data, ok := r.Validate(ctx); !ok {
-		app.JsonResponse(ctx, errno.Api.ErrBind, data)
+		mc.ResponseJsonErr(ctx, errno.Serve.BindErr, data)
 		return
 	}
 
 	params := gin.H{
-		"sort": "sort desc, id asc",
+		"orderBy": "sort desc, id asc",
 	}
 
 	if r.Title != "" {
 		params["like_title"] = "%" + r.Title + "%"
 	}
-	if r.Visible != nil {
-		params["visible"] = *r.Visible
+	if r.IsShow != nil {
+		params["is_show"] = *r.IsShow
 	}
 
 	columns := []string{
-		"id", "parent_id", "paths", "title", "icon", "type", "path",
-		"component", "method", "permission", "sort", "visible", "is_link",
-		"created_at",
+		"id", "title", "icon", "type", "path", "sort", "is_show",
+		"created_at", "component", "redirect", "target", "status",
+		"is_hide_child", "parent_id",
 	}
 
 	menus, err := service.AdminMenuService.Index(params, columns, nil)
 	if err != nil {
-		log.Log.Errorln(err)
-		app.JsonResponse(ctx, errno.Api.ErrAdminMenuList, nil)
+		mc.ResponseJsonErrLog(ctx, errno.Serve.ListErr, err, nil)
 		return
 	}
 
-	data := admin_response.AdminMenusList(menus...).Collection()
+	data := response.AdminMenusList(menus...).Collection()
 
-	app.JsonResponse(ctx, errno.OK, data)
+	mc.ResponseJsonOK(ctx, data)
 	return
 }
 
-func (menuController) Show(ctx *gin.Context) {
+func (mc *menuController) Show(ctx *gin.Context) {
 	id, err := request.ShouldBindUriUintID(ctx)
 	if err != nil {
-		app.JsonResponse(ctx, errno.Api.ErrBind, nil)
+		mc.ResponseJsonErr(ctx, errno.Serve.BindErr, nil)
 		return
 	}
 
 	columns := []string{"*"}
 	m, err := service.AdminMenuService.Show(id, columns)
 	if err != nil {
-		app.JsonResponse(ctx, errno.Api.ErrAddAdminMenu, nil)
+		mc.ResponseJsonErrLog(ctx, errno.Serve.StoreErr, err, nil)
 		return
 	}
 
-	app.JsonResponse(ctx, errno.OK, gin.H{
-		"id":         m.ID,
-		"parent_id":  m.ParentId,
-		"paths":      m.Paths,
-		"name":       m.Name,
-		"title":      m.Title,
-		"icon":       m.Icon,
-		"type":       m.Type,
-		"path":       m.Path,
-		"component":  m.Component,
-		"method":     m.Method,
-		"permission": m.Permission,
-		"sort":       m.Sort,
-		"visible":    m.Visible,
-		"is_link":    m.IsLink,
-		"created_at": m.CreatedAt.Format(time.RFC3339),
+	mc.ResponseJsonOK(ctx, gin.H{
+		"id":            m.ID,
+		"parent_id":     m.ParentId,
+		"paths":         m.Paths,
+		"name":          m.Name,
+		"title":         m.Title,
+		"icon":          m.Icon,
+		"type":          m.Type,
+		"path":          m.Path,
+		"method":        m.Method,
+		"component":     m.Component,
+		"permission":    m.Permission,
+		"sort":          m.Sort,
+		"is_show":       m.IsShow,
+		"redirect":      m.Redirect,
+		"target":        m.Target,
+		"status":        m.Status,
+		"is_hide_child": m.IsHideChild,
+		"created_at":    m.CreatedAt.Format(time.RFC3339),
 	})
 	return
 }
 
-func (menuController) Del(ctx *gin.Context) {
+func (mc *menuController) Store(ctx *gin.Context) {
+	var r = admin_request.NewCreateAdminMenu()
+	if data, ok := r.Validate(ctx); !ok {
+		mc.ResponseJsonErr(ctx, errno.Serve.BindErr, data)
+		return
+	}
+
+	b := admin_menu.AdminMenu{
+		ParentId:    r.ParentId,
+		Component:   r.Component,
+		Name:        r.Name,
+		Title:       r.Title,
+		Icon:        r.Icon,
+		Type:        r.Type,
+		Path:        r.Path,
+		Method:      r.Method,
+		Permission:  r.Permission,
+		Sort:        r.Sort,
+		IsShow:      *r.IsShow,
+		Redirect:    r.Redirect,
+		Target:      r.Target,
+		Status:      *r.Status,
+		IsHideChild: *r.IsHideChild,
+	}
+
+	err := service.AdminMenuService.Create(&b)
+	if err != nil {
+		mc.ResponseJsonErrLog(ctx, errno.Serve.StoreErr, err, nil)
+		return
+	}
+
+	mc.ResponseJsonOK(ctx, nil)
+	return
+}
+
+func (mc *menuController) Update(ctx *gin.Context) {
 	id, err := request.ShouldBindUriUintID(ctx)
 	if err != nil {
-		app.JsonResponse(ctx, errno.Api.ErrBind, nil)
+		mc.ResponseJsonErr(ctx, errno.Serve.BindErr, nil)
+		return
+	}
+
+	var r = admin_request.NewUpdateAdminMenu()
+	if data, ok := r.Validate(ctx); !ok {
+		mc.ResponseJsonErr(ctx, errno.Serve.BindErr, data)
+		return
+	}
+
+	if id == r.ParentId {
+		mc.ResponseJsonErr(ctx, errno.Serve.BindErr, nil)
+		return
+	}
+
+	data := map[string]interface{}{
+		"parent_id":     r.ParentId,
+		"name":          r.Name,
+		"component":     r.Component,
+		"title":         r.Title,
+		"icon":          r.Icon,
+		"type":          *r.Type,
+		"path":          r.Path,
+		"method":        r.Method,
+		"permission":    r.Permission,
+		"sort":          r.Sort,
+		"is_show":       *r.IsShow,
+		"status":        *r.Status,
+		"target":        r.Target,
+		"redirect":      r.Redirect,
+		"is_hide_child": r.IsHideChild,
+	}
+	err = service.AdminMenuService.Update(id, data)
+	if err != nil {
+		mc.ResponseJsonErrLog(ctx, errno.Serve.UpdateErr, err, nil)
+		return
+	}
+	err = service.AdminMenuService.RemoveUserMenusCache(id)
+	if err != nil {
+		mc.ResponseJsonErrLog(ctx, errno.Serve.UpdateErr, err, nil)
+		return
+	}
+
+	mc.ResponseJsonOK(ctx, nil)
+	return
+}
+
+func (mc *menuController) Delete(ctx *gin.Context) {
+	id, err := request.ShouldBindUriUintID(ctx)
+	if err != nil {
+		mc.ResponseJsonErr(ctx, errno.Serve.BindErr, nil)
 		return
 	}
 
 	err = service.AdminMenuService.Delete(id)
 	if err != nil {
-		log.Log.Errorln(err)
-		app.JsonResponse(ctx, errno.Api.ErrDeleteAdminMenu, err)
+		if err == errno.Serve.MenuSubExistErr {
+			mc.ResponseJsonErr(ctx, errno.Serve.MenuSubExistErr, nil)
+			return
+		}
+		if err == errno.Serve.MenuRelationExistErr {
+			mc.ResponseJsonErr(ctx, errno.Serve.MenuRelationExistErr, nil)
+			return
+		}
+		mc.ResponseJsonErrLog(ctx, errno.Serve.DeleteErr, err, nil)
 		return
 	}
 
-	app.JsonResponse(ctx, errno.OK, nil)
+	mc.ResponseJsonOK(ctx, nil)
 	return
 }
 
-func (menuController) Store(ctx *gin.Context) {
-	var r admin_request.CreateAdminMenu
+func (mc *menuController) All(ctx *gin.Context) {
+	var r  = admin_request.NewAdminMenuList()
 	if data, ok := r.Validate(ctx); !ok {
-		app.JsonResponse(ctx, errno.Api.ErrBind, data)
+		mc.ResponseJsonErr(ctx, errno.Serve.BindErr, data)
 		return
 	}
-
-	b := admin_menu.AdminMenu{
-		ParentId:   r.ParentId,
-		Name:       r.Name,
-		Title:      r.Title,
-		Icon:       r.Icon,
-		Type:       *r.Type,
-		Path:       r.Path,
-		Component:  r.Component,
-		Method:     r.Method,
-		Permission: r.Permission,
-		Sort:       r.Sort,
-		Visible:    *r.Visible,
-		IsLink:     *r.IsLink,
+	params := gin.H{
+		"orderBy": "sort desc, id asc",
+		"type": r.Type,
 	}
 
-	spew.Dump(r, b)
-	err := service.AdminMenuService.Create(&b)
+	columns := []string{"*"}
+	groups, err := service.AdminMenuService.All(params, columns)
 	if err != nil {
-		app.JsonResponse(ctx, errno.Api.ErrAddAdminMenu, err)
+		mc.ResponseJsonErrLog(ctx, errno.Serve.ListErr, err, nil)
 		return
 	}
 
-	app.JsonResponse(ctx, errno.OK, nil)
-	return
-}
+	data := response.AdminMenusList(*groups...).Collection()
 
-func (menuController) Update(ctx *gin.Context) {
-	id, err := request.ShouldBindUriUintID(ctx)
-	if err != nil {
-		app.JsonResponse(ctx, errno.Api.ErrBind, nil)
-		return
-	}
-
-	var r admin_request.UpdateAdminMenu
-	if data, ok := r.Validate(ctx); !ok {
-		app.JsonResponse(ctx, errno.Api.ErrBind, data)
-		return
-	}
-
-	if id == r.ParentId {
-		app.JsonResponse(ctx, errno.Api.ErrBind, nil)
-		return
-	}
-
-	data := map[string]interface{}{
-		"parent_id":   r.ParentId,
-		"name":       r.Name,
-		"title":      r.Title,
-		"icon":       r.Icon,
-		"type":       *r.Type,
-		"path":       r.Path,
-		"component":  r.Component,
-		"method":     r.Method,
-		"permission": r.Permission,
-		"sort":       r.Sort,
-		"visible":    *r.Visible,
-		"is_link":     *r.IsLink,
-	}
-	err = service.AdminMenuService.Update(id, data)
-	if err != nil {
-		app.JsonResponse(ctx, errno.Api.ErrUpdateAdminMenu, nil)
-		return
-	}
-
-	app.JsonResponse(ctx, errno.OK, nil)
+	mc.ResponseJsonOK(ctx, data)
 	return
 }

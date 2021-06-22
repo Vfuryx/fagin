@@ -2,53 +2,55 @@ package admin
 
 import (
 	"encoding/json"
-	"fagin/app"
-	"fagin/app/cache"
+	"fagin/app/caches"
 	"fagin/app/errno"
-	"fagin/app/models/website_config"
-	admin_request "fagin/app/requests/admin"
-	"fagin/app/responses/admin_response"
+	adminRequest "fagin/app/requests/admin"
+	response "fagin/app/responses/admin"
 	"fagin/app/service"
 	"fagin/config"
-	"fagin/pkg/log"
 	"github.com/gin-gonic/gin"
-	"net/http"
-	"os"
-	"path"
-	"time"
 )
 
-type websiteConfigController struct{}
+type websiteConfigController struct {
+	BaseController
+}
 
 var WebsiteConfigController websiteConfigController
 
-func (websiteConfigController) Info(ctx *gin.Context) {
-	cache.WebsiteConfig.Content = func() (*website_config.WebsiteConfig, error) {
-		column := []string{"web_name", "web_en_name", "web_title", "keywords", "description", "company_name",
-			"contact_number", "company_address", "email", "icp", "public_security_record", "web_logo", "qr_code",
+func (wc *websiteConfigController) Info(ctx *gin.Context) {
+	webConfig := caches.NewWebsiteConfig(func(key string) (b []byte, err error) {
+		column := []string{
+			"web_name", "web_en_name", "web_title", "keywords", "description", "company_name",
+			"contact_number", "company_address", "email", "icp", "public_security_record",
+			"web_logo", "qr_code",
 		}
-		return service.WebsiteConfigService.ShowInfo(1, column)
-	}
-
-	cach , err := cache.WebsiteConfig.Get("info")
+		info, err := service.WebsiteConfigService.ShowInfo(1, column)
+		if err != nil {
+			return nil, err
+		}
+		data := response.WebsiteConfig(*info).Item()
+		return json.Marshal(data)
+	})
+	str, err := webConfig.Get("info")
 	if err != nil {
-		log.Log.Errorln(err)
-		app.JsonResponse(ctx, errno.Api.ErrWebsiteConfig, nil)
+		wc.ResponseJsonErrLog(ctx, errno.Serve.ShowErr, err, nil)
 		return
 	}
 
-	var res website_config.WebsiteConfig
-	err = json.Unmarshal([]byte(cach), &res)
-
-	data := admin_response.WebsiteConfig(res).Item()
-	app.JsonResponse(ctx, errno.OK, data)
+	var data gin.H
+	err = json.Unmarshal([]byte(str), &data)
+	if err != nil {
+		wc.ResponseJsonErrLog(ctx, errno.Serve.ShowErr, err, nil)
+		return
+	}
+	wc.ResponseJsonOK(ctx, data)
 	return
 }
 
-func (websiteConfigController) UpdateInfo(ctx *gin.Context) {
-	var r admin_request.UpdateWebsiteConfig
+func (wc *websiteConfigController) UpdateInfo(ctx *gin.Context) {
+	var r = adminRequest.NewUpdateWebsiteConfig()
 	if data, ok := r.Validate(ctx); !ok {
-		app.JsonResponse(ctx, errno.Api.ErrBind, data)
+		wc.ResponseJsonErr(ctx, errno.Serve.BindErr, data)
 		return
 	}
 
@@ -70,41 +72,28 @@ func (websiteConfigController) UpdateInfo(ctx *gin.Context) {
 
 	err := service.WebsiteConfigService.UpdateInfo(1, data)
 	if err != nil {
-		log.Log.Errorln(err)
-		app.JsonResponse(ctx, errno.Api.ErrUpdateWebsiteConfig, nil)
+		wc.ResponseJsonErrLog(ctx, errno.Serve.UpdateErr, err, nil)
 		return
 	}
 
-	app.JsonResponse(ctx, errno.OK, nil)
+	wc.ResponseJsonOK(ctx, nil)
 	return
 }
 
-// 上传
-func (websiteConfigController) Upload(ctx *gin.Context) {
-	var r admin_request.UploadWebsiteConfigPic
+// Upload 上传
+func (wc *websiteConfigController) Upload(ctx *gin.Context) {
+	var r = adminRequest.NewUploadWebsiteConfigPic()
 	if data, ok := r.Validate(ctx); !ok {
-		app.JsonResponseWithStatus(ctx, http.StatusBadRequest, errno.Api.ErrBind, data)
+		wc.ResponseJsonErr(ctx, errno.Serve.BindErr, data)
 		return
 	}
 
-	filePath := "/web/website/" + time.Now().Format("2006123") + app.RandString(20) + path.Ext(r.File.Filename)
-
-	// 是否创建目录
-	dir := path.Dir(config.App.PublicPath + filePath)
-	_, err := os.Stat(dir)
-	if err != nil && os.IsNotExist(err) {
-		log.Log.Errorln(err)
-		_ = os.MkdirAll(dir, os.ModePerm)
-	}
-
-	err = ctx.SaveUploadedFile(r.File, config.App.PublicPath+filePath)
+	upload := service.NewUploadService(config.App.PublicPath)
+	path, err := upload.UploadFile("/web/website/", r.File)
 	if err != nil {
-		log.Log.Errorln(err)
-		app.JsonResponse(ctx, errno.Api.ErrUploadFile, nil)
+		wc.ResponseJsonErrLog(ctx, errno.Serve.UploadFileErr, err, nil)
 		return
 	}
 
-	app.JsonResponse(ctx, errno.OK, gin.H{"path": filePath})
-
-	return
+	wc.ResponseJsonOK(ctx, gin.H{"path": "/public/" + path})
 }

@@ -2,16 +2,15 @@ package routes
 
 import (
 	"fagin/app/controllers/web"
-	"fagin/pkg/router"
+	"fagin/app/middleware"
+	"fagin/pkg/router/no_router"
 	"github.com/gin-gonic/gin"
 	"net/http"
 )
 
-var Web = router.Group("/")
-
-func init() {
+var webRoute = func(Web *gin.RouterGroup) {
 	// 404
-	router.NoRoute(Web.BasePath(), func(ctx *gin.Context) {
+	no_router.NoRoute(Web.BasePath(), func(ctx *gin.Context) {
 		ctx.String(http.StatusNotFound, "404 NotFound")
 	})
 
@@ -26,11 +25,17 @@ func init() {
 	//	})
 	//})
 
-	// 首页
-	Web.GET("/", web.VideoController.VideoList)
-	// banner
-	Web.GET("/banner", web.IndexController.Index)
-	// 视频播放
-	Web.GET("/video/av:id", web.VideoController.VideoShow)
-	
+	w := Web.Group("/", middleware.WebNavbar.WebNavbar())
+	{
+		// 首页
+		w.GET("/", middleware.WebTags.WebTags(), web.IndexController.Home)
+		// 类型
+		w.GET("/category/:cate", middleware.WebTags.WebTags(), web.IndexController.Category)
+		// 标签
+		w.GET("/tag/:tag", middleware.WebTags.WebTags(), web.IndexController.Tag)
+		// 文章
+		w.GET("/article/:id", web.IndexController.Article)
+		// 搜索
+		w.GET("/search", web.IndexController.Search)
+	}
 }

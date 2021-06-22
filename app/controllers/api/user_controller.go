@@ -1,12 +1,11 @@
 package api
 
 import (
-	"fagin/app"
 	"fagin/app/constants/status"
 	"fagin/app/errno"
 	"fagin/app/models/user"
 	"fagin/app/requests/api"
-	"fagin/app/responses"
+	apiResponses "fagin/app/responses/api"
 	"fagin/app/service"
 	"fagin/pkg/db"
 	"fagin/pkg/request"
@@ -14,7 +13,9 @@ import (
 	"strconv"
 )
 
-type userController struct{}
+type userController struct {
+	BaseController
+}
 
 var UserController userController
 
@@ -23,11 +24,11 @@ type Login struct {
 	Password string `form:"password" json:"password" binding:"required"`
 }
 
-func (userController) Register(ctx *gin.Context) {
-	var v api_request.AddUserRequest
-	msg, ok := v.Validate(ctx)
-	if !ok {
-		app.JsonResponse(ctx, errno.Api.ErrBind, msg)
+func (uc *userController) Register(ctx *gin.Context) {
+	var v = api_request.NewAddUserRequest()
+
+	if msg, ok := v.Validate(ctx); !ok {
+		uc.ResponseJsonErr(ctx, errno.Serve.BindErr, msg)
 		return
 	}
 
@@ -38,16 +39,16 @@ func (userController) Register(ctx *gin.Context) {
 	}
 	err := service.User.AddUser(&u).Error
 	if err != nil {
-		app.JsonResponse(ctx, errno.Api.ErrAddUser, nil)
+		uc.ResponseJsonErrLog(ctx, errno.Serve.StoreErr, err, nil)
 		return
 	}
 
-	app.JsonResponse(ctx, errno.OK, gin.H{
+	uc.ResponseJsonOK(ctx, gin.H{
 		"user": u,
 	})
 }
 
-func (userController) UserList(ctx *gin.Context) {
+func (uc *userController) UserList(ctx *gin.Context) {
 	page := ctx.DefaultQuery("page", "1")
 	per := ctx.DefaultQuery("per", "15")
 	currentPage, err := strconv.Atoi(page)
@@ -72,46 +73,46 @@ func (userController) UserList(ctx *gin.Context) {
 	columns := []string{"id", "username", "status"}
 	users, err := service.User.UserList(params, columns, nil, &p)
 	if err != nil {
-		app.JsonResponse(ctx, errno.Api.ErrUserList, nil)
+		uc.ResponseJsonErrLog(ctx, errno.Serve.ListErr, err, nil)
 		return
 	}
-	urs := responses.UserResponse(users...).Collection()
-	app.JsonResponse(ctx, errno.OK, gin.H{
+	urs := apiResponses.UserResponse(users...).Collection()
+	uc.ResponseJsonOK(ctx, gin.H{
 		"users":     urs,
 		"paginator": p,
 	})
 }
 
-func (userController) ShowUser(ctx *gin.Context) {
+func (uc *userController) ShowUser(ctx *gin.Context) {
 	i := ctx.Param("id")
 
 	id, err := strconv.ParseUint(i, 10, 64)
 	if err != nil || id <= 0 {
-		app.JsonResponse(ctx, errno.Api.ErrBind, nil)
+		uc.ResponseJsonErr(ctx, errno.Serve.BindErr, nil)
 		return
 	}
 
 	columns := []string{"id", "username", "status"}
 	u, err := service.User.ShowUser(uint(id), columns)
 	if err != nil || u.Status == status.Disable {
-		app.JsonResponse(ctx, errno.Api.ErrUserNotFound, nil)
+		uc.ResponseJsonErrLog(ctx, errno.Serve.ShowErr, err, nil)
 		return
 	}
-	ru := responses.UserResponse(*u).Item()
-	app.JsonResponse(ctx, errno.OK, ru)
+	ru := apiResponses.UserResponse(*u).Item()
+	uc.ResponseJsonOK(ctx, ru)
 }
 
-func (userController) UpdateUser(ctx *gin.Context) {
+func (uc *userController) UpdateUser(ctx *gin.Context) {
 	id, err := request.ShouldBindUriUintID(ctx)
 	if err != nil {
-		app.JsonResponse(ctx, errno.Api.ErrBind, nil)
+		uc.ResponseJsonErr(ctx, errno.Serve.BindErr, nil)
 		return
 	}
 
-	var r api_request.UpdateUserRequest
-	msg, ok := r.Validate(ctx)
-	if !ok {
-		app.JsonResponse(ctx, errno.Api.ErrBind, msg)
+	var r = api_request.NewUpdateUserRequest()
+
+	if msg, ok := r.Validate(ctx); !ok {
+		uc.ResponseJsonErr(ctx, errno.Serve.BindErr, msg)
 		return
 	}
 
@@ -125,25 +126,25 @@ func (userController) UpdateUser(ctx *gin.Context) {
 
 	err = service.User.UpdateUser(id, data)
 	if err != nil {
-		app.JsonResponse(ctx, errno.Api.ErrUpdateUser, nil)
+		uc.ResponseJsonErrLog(ctx, errno.Serve.UpdateErr, err, nil)
 		return
 	}
 
-	app.JsonResponse(ctx, errno.OK, nil)
+	uc.ResponseJsonOK(ctx, nil)
 }
 
-func (userController) DestroyUser(ctx *gin.Context) {
+func (uc *userController) DestroyUser(ctx *gin.Context) {
 	id, err := request.ShouldBindUriUintID(ctx)
 	if err != nil {
-		app.JsonResponse(ctx, errno.Api.ErrBind, nil)
+		uc.ResponseJsonErr(ctx, errno.Serve.BindErr, nil)
 		return
 	}
 
 	err = service.User.DestroyUser(id)
 	if err != nil {
-		app.JsonResponse(ctx, errno.Api.ErrDeleteUser, nil)
+		uc.ResponseJsonErrLog(ctx, errno.Serve.DeleteErr, err, nil)
 		return
 	}
 
-	app.JsonResponse(ctx, errno.OK, nil)
+	uc.ResponseJsonOK(ctx, nil)
 }

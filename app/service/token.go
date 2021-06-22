@@ -26,7 +26,7 @@ func (ts tokenService) ParseRequest(ctx *gin.Context) (*context, error) {
 	secret := config.Jwt.Secret
 
 	if len(head) == 0 {
-		return Login, errno.Api.ErrTokenInvalid
+		return Login, errno.Serve.ErrTokenInvalid
 	}
 
 	var token string
@@ -38,13 +38,13 @@ func (ts tokenService) ParseRequest(ctx *gin.Context) (*context, error) {
 func (ts tokenService) Parse(token string, secret string) (*context, error) {
 	ctx := Login
 	if token, err := jwt.Parse(token, ts.secretFunc(secret)); err != nil {
-		return ctx, errno.Api.ErrTokenInvalid
+		return ctx, errno.Serve.ErrTokenInvalid
 	} else if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
 		ctx.ID = uint64(claims["id"].(float64))
 		ctx.Username = claims["username"].(string)
 		return ctx, nil
 	} else {
-		return ctx, errno.Api.ErrTokenInvalid
+		return ctx, errno.Serve.ErrTokenInvalid
 	}
 }
 

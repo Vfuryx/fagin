@@ -4,24 +4,51 @@ import (
 	"fagin/app"
 	"fagin/app/middleware"
 	"fagin/config"
+	"fagin/pkg/router/no_router"
 	"fagin/pkg/session"
+	"fagin/pkg/view"
+	"fagin/routes"
 	"github.com/gin-contrib/cors"
+	"github.com/gin-contrib/pprof"
 	"github.com/gin-gonic/gin"
+	"html/template"
+	"net/http"
 )
 
-// 路由引擎
-var Engine *gin.Engine = New()
+// engine 路由引擎
+var engine *gin.Engine
 
 func New() *gin.Engine {
+	if engine != nil {
+		return engine
+	}
+
 	e := gin.New()
+
+	// 加载模版
+	temp := loadHTMLGlobFS(e)
 
 	// 是否正式环境
 	if ok := app.IsProd(); !ok {
+		view.DebugPrintLoadTemplate(temp)
 		e.Use(gin.Logger(), gin.Recovery())
 	}
 
+	// 收集日志
+	e.Use(middleware.RecoveryLog())
+
+	// 加载路由
+	routes.Handle(e)
+
+	// 设置公开静态资源 （上传公开文件）
+	e.Static(config.Template.PublicRouter, config.Template.Public)
+
+	// 设置固定静态资源文件
+	e.StaticFS(config.Template.StaticRouter, http.FS(config.Template.StaticEmbed))
+
 	// 全局实例Session
 	e.Use(session.Sessions())
+
 	// 支持跨域
 	if config.DefaultRouter.IsCors {
 		conf := cors.DefaultConfig()
@@ -30,42 +57,44 @@ func New() *gin.Engine {
 		conf.AllowMethods = config.DefaultRouter.CorsConf.AllowMethods
 		e.Use(cors.New(conf))
 	}
-	// 收集日志
-	e.Use(middleware.RecoveryLog())
-	// 设置静态资源
-	e.Static(config.Template.StaticRouter, config.Template.Static)
-	// 加载顺序 1 - 3 顺序不能变
-	// 1 定界符
-	e.Delims(config.Template.DelimitersL, config.Template.DelimitersR)
-	// 2 注册模版函数
-	e.SetFuncMap(config.Template.FuncMap)
-	// 3 设置模版目录
-	e.LoadHTMLGlob(config.Template.LoadHTMLGlob)
+
 	// 限定表单占用内存
 	//engine.MaxMultipartMemory = 32 << 20
 
 	// 配置 404 模块
-	e.NoRoute(noRoute)
+	e.NoRoute(no_router.NoRouteHandle)
+
+	// 设置pprof
+	setPprof(e)
 
 	return e
 }
 
 func Group(name string) *gin.RouterGroup {
-	return Engine.Group(name)
+	return New().Group(name)
 }
 
-// 存入 NoRouteMap
-func NoRoute(basePath string, handle gin.HandlerFunc) {
-	err := rootNode.SetPathAndFunc(basePath, handle)
-	if err != nil {
-		panic(err)
-	}
+// 设置 Pprof
+func setPprof(e *gin.Engine) {
+	adminGroup := e.Group("/debug", func(c *gin.Context) {
+		if app.IsProd() {
+			if c.Query("debug") != "debug" {
+				c.AbortWithStatus(http.StatusForbidden)
+				return
+			}
+		}
+		c.Next()
+	})
+	pprof.RouteRegister(adminGroup, "pprof")
 }
 
-// 404处理
-func noRoute(ctx *gin.Context) {
-	f := rootNode.GetPathFunc(ctx.Request.RequestURI)
-	if f != nil {
-		f(ctx)
-	}
+// 加载模版
+func loadHTMLGlobFS(e *gin.Engine) *template.Template {
+	temp := template.Must(template.New("").
+		Delims(config.Template.DelimitersL, config.Template.DelimitersR). // 1 设置定界符
+		Funcs(config.Template.FuncMap). // 2 注册模版函数
+		ParseFS(config.Template.TemplatesEmbed, config.Template.TemplatePattern)) // 3 导入模版
+
+	e.SetHTMLTemplate(temp)
+	return temp
 }

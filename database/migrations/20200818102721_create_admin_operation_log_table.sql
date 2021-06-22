@@ -7,6 +7,7 @@ CREATE TABLE `admin_operation_logs`
     `created_at`   datetime                     DEFAULT NULL,
     `updated_at`   datetime                     DEFAULT NULL,
     `deleted_at`   datetime                     DEFAULT NULL,
+    `admin_id`     int(11) unsigned    NOT NULL DEFAULT '0' COMMENT '管理员id',
     `user`         varchar(32)         NOT NULL DEFAULT '' COMMENT '用户',
     `method`       varchar(8)          NOT NULL DEFAULT '' COMMENT '方法',
     `path`         varchar(255)        NOT NULL DEFAULT '' COMMENT '路径',
@@ -17,9 +18,12 @@ CREATE TABLE `admin_operation_logs`
     `input`        text COMMENT '输入',
     `latency_time` varchar(128)        NOT NULL DEFAULT '' COMMENT '耗时',
     `user_agent`   varchar(255)        NOT NULL DEFAULT '' COMMENT 'ua',
-    `status`       tinyint(3) unsigned NOT NULL DEFAULT '0' COMMENT '状态 0:异常 1:正常',
+    `status`       tinyint(4) unsigned NOT NULL DEFAULT '0' COMMENT '状态 0:异常 1:正常',
     PRIMARY KEY (`id`),
-    KEY `idx_admin_operation_logs_deleted_at` (`deleted_at`)
+    KEY `idx_admin_operation_logs_deleted_at` (`deleted_at`),
+    KEY `idx_path` (`path`) USING BTREE,
+    KEY `idx_method` (`method`) USING BTREE,
+    KEY `idx_created_at` (`created_at`) USING BTREE
 ) ENGINE = InnoDB
   DEFAULT CHARSET = utf8mb4
   COLLATE = utf8mb4_unicode_ci COMMENT ='后台操作日志表';

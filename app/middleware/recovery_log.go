@@ -1,7 +1,7 @@
 package middleware
 
 import (
-	"fagin/pkg/log"
+	"fagin/pkg/logger"
 	"github.com/gin-gonic/gin"
 	"net/http/httputil"
 	"runtime/debug"
@@ -14,7 +14,8 @@ func RecoveryLog() gin.HandlerFunc {
 		defer func() {
 			top := recover()
 			if top != nil {
-				go writeLog(ctx, top, debug.Stack())
+				httpRequest, _ := httputil.DumpRequest(ctx.Request, false)
+				go writeLog(httpRequest, top, debug.Stack())
 				// 重新抛出错误
 				panic(top)
 			}
@@ -24,8 +25,7 @@ func RecoveryLog() gin.HandlerFunc {
 }
 
 // 写入日志
-func writeLog(ctx *gin.Context, r interface{}, s []byte) {
-	httpRequest, _ := httputil.DumpRequest(ctx.Request, false)
+func writeLog(httpRequest []byte, r interface{}, s []byte) {
 	headers := strings.Split(string(httpRequest), "\r\n")
 
 	for idx, header := range headers {
@@ -35,7 +35,7 @@ func writeLog(ctx *gin.Context, r interface{}, s []byte) {
 		}
 	}
 
-	log.Log.Errorf(
+	logger.Log.Panicf(
 		"[Recovery] %s panic recovered:\n%s\n%s\n%s\n",
 		time.Now(),
 		strings.Join(headers, "\r\n"),

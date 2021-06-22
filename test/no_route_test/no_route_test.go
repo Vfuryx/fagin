@@ -1,13 +1,13 @@
 package no_route_test
 
 import (
-	"fagin/pkg/router"
+	"fagin/pkg/router/no_router"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"testing"
 )
 
-var rootNode = router.NewNode()
+var rootNode = no_router.NewNode()
 
 func TestMain(m *testing.M) {
 	var err error

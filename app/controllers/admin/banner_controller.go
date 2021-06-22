@@ -1,65 +1,61 @@
 package admin
 
 import (
-	"fagin/app"
 	"fagin/app/errno"
 	"fagin/app/models/banner"
 	"fagin/app/requests/admin"
-	"fagin/app/responses/admin_response"
+	response "fagin/app/responses/admin"
 	"fagin/app/service"
 	"fagin/config"
 	"fagin/pkg/db"
-	"fagin/pkg/log"
 	"fagin/pkg/request"
 	"github.com/gin-gonic/gin"
-	"net/http"
-	"os"
-	"path"
-	"time"
 )
 
-type bannerController struct{}
+type bannerController struct {
+	BaseController
+}
 
 var BannerController bannerController
 
-func (bannerController) Index(ctx *gin.Context) {
+func (bc *bannerController) Index(ctx *gin.Context) {
 	paginator := db.NewPaginator(ctx, 1, 15)
 
 	params := gin.H{
-		"sort": "sort desc, id asc",
+		"orderBy": "sort desc, id asc",
 	}
 	columns := []string{"id", "title", "banner", "path", "sort", "status"}
 
 	banners, err := service.Banner.Index(params, columns, nil, &paginator)
 	if err != nil {
-		app.JsonResponse(ctx, errno.Api.ErrBannerList, nil)
+		bc.ResponseJsonErrLog(ctx, errno.Serve.ListErr, err, nil)
 		return
 	}
 
-	data := admin_response.BannerList(banners...).Collection()
+	data := response.BannerList(banners...).Collection()
 
-	app.JsonResponse(ctx, errno.OK, gin.H{
+	bc.ResponseJsonOK(ctx, gin.H{
 		"banners":   data,
 		"paginator": paginator,
 	})
 	return
 }
 
-func (bannerController) Show(ctx *gin.Context) {
+func (bc *bannerController) Show(ctx *gin.Context) {
 	id, err := request.ShouldBindUriUintID(ctx)
 	if err != nil {
-		app.JsonResponse(ctx, errno.Api.ErrBind, nil)
+		bc.ResponseJsonErr(ctx, errno.Serve.BindErr, nil)
 		return
 	}
 
 	columns := []string{"id", "title", "banner", "path", "sort", "status"}
 	b, err := service.Banner.Show(id, columns)
 	if err != nil {
-		app.JsonResponse(ctx, errno.Api.ErrBanner, nil)
+		bc.ResponseJsonErrLog(ctx, errno.Serve.ShowErr, err, nil)
 		return
 	}
 
-	app.JsonResponse(ctx, errno.OK, gin.H{
+	bc.ResponseJsonOK(ctx, gin.H{
 		"id":     b.ID,
 		"title":  b.Title,
 		"banner": b.Banner,
@@ -70,10 +66,10 @@ func (bannerController) Show(ctx *gin.Context) {
 	return
 }
 
-func (bannerController) Store(ctx *gin.Context) {
-	var r admin_request.CreateBanner
+func (bc *bannerController) Store(ctx *gin.Context) {
+	var r = admin_request.NewCreateBanner()
 	if data, ok := r.Validate(ctx); !ok {
-		app.JsonResponse(ctx, errno.Api.ErrBind, data)
+		bc.ResponseJsonErr(ctx, errno.Serve.BindErr, data)
 		return
 	}
 
@@ -87,24 +83,24 @@ func (bannerController) Store(ctx *gin.Context) {
 
 	err := service.Banner.Create(&b)
 	if err != nil {
-		app.JsonResponse(ctx, errno.Api.ErrAddBanner, nil)
+		bc.ResponseJsonErrLog(ctx, errno.Serve.StoreErr, err, nil)
 		return
 	}
 
-	app.JsonResponse(ctx, errno.OK, nil)
+	bc.ResponseJsonOK(ctx, nil)
 	return
 }
 
-func (bannerController) Update(ctx *gin.Context) {
+func (bc *bannerController) Update(ctx *gin.Context) {
 	id, err := request.ShouldBindUriUintID(ctx)
 	if err != nil {
-		app.JsonResponse(ctx, errno.Api.ErrBind, nil)
+		bc.ResponseJsonErr(ctx, errno.Serve.BindErr, nil)
 		return
 	}
 
-	var r admin_request.UpdateBanner
+	var r = admin_request.NewUpdateBanner()
 	if data, ok := r.Validate(ctx); !ok {
-		app.JsonResponse(ctx, errno.Api.ErrBind, data)
+		bc.ResponseJsonErr(ctx, errno.Serve.BindErr, data)
 		return
 	}
 	data := map[string]interface{}{
@@ -116,59 +112,47 @@ func (bannerController) Update(ctx *gin.Context) {
 	}
 	err = service.Banner.Update(id, data)
 	if err != nil {
-		app.JsonResponse(ctx, errno.Api.ErrUpdateBanner, nil)
+		bc.ResponseJsonErrLog(ctx, errno.Serve.UpdateErr, err, nil)
 		return
 	}
 
-	app.JsonResponse(ctx, errno.OK, nil)
+	bc.ResponseJsonOK(ctx, nil)
 	return
 }
 
-// 上传视频
-func (bannerController) Upload(ctx *gin.Context) {
-	var r admin_request.UploadBanner
+// Upload 上传视频
+func (bc *bannerController) Upload(ctx *gin.Context) {
+	var r = admin_request.NewUploadBanner()
 	if data, ok := r.Validate(ctx); !ok {
-		app.JsonResponseWithStatus(ctx, http.StatusBadRequest, errno.Api.ErrBind, data)
+		bc.ResponseJsonErr(ctx, errno.Serve.BindErr, data)
 		return
 	}
 
-	filePath := "/web/banner/" + time.Now().Format("2006123") + app.RandString(20) + path.Ext(r.File.Filename)
-
-	// 是否创建目录
-	dir := path.Dir(config.App.PublicPath + filePath)
-	_, err := os.Stat(dir)
-	if err != nil && os.IsNotExist(err) {
-		_ = os.MkdirAll(dir, os.ModePerm)
-	}
-
-	err = ctx.SaveUploadedFile(r.File, config.App.PublicPath+filePath)
+	upload := service.NewUploadService(config.App.PublicPath)
+	path, err := upload.UploadFile("/web/banner/", r.File)
 	if err != nil {
-		log.Log.Errorln(err)
-		app.JsonResponse(ctx, errno.Api.ErrUploadFile, nil)
+		bc.ResponseJsonErrLog(ctx, errno.Serve.UploadFileErr, err, nil)
 		return
 	}
 
-	app.JsonResponse(ctx, errno.OK, gin.H{"path": filePath})
-
+	bc.ResponseJsonOK(ctx, gin.H{"path": "/public/" + path})
 	return
 }
 
-
-func (bannerController) Del(ctx *gin.Context) {
+func (bc *bannerController) Del(ctx *gin.Context) {
 	id, err := request.ShouldBindUriUintID(ctx)
 	if err != nil {
-		app.JsonResponse(ctx, errno.Api.ErrBind, nil)
+		bc.ResponseJsonErr(ctx, errno.Serve.BindErr, nil)
 		return
 	}
 
 	err = service.Banner.Delete(id)
 	if err != nil {
-		log.Log.Errorln(err)
-		app.JsonResponse(ctx, errno.Api.ErrDeleteBanner, err)
+		bc.ResponseJsonErrLog(ctx, errno.Serve.DeleteErr, err, nil)
 		return
 	}
 
-	app.JsonResponse(ctx, errno.OK, nil)
+	bc.ResponseJsonOK(ctx, nil)
 	return
 }
 
@@ -176,21 +160,20 @@ type BannerIDs struct {
 	IDs []uint `form:"ids" json:"ids" binding:"required"`
 }
 
-// 批量删除轮播图
-func (bannerController) DeleteBanners(ctx *gin.Context) {
+// DeleteBanners 批量删除轮播图
+func (bc *bannerController) DeleteBanners(ctx *gin.Context) {
 	var ids BannerIDs
 	err := ctx.ShouldBind(&ids)
 	if err != nil {
-		app.JsonResponse(ctx, errno.Api.ErrBind, nil)
+		bc.ResponseJsonErr(ctx, errno.Serve.BindErr, nil)
 		return
 	}
 
 	err = service.Banner.DeleteBanners(ids.IDs)
 	if err != nil {
-		log.Log.Errorln(err)
-		app.JsonResponse(ctx, errno.Api.ErrDeleteBanner, err)
+		bc.ResponseJsonErrLog(ctx, errno.Serve.DeleteErr, err, nil)
 		return
 	}
 
-	app.JsonResponse(ctx, errno.OK, nil)
+	bc.ResponseJsonOK(ctx, nil)
 }

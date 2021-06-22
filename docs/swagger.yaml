@@ -1,9 +1,11 @@
 definitions:
-  app.Response:
+  response.Response:
     properties:
       code:
         type: integer
       data:
+        type: object
+      errors:
         type: object
       message:
         type: string
@@ -11,11 +13,56 @@ definitions:
 info:
   contact: {}
   description: fagin服务.
-  license: {}
   termsOfService: https://github.com/Vfuryx/fagin
-  title: server API
-  version: "1.0"
+  title: server
+  version: "2.0"
 paths:
+  /:
+    get:
+      produces:
+      - text/html
+      responses:
+        "200":
+          description: ""
+      summary: 首页
+      tags:
+      - web
+  /admin/api/v1/admins/:
+    post:
+      consumes:
+      - application/json
+      description: 管理员列表接口
+      parameters:
+      - description: 用户名称
+        in: query
+        maxLength: 64
+        name: username
+        type: string
+      - description: 手机号码
+        in: query
+        maxLength: 11
+        minLength: 11
+        name: phone
+        type: string
+      - description: 状态
+        enum:
+        - 0
+        - 1
+        in: query
+        name: status
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '正确 {"code":0,"message":"OK","data":{"token":"XXXXX"}} <br/>
+            错误 {"code": 20102,"message": "找不到用户"} <br/> "{code": 20105, "message":
+            "密码不正确"}'
+          schema:
+            $ref: '#/definitions/response.Response'
+      summary: 管理员列表
+      tags:
+      - 总后台接口
   /api/v1/login:
     post:
       consumes:
@@ -44,7 +91,7 @@ paths:
             错误 {"code": 20102,"message": "找不到用户"} <br/> "{code": 20105, "message":
             "密码不正确"}'
           schema:
-            $ref: '#/definitions/app.Response'
+            $ref: '#/definitions/response.Response'
       summary: 登录接口
       tags:
       - auth
@@ -65,11 +112,8 @@ paths:
         "200":
           description: '成功返回视频溜 <br/> 失败返回 {"code": 10005,"message": "打开文件失败"}'
           schema:
-            $ref: '#/definitions/app.Response'
+            $ref: '#/definitions/response.Response'
       summary: 播放视频接口
       tags:
       - video
-securityDefinitions:
-  BasicAuth:
-    type: basic
 swagger: "2.0"

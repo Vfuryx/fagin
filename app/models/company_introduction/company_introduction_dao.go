@@ -28,12 +28,12 @@ func Dao() *dao {
 
 func (dao) All(columns []string) (*[]CompanyIntroduction, error) {
 	var model []CompanyIntroduction
-	err := db.ORM.Select(columns).Find(&model).Error
+	err := db.ORM().Select(columns).Find(&model).Error
 	return &model, err
 }
 
 func (d *dao) Query(params map[string]interface{}, columns []string, with map[string]interface{}) db.IDao {
-	model := db.ORM.Select(columns)
+	model := db.ORM().Select(columns)
 
 	var (
 		v  interface{}

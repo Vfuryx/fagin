@@ -1,10 +1,14 @@
 package middleware
 
 import (
-	"fagin/app"
+	"encoding/json"
+	"fagin/app/caches"
 	"fagin/app/errno"
-	"fagin/app/service"
+	"fagin/app/models/admin_user"
 	"fagin/app/service/admin_auth"
+	"fagin/pkg/auths"
+	"fagin/pkg/casbins"
+	"fagin/pkg/response"
 	"github.com/gin-gonic/gin"
 	"strconv"
 )
@@ -13,35 +17,31 @@ type adminAuth struct{}
 
 var AdminAuth adminAuth
 
-/**
- * 验证后台管理员是否登录
- */
+// IsLogin 验证后台管理员是否登录
 func (adminAuth) IsLogin() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-
 		c, err := admin_auth.AdminAuth.ParseRequest(ctx)
-
 		if err != nil {
-			app.JsonResponse(ctx, err, nil)
+			response.JsonErr(ctx, err, nil)
 			ctx.Abort()
 			return
 		}
 
-		ctx.Set("user_name", c.Name)
-		ctx.Set("admin_user_id", c.UserID)
+		ctx.Set(admin_user.AdminUserNameKey, c.Name)
+		ctx.Set(admin_user.AdminUserIdKey, c.UserID)
 
 		ctx.Next()
 	}
 }
 
-//权限检查中间件
+// AuthCheckRole 权限检查中间件
 func (adminAuth) AuthCheckRole() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		userID := c.GetInt64("admin_user_id")
+		userID := auths.GetAdminID(c)
 
-		roles, err := service.Canbin.GetRolesForUser(strconv.FormatInt(userID, 10))
+		roles, err := casbins.Casbin.GetRolesForUser(strconv.FormatUint(userID, 10))
 		if err != nil {
-			app.JsonResponse(c, errno.Api.ErrAuthCheckRole, nil)
+			response.JsonErr(c, errno.Serve.ErrAuthCheckRole, nil)
 			c.Abort()
 			return
 		}
@@ -56,15 +56,80 @@ func (adminAuth) AuthCheckRole() gin.HandlerFunc {
 		if isAdmin {
 			c.Next()
 		} else {
-			ok, err := service.Canbin.CheckRoles(roles, c.FullPath(), c.Request.Method)
+			ok, err := casbins.Casbin.CheckRoles(roles, c.FullPath(), c.Request.Method)
 			if ok && err == nil {
 				c.Next()
 			} else {
-				app.JsonResponse(c, errno.Api.ErrAuthCheckRole, nil)
+				response.JsonErr(c, errno.Serve.ErrAuthCheckRole, nil)
 				c.Abort()
 				return
 			}
 		}
 
+	}
+}
+
+// AuthCheckRoleCache 权限检查中间件 有缓存
+func (adminAuth) AuthCheckRoleCache() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		uid := auths.GetAdminID(c)
+		strUID := strconv.FormatUint(uid, 10)
+
+		roleCache := caches.NewAdminCasbin(func(key string) ([]byte, error) {
+			// 缓存用户的角色
+			roles, err := casbins.Casbin.GetRolesForUser(strUID)
+			if err != nil {
+				return nil, err
+			}
+			return json.Marshal(roles)
+		})
+		str, err := roleCache.Get("roles::uid::" + strUID)
+		if err != nil {
+			response.JsonErr(c, errno.Serve.ErrAuthCheckRole, nil)
+			c.Abort()
+			return
+		}
+
+		var roles []string
+		err = json.Unmarshal([]byte(str), &roles)
+		if err != nil {
+			response.JsonErr(c, errno.Serve.ErrAuthCheckRole, nil)
+			c.Abort()
+			return
+		}
+
+		isAdmin := false
+		for _, r := range roles {
+			if r == "admin" {
+				isAdmin = true
+			}
+		}
+
+		//是超级管理员
+		if isAdmin {
+			c.Next()
+		} else {
+			fullPath := c.FullPath()
+			method := c.Request.Method
+			rbacCache := caches.NewAdminCasbin(func(key string) ([]byte, error) {
+				ok, err := casbins.Casbin.CheckRoles(roles, fullPath, method)
+				if err != nil {
+					return nil, err
+				}
+				if ok {
+					return []byte{'1'}, nil
+				}
+				return []byte{'0'}, nil
+			})
+			// 缓存用户的授权
+			str, err = rbacCache.Get("rbac::UID::" + strUID + "::" + method + ":" + fullPath)
+			if str == "1" && err == nil {
+				c.Next()
+			} else {
+				response.JsonErr(c, errno.Serve.ErrAuthCheckRole, nil)
+				c.Abort()
+				return
+			}
+		}
 	}
 }

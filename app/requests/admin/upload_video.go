@@ -7,28 +7,33 @@ import (
 	"mime/multipart"
 )
 
-type UploadVideo struct {
-	File *multipart.FileHeader `form:"file" binding:"required"`
+type uploadVideo struct {
+	File               *multipart.FileHeader `form:"file" binding:"required"`
+	request.Validation `binding:"-"`
 }
 
-var _ request.Request = &UploadVideo{}
+func NewUploadVideo() *uploadVideo {
+	r := new(uploadVideo)
+	r.Request = r
+	return r
+}
 
-func (UploadVideo) Message() map[string]string {
+func (uploadVideo) Message() map[string]string {
 	return map[string]string{
 		"File.required": "文件不能为空",
 	}
 }
 
-func (UploadVideo) Attributes() map[string]string {
+func (uploadVideo) Attributes() map[string]string {
 	return map[string]string{
 		"File": "文件",
 	}
 }
 
-func (r *UploadVideo) Validate(ctx *gin.Context) (map[string]string, bool) {
+// Validate 重写验证方法
+func (r *uploadVideo) Validate(ctx *gin.Context) (map[string]string, bool) {
 	const maxFileSize int64 = 100 << 20 // 限定大小
-	var v request.Validate
-	return v.FileValidate(r, ctx, maxFileSize, func() (map[string]string, bool) {
+	return request.FileValidate(r, ctx, maxFileSize, func() (map[string]string, bool) {
 		// 判断文件类型
 		fmt.Println(r.File.Header)
 		if r.File.Header.Get("Content-Type") != "video/mp4" {

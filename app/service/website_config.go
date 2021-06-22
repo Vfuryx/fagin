@@ -27,7 +27,7 @@ func (websiteConfigService) UpdateInfo(id uint, data map[string]interface{}) err
 	//go func() {
 	//	_, err = cache.WebsiteConfig.DelInfo()
 	//	if err != nil {
-	//		log.Log.Errorln(err)
+	//		go app.Log().Errorln(err, string(debug.Stack()))
 	//	}
 	//}()
 	return nil

@@ -3,23 +3,22 @@ package routes
 import (
 	"fagin/app"
 	"fagin/app/errno"
-	"fagin/pkg/router"
+	_ "fagin/docs"
+	"fagin/pkg/router/no_router"
 	"github.com/gin-gonic/gin"
+	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
-	"github.com/swaggo/gin-swagger/swaggerFiles"
 	"net/http"
 )
 
-func init() {
+var swaggerRoute = func(Swagger *gin.RouterGroup) {
 	// 生产环境禁止加载
 	if app.IsProd() {
 		return
 	}
 
-	var Swagger = router.Group("swagger")
-
-	router.NoRoute(Swagger.BasePath(), func(ctx *gin.Context) {
-		app.JsonResponseWithStatus(ctx, http.StatusNotFound, errno.Api.NotFound, gin.H{"m": "swagger 404"})
+	no_router.NoRoute(Swagger.BasePath(), func(ctx *gin.Context) {
+		app.ResponseJsonWithStatus(ctx, http.StatusNotFound, errno.Serve.NotFound, nil, gin.H{"m": "swagger 404"})
 	})
 
 	// use ginSwagger middleware to

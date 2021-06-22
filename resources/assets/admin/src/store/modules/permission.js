@@ -33,15 +33,18 @@ function hasPathPermission(paths, route) {
 
 /**
  * 后台查询的菜单数据拼装成路由格式的数据
- * @param routes
+ * @param routes 原本路由
+ * @param data  新增路由
+ * @param p_path 父路径
  */
-export function generaMenu(routes, data) {
+export function generaMenu(routes, data, p_path) {
   data.forEach(item => {
     // console.log(item)
+    const path = p_path + item.path
     const menu = {
-      path: item.path,
-      component: item.component === 'Layout' ? Layout : loadView(item.component),
-      hidden: item.visible !== 1,
+      path: path,
+      component: item.parent_id === 0 ? Layout : loadView(path),
+      hidden: item.is_show !== 1,
       children: [],
       name: item.name,
       meta: {
@@ -51,7 +54,7 @@ export function generaMenu(routes, data) {
       }
     }
     if (item.children) {
-      generaMenu(menu.children, item.children)
+      generaMenu(menu.children, item.children, path + '/')
     }
     routes.push(menu)
   })
@@ -136,7 +139,7 @@ const actions = {
           data = response.data
           Object.assign(loadMenuData, data)
 
-          generaMenu(asyncRoutes, loadMenuData)
+          generaMenu(asyncRoutes, loadMenuData, '/')
           asyncRoutes.push({ path: '*', redirect: '/404', hidden: true })
           commit('SET_ROUTES', asyncRoutes)
           resolve(asyncRoutes)

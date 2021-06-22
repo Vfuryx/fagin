@@ -6,24 +6,25 @@ import (
 	"fagin/app/models/admin_role"
 	"fagin/app/models/admin_user"
 	"fagin/app/requests/admin"
-	"fagin/app/responses/admin_response"
+	response "fagin/app/responses/admin"
 	"fagin/app/service"
 	"fagin/pkg/db"
-	"fagin/pkg/log"
 	"fagin/pkg/request"
 	"github.com/gin-gonic/gin"
 )
 
-type userController struct{}
+type userController struct {
+	BaseController
+}
 
 var UserController userController
 
-func (userController) Index(ctx *gin.Context) {
+func (uc *userController) Index(ctx *gin.Context) {
 	paginator := db.NewPaginator(ctx, 1, 15)
 
-	var r admin_request.AdminUserList
+	var r = admin_request.NewAdminUserList()
 	if data, ok := r.Validate(ctx); !ok {
-		app.JsonResponse(ctx, errno.Api.ErrBind, data)
+		uc.ResponseJsonErr(ctx, errno.Serve.BindErr, data)
 		return
 	}
 
@@ -41,35 +42,34 @@ func (userController) Index(ctx *gin.Context) {
 
 	users, err := service.AdminUserService.Index(params, columns, nil, &paginator)
 	if err != nil {
-		log.Log.Errorln(err)
-		app.JsonResponse(ctx, errno.Api.ErrUserList, nil)
+		uc.ResponseJsonErrLog(ctx, errno.Serve.ListErr, err, nil)
 		return
 	}
 
-	data := admin_response.AdminUserList(users...).Collection()
+	data := response.AdminUserList(users...).Collection()
 
-	app.JsonResponse(ctx, errno.OK, gin.H{
+	uc.ResponseJsonOK(ctx, gin.H{
 		"users":     data,
 		"paginator": paginator,
 	})
 	return
 }
 
-func (userController) Show(ctx *gin.Context) {
+func (uc *userController) Show(ctx *gin.Context) {
 	id, err := request.ShouldBindUriUintID(ctx)
 	if err != nil {
-		app.JsonResponse(ctx, errno.Api.ErrBind, nil)
+		uc.ResponseJsonErr(ctx, errno.Serve.BindErr, nil)
 		return
 	}
 
 	columns := []string{"*"}
-	user, err := service.AdminUserService.Show(id, columns)
+	user, err := service.AdminUserService.Show(id, columns, nil)
 	if err != nil {
-		app.JsonResponse(ctx, errno.Api.ErrUserShow, nil)
+		uc.ResponseJsonErrLog(ctx, errno.Serve.ShowErr, err, nil)
 		return
 	}
 
-	app.JsonResponse(ctx, errno.OK, gin.H{
+	uc.ResponseJsonOK(ctx, gin.H{
 		"id":        user.ID,
 		"username":  user.Username,
 		"nick_name": user.NickName,
@@ -79,27 +79,26 @@ func (userController) Show(ctx *gin.Context) {
 		"sex":       user.Sex,
 		"remark":    user.Remark,
 		"status":    user.Status,
-		"role_id":   user.RoleID,
+		//"role_id":   user.RoleID,
 		"create_at": user.CreatedAt,
 	})
 	return
 }
 
-func (userController) Del(ctx *gin.Context) {
+func (uc *userController) Del(ctx *gin.Context) {
 	id, err := request.ShouldBindUriUintID(ctx)
 	if err != nil {
-		app.JsonResponse(ctx, errno.Api.ErrBind, nil)
+		uc.ResponseJsonErr(ctx, errno.Serve.BindErr, nil)
 		return
 	}
 
 	err = service.AdminUserService.Delete(id)
 	if err != nil {
-		log.Log.Errorln(err)
-		app.JsonResponse(ctx, errno.Api.ErrDeleteUser, err)
+		uc.ResponseJsonErrLog(ctx, errno.Serve.DeleteErr, err, nil)
 		return
 	}
 
-	app.JsonResponse(ctx, errno.OK, nil)
+	uc.ResponseJsonOK(ctx, nil)
 	return
 }
 
@@ -107,42 +106,41 @@ type userIDs struct {
 	IDs []uint `form:"ids" json:"ids" binding:"required"`
 }
 
-func (userController) Dels(ctx *gin.Context) {
+func (uc *userController) Dels(ctx *gin.Context) {
 	var ids userIDs
 	err := ctx.ShouldBind(&ids)
 	if err != nil {
-		app.JsonResponse(ctx, errno.Api.ErrBind, nil)
+		uc.ResponseJsonErr(ctx, errno.Serve.BindErr, nil)
 		return
 	}
 
 	err = service.AdminUserService.Deletes(ids.IDs)
 	if err != nil {
-		log.Log.Errorln(err)
-		app.JsonResponse(ctx, errno.Api.ErrDeleteUser, err)
+		uc.ResponseJsonErrLog(ctx, errno.Serve.DeleteErr, err, nil)
 		return
 	}
 
-	app.JsonResponse(ctx, errno.OK, nil)
+	uc.ResponseJsonOK(ctx, nil)
 	return
 }
 
-func (userController) Store(ctx *gin.Context) {
-	var r admin_request.CreateAdminUser
+func (uc *userController) Store(ctx *gin.Context) {
+	var r = admin_request.NewCreateUser()
 	if data, ok := r.Validate(ctx); !ok {
-		app.JsonResponse(ctx, errno.Api.ErrBind, data)
+		uc.ResponseJsonErr(ctx, errno.Serve.BindErr, data)
 		return
 	}
 
 	var role admin_role.AdminRole
 	err := admin_role.Dao().Query(gin.H{"id": r.RoleID}, []string{"*"}, nil).First(&role)
 	if err != nil || role.ID == 0 {
-		app.JsonResponse(ctx, errno.Api.ErrBind, nil)
+		uc.ResponseJsonErr(ctx, errno.Serve.BindErr, nil)
 		return
 	}
 
 	pw, err := app.Encrypt(r.Password)
 	if err != nil {
-		app.JsonResponse(ctx, errno.Api.ErrBind, nil)
+		uc.ResponseJsonErr(ctx, errno.Serve.BindErr, nil)
 		return
 	}
 
@@ -155,36 +153,36 @@ func (userController) Store(ctx *gin.Context) {
 		Password: pw,
 		Remark:   r.Remark,
 		Sex:      *r.Sex,
-		RoleID:   r.RoleID,
+		//Roles:   r.RoleID,
 	}
 
-	err = service.AdminUserService.Create(&user, &role)
+	err = service.AdminUserService.Create(&user, nil)
 	if err != nil {
-		app.JsonResponse(ctx, errno.Api.ErrAddUser, err)
+		uc.ResponseJsonErrLog(ctx, errno.Serve.StoreErr, err, nil)
 		return
 	}
 
-	app.JsonResponse(ctx, errno.OK, nil)
+	uc.ResponseJsonOK(ctx, nil)
 	return
 }
 
-func (userController) Update(ctx *gin.Context) {
+func (uc *userController) Update(ctx *gin.Context) {
 	id, err := request.ShouldBindUriUintID(ctx)
 	if err != nil {
-		app.JsonResponse(ctx, errno.Api.ErrBind, nil)
+		uc.ResponseJsonErr(ctx, errno.Serve.BindErr, nil)
 		return
 	}
 
-	var r admin_request.UpdateAdminUser
+	var r = admin_request.NewUpdateUser()
 	if data, ok := r.Validate(ctx); !ok {
-		app.JsonResponse(ctx, errno.Api.ErrBind, data)
+		uc.ResponseJsonErr(ctx, errno.Serve.BindErr, data)
 		return
 	}
 
 	var role admin_role.AdminRole
 	err = admin_role.Dao().Query(gin.H{"id": r.RoleID}, []string{"*"}, nil).First(&role)
 	if err != nil || role.ID == 0 {
-		app.JsonResponse(ctx, errno.Api.ErrBind, nil)
+		uc.ResponseJsonErr(ctx, errno.Serve.BindErr, nil)
 		return
 	}
 
@@ -196,17 +194,16 @@ func (userController) Update(ctx *gin.Context) {
 		"phone":     r.Phone,
 		"email":     r.Email,
 		//"password":  pw,
-		"sex":     *r.Sex,
-		"role_id": r.RoleID,
+		"sex": *r.Sex,
+		//"role_id": r.RoleID,
 	}
-	err = service.AdminUserService.Update(id, data, &role)
+	err = service.AdminUserService.Update(id, data)
 	if err != nil {
-		log.Log.Errorln(err)
-		app.JsonResponse(ctx, errno.Api.ErrUpdateUser, nil)
+		uc.ResponseJsonErrLog(ctx, errno.Serve.UpdateErr, err, nil)
 		return
 	}
 
-	app.JsonResponse(ctx, errno.OK, nil)
+	uc.ResponseJsonOK(ctx, nil)
 	return
 }
 
@@ -214,17 +211,17 @@ type updateAdminUserStatus struct {
 	Status *uint8 `form:"status" json:"status" binding:"required,oneof=0 1"`
 }
 
-func (userController) UpdateStatus(ctx *gin.Context) {
+func (uc *userController) UpdateStatus(ctx *gin.Context) {
 	id, err := request.ShouldBindUriUintID(ctx)
 	if err != nil {
-		app.JsonResponse(ctx, errno.Api.ErrBind, nil)
+		uc.ResponseJsonErr(ctx, errno.Serve.BindErr, nil)
 		return
 	}
 
 	var r updateAdminUserStatus
 	err = ctx.ShouldBind(&r)
 	if err != nil {
-		app.JsonResponse(ctx, errno.Api.ErrBind, nil)
+		uc.ResponseJsonErr(ctx, errno.Serve.BindErr, nil)
 		return
 	}
 	s := 0
@@ -234,43 +231,42 @@ func (userController) UpdateStatus(ctx *gin.Context) {
 
 	err = service.AdminUserService.UpdateStatus(id, s)
 	if err != nil {
-		app.JsonResponse(ctx, errno.Api.ErrUpdateUser, nil)
+		uc.ResponseJsonErrLog(ctx, errno.Serve.UpdateErr, err, nil)
 		return
 	}
 
-	app.JsonResponse(ctx, errno.OK, nil)
+	uc.ResponseJsonOK(ctx, nil)
 	return
 }
 
-func (userController) Reset(ctx *gin.Context) {
+func (uc *userController) Reset(ctx *gin.Context) {
 	id, err := request.ShouldBindUriUintID(ctx)
 	if err != nil {
-		app.JsonResponse(ctx, errno.Api.ErrBind, nil)
+		uc.ResponseJsonErr(ctx, errno.Serve.BindErr, nil)
 		return
 	}
 
-	var r admin_request.ResetAdminUser
+	var r = admin_request.NewResetAdminUser()
 	if data, ok := r.Validate(ctx); !ok {
-		app.JsonResponse(ctx, errno.Api.ErrBind, data)
+		uc.ResponseJsonErr(ctx, errno.Serve.BindErr, data)
 		return
 	}
 
 	pw, err := app.Encrypt(r.Password)
 	if err != nil {
-		app.JsonResponse(ctx, errno.Api.ErrBind, nil)
+		uc.ResponseJsonErrLog(ctx, errno.Serve.UpdateErr, err, nil)
 		return
 	}
 
 	data := map[string]interface{}{
 		"password": pw,
 	}
-	err = service.AdminUserService.Update(id, data, nil)
+	err = service.AdminUserService.Update(id, data)
 	if err != nil {
-		log.Log.Errorln(err)
-		app.JsonResponse(ctx, errno.Api.ErrUpdateUser, nil)
+		uc.ResponseJsonErrLog(ctx, errno.Serve.UpdateErr, err, nil)
 		return
 	}
 
-	app.JsonResponse(ctx, errno.OK, nil)
+	uc.ResponseJsonOK(ctx, nil)
 	return
 }

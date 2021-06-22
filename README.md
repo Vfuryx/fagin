@@ -10,35 +10,37 @@ gin 构建的 api 项目
  gorm | orm 
  sql-migrate | 数据迁移 
  spf13/viper | 配置 
- spf13/cobra  | cli 
- swaggo/gin-swagger | 自动生成RESTful API文档的gin中间件 
- swaggo/gin-swagger/swaggerFiles | swagger嵌入文件 |
- casbin/casbin | 权限配置 
- casbin/gorm-adapter | Gorm适配器。使用此库，Casbin可 以从Gorm支持的数据库加载策略或将策略保存到它。 
- sirupsen/logrus  | 日志包 
- lestrrat/go-file-rotatelogs | 日志文件分割 
+ spf13/cobra  | cli
+ swaggo | swagger 
+ casbinV2 | 权限配置 
+ logrus  | 日志包 
+ go-file-rotatelogs | 日志文件分割 
  gin-contrib/sessions | session包
- go-redis/redis/v7 | 缓存
+ go-redis/redis/v8 | 缓存
+
+# 热更新 air
+热更新需要安装 air
 
 ## 项目目录结构
 <details>
 <summary>展开查看</summary>
 <pre><code>
 ├── app                 项目核心逻辑代码
-│    ├── cache          缓存
+│    ├── caches         缓存
 │    ├── constants      常量
 │    ├── errno          错误
 │    ├── controllers    控制器
 │    ├── models         模型
 │    ├── middleware     中间件
-│    ├── services       业务
+│    ├── service        服务
 │    ├── requests       参数校验
 │    ├── responses      响应
+│    ├── utils          工具
 │    └── helper.go      工具方法
 │
 ├── console             控制台
-│    ├── cmd            cmd 入口
-│    └── main.go        cmd 命令
+│    ├── cmd            cmd 文件
+│    └── console.go     cmd 加载
 │
 ├── config              配置中心
 │
@@ -49,36 +51,32 @@ gin 构建的 api 项目
 │
 ├── doc                 文档
 │
-├── public              项目静态文件
+├── public              项目公开静态文件（包含上传文件）
 │    ├── css     
 │    ├── js      
 │    ├── js      
-│    └── assets  
-│
+│    ├── upload      
+│    └── assets
+|
 ├── resources           项目资源
 │    ├── assets         assets
-│    │     └── admin    后台前端项目
-│    └── views          go 模板文件
+│    │    └── admin     后台前端项目
+│    ├── static         打包静态文件
+│    └── views          模板文件
 │
 ├── routes              路由
+│    ├── root.go        路由加载
 │    ├── admin.go       后台 路由
 │    ├── api.go         api 路由
 │    └── web.go         web 路由
 │ 			
-├── test                测试文件  
-│
+├── test                测试文件夹
 ├── storage             存放日志等文件
-│
+├── .air.toml           热更新配置
 ├── main.go             项目入口
-│
 ├── config.yaml         动态项目配置
-│
-├── .env                系统配置
-│
 ├── .drone.yml          drone 配置
-│
 ├── admin.sh            脚本
-│
 └── Makefile            Makefile 文件
 </code></pre>
 </details>
@@ -213,7 +211,9 @@ if id := session.Get("user"); id == nil {
 > 提示 如果无法下载 golang.org/x 等包，可用 proxy 的方式下载包
 
 ```
-export GOPROXY=https://goproxy.cn
+export GOPROXY=https://goproxy.cn,direct
+# 或者
+go env -w GOPROXY=https://goproxy.cn,direct
 ```
 
 
@@ -225,26 +225,37 @@ export GOPROXY=https://goproxy.cn
 
 1. gitea + drone
 
-## admin 前端
+## 总后台 前端
+
+#### 快速运行
+```
+make web
+```
+#### 快速打包
+```
+make web:build
+```
+#### 位置
+```
+cd /resources/assets/admin 
+```
+#### install npm
+```
+npm i 
+```
+#### 运行项目
+```
+npm run dev
+```
+#### 新增并设置生产环境配置 （参考 .env.development 配置）
+```
+vim .env.production
+```
+#### 打包项目
 
 ```
-# 位置 
-cd /resources/assets/admin 
-
-# install npm
-npm i 
-
-# 运行项目
-npm run dev
-
-#新增并设置生产环境配置 （参考 .env.development 配置）
-vim .env.production
-
-# 打包项目
 npm run build:prod  (打包生产环境配置)
-
 // 打包的文件会生成在指定位置，无需更改
-
 ```
 
 ## 开启后端服务

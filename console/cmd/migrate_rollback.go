@@ -5,7 +5,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var rollbackCmd = &cobra.Command{
+var MigrateRollbackCmd = &cobra.Command{
 	Use:   "rollback",
 	Short: "回滚到上一步",
 	Long: ``,
@@ -14,6 +14,3 @@ var rollbackCmd = &cobra.Command{
 	},
 }
 
-func init() {
-	migrateCmd.AddCommand(rollbackCmd)
-}

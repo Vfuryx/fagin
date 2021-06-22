@@ -1,7 +1,7 @@
 package cache
 
 import (
-	"fagin/app"
+	"fagin/app/utils"
 	"fagin/config"
 	"fmt"
 	"log"
@@ -9,14 +9,16 @@ import (
 	"strings"
 )
 
-func CreateCacheTemplate( name string) {
-	Path := config.App.AppPath + "/cache/" + name + ".go"
-	sl := strings.Split(Path, "/")
-	packageName := sl[len(sl)-2]
+func CreateCacheTemplate(path, name string) {
+	filePath := config.App.AppPath + "/cache/" + path + ".go"
+	sl := strings.Split(filePath, "/")
 	dirPath := strings.Join(sl[:len(sl)-1], "/")
+	packageName := sl[len(sl)-2]
+	name = utils.Camel(name)
+	structName := strings.ToLower(string(name[0])) + name[1:]
 
 	//os.Stat获取文件信息
-	if _, err := os.Stat(Path); err == nil {
+	if _, err := os.Stat(filePath); err == nil {
 		panic("文件已存在")
 	}
 
@@ -26,17 +28,14 @@ func CreateCacheTemplate( name string) {
 		panic(err)
 	}
 
-	file, err := os.Create(Path)
+	file, err := os.Create(filePath)
 	if err != nil {
 		panic(err)
 	}
-	defer file.Close()
 
 	const Temp = `package %[1]s
 
 import (
-	"encoding/json"
-	"fagin/app/models/model"
 	"fagin/pkg/cache"
 	"time"
 )
@@ -44,47 +43,34 @@ import (
 // 网站配置缓存管理
 type %[2]s struct {
 	cache.SCache
-	Content func() (model, error)
 }
 
-// 实例
-var %[3]s = New%[3]s()
-
-func New%[3]s() *%[2]s {
+func New%[3]s(f cache.GetterFunc) *%[2]s {
 	var c = new(%[2]s)
 	c.Prefix = "prefix"
 	c.LifeTime = 60 * time.Second
+	c.Content = f
 	c.SetFunc(c)
 	return c
 }
 
-// 获取键名称
+// Key 获取键名称
 func (c *%[2]s) Key(value string) string {
 	return c.Prefix + value
 }
 
-// 默认存在时间
+// Lift 默认存在时间
 func (c *%[2]s) Lift() time.Duration {
 	return c.LifeTime
 }
-
-//获取数据
-func (c *%[2]s) GetContent(id string) (string, error) {
-	str, err := c.Content()
-	if err != nil {
-		return "", err
-	}
-	data, err := json.Marshal(str)
-	if err != nil {
-		return "", err
-	}
-	return string(data), nil
-}
 `
 
-	n := app.Camel(name)
-	content := fmt.Sprintf(Temp, packageName, app.LFirst(n), n)
+	content := fmt.Sprintf(Temp, packageName, structName, name)
 	if _, err = file.WriteString(content); err != nil {
+		panic(err)
+	}
+
+	if err = file.Close(); err != nil {
 		panic(err)
 	}
 

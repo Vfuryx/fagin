@@ -1,7 +1,7 @@
 package service
 
 import (
-	"fagin/app"
+	"fagin/app/utils"
 	"fagin/config"
 	"fmt"
 	"log"
@@ -14,7 +14,7 @@ func CreateServiceTemplate(path, name string) {
 	sl := strings.Split(filePath, "/")
 	dirPath := strings.Join(sl[:len(sl)-1], "/")
 	packageName := sl[len(sl)-2]
-	name = app.Camel(name)
+	name = utils.Camel(name)
 	structName := strings.ToLower(string(name[0])) + name[1:]
 
 	//os.Stat获取文件信息

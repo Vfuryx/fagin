@@ -10,5 +10,5 @@ type cdn struct {
 var CDN cdn
 
 func init() {
-	CDN.URL = conf.Env("CDN_URL", "")
+	CDN.URL = conf.GetString("cdn.host", "")
 }

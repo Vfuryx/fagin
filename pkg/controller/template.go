@@ -1,7 +1,7 @@
 package controller
 
 import (
-	"fagin/app"
+	"fagin/app/utils"
 	"fagin/config"
 	"fmt"
 	"log"
@@ -14,7 +14,7 @@ func CreateControllerTemplate(path, name string) {
 	sl := strings.Split(filePath, "/")
 	dirPath := strings.Join(sl[:len(sl)-1], "/")
 	packageName := sl[len(sl)-2]
-	name = app.Camel(name)
+	name = utils.Camel(name)
 	structName := strings.ToLower(string(name[0])) + name[1:]
 
 	//os.Stat获取文件信息
@@ -36,147 +36,145 @@ func CreateControllerTemplate(path, name string) {
 	const temp = `package %[1]s
 
 import (
-	"fagin/app"
 	"fagin/app/errno"
 	"fagin/app/service"
 	"fagin/pkg/db"
-	"fagin/pkg/log"
 	"fagin/pkg/request"
 	"github.com/gin-gonic/gin"
 )
 
-type %[2]s struct{}
+type %[2]s struct{
+	BaseController
+}
 
 var %[3]s %[2]s
 
-// 列表
-func (%[2]s) Index(ctx *gin.Context) {
+// Index 列表
+func (c *%[2]s) Index(ctx *gin.Context) {
 	paginator := db.NewPaginator(ctx, 1, 15)
 
 	params := gin.H{
-		"sort": "id asc",
+		"orderBy": "id asc",
 	}
 	columns := []string{"id"}
 	with := gin.H{"Model": nil}
 	result, err := service.S.Index(params, columns, with, &paginator)
 	if err != nil {
-		app.JsonResponse(ctx, errno.Api.ErrList, nil)
+		c.ResponseJsonErr(ctx, errno.Serve.ListErr, nil)
 		return
 	}
 
 	data := response.R(result...).Collection()
 
-	app.JsonResponse(ctx, errno.OK, gin.H{
+	c.ResponseJsonOK(ctx, gin.H{
 		"data": data,
 		"paginator":  paginator,
 	})
 	return
 }
 
-// 展示
-func (%[2]s) Show(ctx *gin.Context) {
+// Show 展示
+func (c *%[2]s) Show(ctx *gin.Context) {
 	id, err := request.ShouldBindUriUintID(ctx)
 	if err != nil {
-		app.JsonResponse(ctx, errno.Api.ErrBind, nil)
+		c.ResponseJsonErr(ctx, errno.Serve.BindErr, nil)
 		return
 	}
 
 	columns := []string{"id"}
 	data, err := service.S.Show(id, columns)
 	if err != nil {
-		app.JsonResponse(ctx, errno.Api.Err, nil)
+		c.ResponseJsonErrLog(ctx, errno.Serve.ShowErr, err, nil)
 		return
 	}
 
-	app.JsonResponse(ctx, errno.OK, gin.H{
-		"id":     data.ID,
+	c.ResponseJsonOK(ctx, gin.H{
+		"id": data.ID,
 	})
 	return
 }
 
-// 创建
-func (%[2]s) Store(ctx *gin.Context) {
+// Store 创建
+func (c *%[2]s) Store(ctx *gin.Context) {
 	var r r.R
 	if data, ok := r.Validate(ctx); !ok {
-		app.JsonResponse(ctx, errno.Api.ErrBind, data)
+		c.ResponseJsonErr(ctx, errno.Serve.BindErr, data)
 		return
 	}
 
-	c := model{}
+	m := model{}
 
-	err := service.S.Create(&c)
+	err := service.S.Create(&m)
 	if err != nil {
-		app.JsonResponse(ctx, errno.Api.Err, nil)
+		c.ResponseJsonErrLog(ctx, errno.Serve.StoreErr, err, nil)
 		return
 	}
 
-	app.JsonResponse(ctx, errno.OK, nil)
+	c.ResponseJsonOK(ctx, nil)
 	return
 }
 
-// 更新
-func (%[2]s) Update(ctx *gin.Context) {
+// Update 更新
+func (c *%[2]s) Update(ctx *gin.Context) {
 	id, err := request.ShouldBindUriUintID(ctx)
 	if err != nil {
-		app.JsonResponse(ctx, errno.Api.ErrBind, nil)
+		c.ResponseJsonErr(ctx, errno.Serve.BindErr, nil)
 		return
 	}
 
 	var r r.Create
 	if data, ok := r.Validate(ctx); !ok {
-		app.JsonResponse(ctx, errno.Api.ErrBind, data)
+		c.ResponseJsonErr(ctx, errno.Serve.BindErr, data)
 		return
 	}
 	data := map[string]interface{}{}
 	err = service.S.Update(id, data)
 	if err != nil {
-		app.JsonResponse(ctx, errno.Api.ErrUpdate, nil)
+		c.ResponseJsonErrLog(ctx, errno.Serve.UpdateErr, err, nil)
 		return
 	}
 
-	app.JsonResponse(ctx, errno.OK, nil)
+	c.ResponseJsonOK(ctx, nil)
 	return
 }
 
-// 删除
-func (%[2]s) Del(ctx *gin.Context) {
+// Del 删除
+func (c *%[2]s) Del(ctx *gin.Context) {
 	id, err := request.ShouldBindUriUintID(ctx)
 	if err != nil {
-		app.JsonResponse(ctx, errno.Api.ErrBind, nil)
+		c.ResponseJsonErr(ctx, errno.Serve.BindErr, nil)
 		return
 	}
 
 	err = service.S.Delete(id)
 	if err != nil {
-		log.Log.Errorln(err)
-		app.JsonResponse(ctx, errno.Api.ErrDelete, err)
+		c.ResponseJsonErrLog(ctx, errno.Serve.DeleteErr, err, nil)
 		return
 	}
 
-	app.JsonResponse(ctx, errno.OK, nil)
+	c.ResponseJsonOK(ctx, nil)
 	return
 }
 
-// 批量删除
-func (%[2]s) Deletes(ctx *gin.Context) {
+// Deletes 批量删除
+func (c *%[2]s) Deletes(ctx *gin.Context) {
 	type R struct {
 		IDs []uint `+"`form:\"ids\" json:\"ids\" binding:\"required\"`"+`
 	}
 	var ids R
 	err := ctx.ShouldBind(&ids)
 	if err != nil {
-		app.JsonResponse(ctx, errno.Api.ErrBind, nil)
+		c.ResponseJsonErr(ctx, errno.Serve.BindErr, nil)
 		return
 	}
 
 	err = service.S.Deletes(ids.IDs)
 	if err != nil {
-		log.Log.Errorln(err)
-		app.JsonResponse(ctx, errno.Api.ErrDelete, err)
+		c.ResponseJsonErrLog(ctx, errno.Serve.DeleteErr, err, nil)
 		return
 	}
 
-	app.JsonResponse(ctx, errno.OK, nil)
+	c.ResponseJsonOK(ctx, nil)
 	return
 }
 `

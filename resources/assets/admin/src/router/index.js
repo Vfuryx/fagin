@@ -80,18 +80,18 @@ export const constantRoutes = [
  * the routes that need to be dynamically loaded based on user roles
  */
 export const asyncRoutes = [
-  // {
-  //   path: '/video',
-  //   component: Layout,
-  //   redirect: '/video',
-  //   hidden: false,
-  //   children: [{
-  //     path: 'index',
-  //     name: 'VideoIndex',
-  //     component: () => import('@/views/video/index'),
-  //     meta: { title: '视频', icon: 'eye-open' }
-  //   }]
-  // },
+  {
+    path: '/group',
+    component: Layout,
+    redirect: '/group',
+    hidden: false,
+    children: [{
+      path: 'index',
+      name: 'PermissionGroups',
+      component: () => import('@/views/admin/permission_groups'),
+      meta: { title: '视频', icon: 'eye-open' }
+    }]
+  }
   // {
   //   path: '/banner',
   //   component: Layout,

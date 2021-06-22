@@ -3,12 +3,13 @@ package server
 import (
 	"context"
 	"fagin/app"
+	"fagin/app/mq"
 	"fagin/config"
 	"fagin/pkg/cache"
+	"fagin/pkg/casbins"
 	"fagin/pkg/db"
 	"fagin/pkg/request"
 	"fagin/pkg/router"
-	_ "fagin/routes" // 预先载入路由
 	"fmt"
 	"log"
 	"net/http"
@@ -18,8 +19,16 @@ import (
 )
 
 func Run() {
+	db.Init()
 	// 关闭orm
-	defer db.Close()
+	defer func() {
+		err := db.Close()
+		if err != nil {
+			fmt.Println(err)
+		}
+	}()
+
+	casbins.Init()
 
 	// 初始化redis并且延迟关闭redis
 	defer func() {
@@ -34,10 +43,15 @@ func Run() {
 		return
 	}
 
+	// MQ
+	if config.AMQP.Open {
+		mq.InitMQ()
+	}
+
 	// 设置服务
 	srv := &http.Server{
-		Addr:    ":" + config.App.Port,
-		Handler: router.Engine,
+		Addr:    "127.0.0.1:" + config.App.Port,
+		Handler: router.New(),
 		//ReadTimeout:    setting.ReadTimeout,
 		//WriteTimeout:   setting.WriteTimeout,
 		MaxHeaderBytes: 32 << 20,

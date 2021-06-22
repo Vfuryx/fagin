@@ -1,0 +1,48 @@
+# 项目配置
+app:
+  #  env: "prod"
+  env: "local"
+  port: "9091"
+  key: ""
+  debug: true
+  url: "http://localhost"
+
+# 数据库配置
+db:
+  debug: false
+  name: test
+  host: "127.0.0.1"
+  port: 3306
+  user: "homestead"
+  password: "secret"
+  max_idle_conns:
+  max_open_conns:
+  conn_max_life_time:
+
+# session 配置
+session:
+  secret: ""
+  key: "SESSION_ID"
+
+# jwt配置
+jwt:
+  secret: ""
+
+# cdn 配置
+cdn:
+  host: ""
+
+# redis 配置
+redis:
+  open: false
+  address: "127.0.0.1:6379"
+  password: ""
+  prefix: "fagin:"
+
+casbin:
+  model: !!omap
+    0: [ "r", "r", "sub, obj, act" ]
+    1: [ "p", "p", "sub, obj, act" ]
+    2: [ "g", "g", "_, _" ]
+    3: [ "e", "e", "some(where (p.eft == allow))" ]
+    4: [ "m", "m", "r.sub == p.sub && keyMatch(r.obj, p.obj) && regexMatch(r.act, p.act)" ]

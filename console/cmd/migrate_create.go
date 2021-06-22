@@ -6,7 +6,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var migrateCreateCmd = &cobra.Command{
+var MigrateCreateCmd = &cobra.Command{
 	Use:   "create",
 	Short: "创建一个新的数据迁移",
 	Long:  ``,
@@ -21,9 +21,4 @@ var migrateCreateCmd = &cobra.Command{
 			panic(err)
 		}
 	},
-}
-
-func init() {
-	// migrate 的子命令
-	migrateCmd.AddCommand(migrateCreateCmd)
 }

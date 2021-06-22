@@ -1,8 +1,8 @@
 package middleware
 
 import (
-	"fagin/app"
 	"fagin/app/service"
+	"fagin/pkg/response"
 	"github.com/gin-gonic/gin"
 )
 
@@ -10,16 +10,14 @@ type auth struct{}
 
 var Auth = auth{}
 
-/**
- * 验证用户是否登录
- */
+// IsLogin 验证用户是否登录
 func (auth) IsLogin() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 
 		c, err := service.Token.ParseRequest(ctx)
 
 		if err != nil {
-			app.JsonResponse(ctx, err, nil)
+			response.JsonErr(ctx, err, nil)
 			ctx.Abort()
 			return
 		}
@@ -30,22 +28,20 @@ func (auth) IsLogin() gin.HandlerFunc {
 	}
 }
 
-/*
- * 验证用户是否有权限访问
- */
+// AuthCheckRole 验证用户是否有权限访问
 func (auth) AuthCheckRole() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 
 		//role := strconv.Itoa(int(service.Login.ID))
 		//
-		//roles := service.Canbin.GetRolesForUser(role)
+		//roles := service.Casbin.GetRolesForUser(role)
 		//
-		//ok := service.Canbin.CheckRoles(roles, ctx.Request.URL.Path, ctx.Request.Method)
+		//ok := service.Casbin.CheckRoles(roles, ctx.Request.URL.Path, ctx.Request.Method)
 		//
 		//if ok {
 		//	ctx.Next()
 		//} else {
-		//	app.JsonResponse(ctx, errno.Api.ErrPermissionDenied, nil)
+		//	app.ResponseJson(ctx, errno.Serve.ErrPermissionDenied, nil)
 		//	ctx.Abort()
 		//}
 		//return

@@ -11,5 +11,5 @@ type jwt struct {
 var Jwt jwt
 
 func init() {
-	Jwt.Secret = conf.Env("JWT_SECRET", "")
+	Jwt.Secret = conf.GetString("jwt.secret", "")
 }

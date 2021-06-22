@@ -2,7 +2,7 @@ package middleware
 
 import "github.com/gin-gonic/gin"
 
-// chan 实现的流控中间件
+// Limiter chan 实现的流控中间件
 type Limiter struct {
 	Token chan struct{}
 	Max   int

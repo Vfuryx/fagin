@@ -7,7 +7,7 @@ import (
 
 func TestMain(m *testing.M) {
 	// 每次运行都会清空一下表
-	db.ORM.Exec("truncate users")
+	db.ORM().Exec("truncate users")
 	m.Run()
 	db.Close()
 }
@@ -100,7 +100,7 @@ func TestPaginator(t *testing.T) {
 	columns := []string{"*"}
 	p := db.Paginator{
 		CurrentPage: 1,
-		PerPage:     2,
+		PageSize:     2,
 	}
 	err := Dao().Query(params, columns, nil).Paginator(&users, &p)
 	if err != nil {

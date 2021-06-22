@@ -1,26 +1,26 @@
 package cmd
 
 import (
+	"fagin/pkg/paths"
 	"fagin/pkg/service"
 	"fmt"
 	"github.com/spf13/cobra"
 )
 
-var serviceCmd = &cobra.Command{
+var ServiceCmd = &cobra.Command{
 	Use:   "service",
-	Short: "",
-	Long: ``,
+	Short: "生成服务模版",
+	Long: `
+该子命令支持生成服务模版，用法如下：
+go run console/main.go service path
+`,
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("service called")
 		if len(args) <= 0 {
 			fmt.Println("create service err")
 			return
 		}
-		path, name := Handle(args[0])
+		path, name := paths.GetPathAndUnderscore(args[0])
 		service.CreateServiceTemplate(path, name)
 	},
-}
-
-func init() {
-	rootCmd.AddCommand(serviceCmd)
 }

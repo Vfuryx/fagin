@@ -7,7 +7,7 @@ import (
 
 func TestMain(m *testing.M) {
 	// 每次运行都会清空一下表
-	db.ORM.Exec("truncate video_infos")
+	db.ORM().Exec("truncate video_infos")
 	m.Run()
 	db.Close()
 }

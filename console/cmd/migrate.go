@@ -7,7 +7,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var migrateCmd = &cobra.Command{
+var MigrateCmd = &cobra.Command{
 	Use:     "migrate",
 	Short:   "数据迁移",
 	Long:    ``,
@@ -15,8 +15,4 @@ var migrateCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		migrate.Migration()
 	},
-}
-
-func init() {
-	rootCmd.AddCommand(migrateCmd)
 }

@@ -10,6 +10,6 @@ type session struct {
 var Session session
 
 func init() {
-	Session.Secret = conf.Env("SESSION_SECRET", "secret")
-	Session.Key = conf.Env("SESSION_KEY", "SESSION_ID")
+	Session.Secret = conf.GetString("session.secret", "secret")
+	Session.Key = conf.GetString("session.key", "SESSION_ID")
 }
