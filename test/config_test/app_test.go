@@ -3,7 +3,6 @@ package config_test
 import (
 	"bufio"
 	"fagin/config"
-	"fagin/pkg/path"
 	"os"
 	"strings"
 	"testing"
@@ -14,7 +13,7 @@ import (
 func getAppName() string {
 	var err error
 
-	file, err := os.Open(path.RootPath + "/go.mod")
+	file, err := os.Open(config.App.RootPath + "/go.mod")
 	if err != nil {
 		panic(err)
 	}

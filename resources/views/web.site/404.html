@@ -1,0 +1,33 @@
+[[ define "web.site.404" ]]
+[[template "web.layout.header" .]]
+<div id="app">
+    [[template "web.layout.nav" .]]
+    <main role="main">
+        <div class="top pt-2 pb-4">
+            <section class="container text-light">
+                <h1 class="pt-5">Business Name or Tagline</h1>
+                <p class="pb-5 pt-2">Lorem ipsum dolor sit ametconsecteturadipisicingelit. Non possimus
+                    alaboreprovidentmollitia.Idassumenda voluptatearum corporisfacere quibusdamquisquam istipsa cumque
+                    unde nisi,totamquas ipsam.
+                <p>
+            </section>
+        </div>
+        <section class="container">
+            <div class="row pt-5">
+                404
+            </div>
+            <div class="row">
+            </div>
+        </section>
+    </main>
+</div>
+<script>
+    Vue.prototype.$http = axios;
+    var app = new Vue({
+        el: "#app",
+        data: {},
+        methods: {}
+    })
+</script>
+[[template "web.layout.footer" .]]
+[[ end ]]

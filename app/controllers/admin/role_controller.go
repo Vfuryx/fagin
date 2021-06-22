@@ -1,35 +1,37 @@
 package admin
 
 import (
-	"fagin/app"
 	"fagin/app/errno"
 	"fagin/app/models/admin_menu"
+	"fagin/app/models/admin_permission"
 	"fagin/app/models/admin_role"
-	"fagin/app/requests/admin"
-	"fagin/app/responses/admin_response"
+	adminRequest "fagin/app/requests/admin"
+	response "fagin/app/responses/admin"
 	"fagin/app/service"
 	"fagin/pkg/db"
-	"fagin/pkg/log"
 	"fagin/pkg/request"
-	"github.com/davecgh/go-spew/spew"
 	"github.com/gin-gonic/gin"
 	"time"
 )
 
-type roleController struct{}
+type roleController struct {
+	BaseController
+}
 
 var RoleController roleController
 
-func (roleController) Index(ctx *gin.Context) {
+func (rc *roleController) Index(ctx *gin.Context) {
 	paginator := db.NewPaginator(ctx, 1, 15)
 
-	var r admin_request.AdminRoleList
+	var r = adminRequest.NewAdminRoleList()
 	if data, ok := r.Validate(ctx); !ok {
-		app.JsonResponse(ctx, errno.Api.ErrBind, data)
+		rc.ResponseJsonErr(ctx, errno.Serve.BindErr, data)
 		return
 	}
 
-	params := gin.H{}
+	params := gin.H{
+		"type": r.Type,
+	}
 	if r.Name != "" {
 		params["like_name"] = "%" + r.Name + "%"
 	}
@@ -39,172 +41,182 @@ func (roleController) Index(ctx *gin.Context) {
 	if r.Status != nil {
 		params["status"] = *r.Status
 	}
-	columns := []string{"*",}
+	var columns []string
 	with := gin.H{"Menus": nil}
 
 	roles, err := service.AdminRoleService.Index(params, columns, with, &paginator)
 	if err != nil {
-		log.Log.Errorln(err)
-		app.JsonResponse(ctx, errno.Api.ErrAdminRoleList, nil)
+		rc.ResponseJsonErrLog(ctx, errno.Serve.ListErr, err, nil)
 		return
 	}
 
-	data := admin_response.AdminRoleList(roles...).Collection()
+	data := response.AdminRoleList(roles...).Collection()
 
-	app.JsonResponse(ctx, errno.OK, gin.H{
+	rc.ResponseJsonOK(ctx, gin.H{
 		"roles":     data,
 		"paginator": paginator,
 	})
 	return
 }
 
-func (roleController) Show(ctx *gin.Context) {
+func (rc *roleController) Show(ctx *gin.Context) {
 	id, err := request.ShouldBindUriUintID(ctx)
 	if err != nil {
-		app.JsonResponse(ctx, errno.Api.ErrBind, nil)
+		rc.ResponseJsonErr(ctx, errno.Serve.BindErr, nil)
 		return
 	}
 
 	columns := []string{"*"}
 	r, err := service.AdminRoleService.Show(id, columns)
 	if err != nil {
-		app.JsonResponse(ctx, errno.Api.ErrAdminRole, nil)
+		rc.ResponseJsonErrLog(ctx, errno.Serve.ShowErr, err, nil)
 		return
 	}
 
 	menuIDs := make([]uint, 0, 20)
-	getTreeNode(r.Menus, 0, &menuIDs)
+	for _, menu := range r.Menus {
+		menuIDs = append(menuIDs, menu.ID)
+	}
 
-	app.JsonResponse(ctx, errno.OK, gin.H{
-		"id":         r.ID,
-		"name":       r.Name,
-		"key":        r.Key,
-		"sort":       r.Sort,
-		"status":     r.Status,
-		"created_at": r.CreatedAt.Format(time.RFC3339),
-		"remark":     r.Remark,
-		"menu_ids":   menuIDs,
+	rc.ResponseJsonOK(ctx, gin.H{
+		"id":          r.ID,
+		"type":        r.Type,
+		"name":        r.Name,
+		"key":         r.Key,
+		"sort":        r.Sort,
+		"status":      r.Status,
+		"created_at":  r.CreatedAt.Format(time.RFC3339),
+		"remark":      r.Remark,
+		"menu_ids":    menuIDs,
+		"permissions": getPermissions(r.Permissions),
 	})
 	return
 }
 
-// 获取没有子节点的的菜单
-func getTreeNode(menus []admin_menu.AdminMenu, pID uint, node *[]uint) []uint {
-	var m = make([]uint, 0, 10)
-	for _, menu := range menus {
-		if menu.ParentId == pID {
-			m = append(m, menu.ID)
-			mm := getTreeNode(menus, menu.ID, node)
-			if len(mm) <= 0 {
-				*node = append(*node, menu.ID)
-			}
+func getPermissions(p []admin_permission.AdminPermission) []gin.H {
+	ps := make([]gin.H, 0, 20)
+	item := gin.H{}
+	for _, permission := range p {
+		item = gin.H{
+			"id":   permission.ID,
+			"name": permission.Name,
 		}
+		ps = append(ps, item)
 	}
-	return m
+	return ps
 }
 
-func (roleController) Del(ctx *gin.Context) {
+func (rc *roleController) Delete(ctx *gin.Context) {
 	id, err := request.ShouldBindUriUintID(ctx)
-	if err != nil {
-		app.JsonResponse(ctx, errno.Api.ErrBind, nil)
+	if err != nil || id == 1 {
+		rc.ResponseJsonErr(ctx, errno.Serve.BindErr, nil)
 		return
 	}
 
 	err = service.AdminRoleService.Delete(id)
 	if err != nil {
-		log.Log.Errorln(err)
-		app.JsonResponse(ctx, errno.Api.ErrDeleteAdminRole, err)
+		if err == errno.Serve.RoleRelationExistErr {
+			rc.ResponseJsonErr(ctx, errno.Serve.RoleRelationExistErr, nil)
+			return
+		}
+		rc.ResponseJsonErrLog(ctx, errno.Serve.DeleteErr, err, nil)
 		return
 	}
 
-	app.JsonResponse(ctx, errno.OK, nil)
+	rc.ResponseJsonOK(ctx, nil)
 	return
 }
 
-type roleIDs struct {
-	IDs []uint `form:"ids" json:"ids" binding:"required"`
-}
-
-func (roleController) Dels(ctx *gin.Context) {
-	var ids roleIDs
-	err := ctx.ShouldBind(&ids)
-	if err != nil {
-		app.JsonResponse(ctx, errno.Api.ErrBind, nil)
-		return
-	}
-
-	err = service.AdminRoleService.Deletes(ids.IDs)
-	if err != nil {
-		log.Log.Errorln(err)
-		app.JsonResponse(ctx, errno.Api.ErrDeleteAdminRole, err)
-		return
-	}
-
-	app.JsonResponse(ctx, errno.OK, nil)
-	return
-}
-
-func (roleController) Store(ctx *gin.Context) {
-	var r admin_request.CreateAdminRole
+func (rc *roleController) Store(ctx *gin.Context) {
+	var r = adminRequest.NewCreateAdminRole()
 	if data, ok := r.Validate(ctx); !ok {
-		app.JsonResponse(ctx, errno.Api.ErrBind, data)
+		rc.ResponseJsonErr(ctx, errno.Serve.BindErr, data)
 		return
 	}
-	spew.Dump(r.MenuIDs)
 
+	ok := service.AdminRoleService.KeyExist(0, r.Key)
+	if !ok {
+		rc.ResponseJsonErr(ctx, errno.Serve.RoleKeyExistErr, nil)
+		return
+	}
+
+	// 获取菜单组
 	var menus []admin_menu.AdminMenu
-	err := admin_menu.Dao().Query(gin.H{"in_id": r.MenuIDs}, []string{"*"}, nil).Find(&menus)
+	err := admin_menu.Dao().
+		Query(gin.H{"in_id": r.MenuIDs}, []string{"*"}, nil).
+		Find(&menus)
 	if err != nil {
-		app.JsonResponse(ctx, errno.Api.ErrAddAdminRole, nil)
+		rc.ResponseJsonErrLog(ctx, errno.Serve.StoreErr, err, nil)
+		return
+	}
+	// 获取权限组
+	var permissions []admin_permission.AdminPermission
+	err = admin_permission.Dao().
+		Query(gin.H{"in_id": r.PermissionIDs}, []string{"*"}, nil).
+		Find(&permissions)
+	if err != nil {
+		rc.ResponseJsonErrLog(ctx, errno.Serve.StoreErr, err, nil)
 		return
 	}
 
 	role := admin_role.AdminRole{
-		Name:   r.Name,
-		Key:    r.Key,
-		Remark: r.Remark,
-		Sort:   r.Sort,
-		Status: *r.Status,
-		Menus:  menus,
+		Name:        r.Name,
+		Type:        r.Type,
+		Key:         r.Key,
+		Remark:      r.Remark,
+		Sort:        r.Sort,
+		Status:      *r.Status,
+		Menus:       menus,
+		Permissions: permissions,
 	}
 
 	err = service.AdminRoleService.Create(&role)
 	if err != nil {
-		app.JsonResponse(ctx, errno.Api.ErrAddAdminMenu, err)
+		rc.ResponseJsonErrLog(ctx, errno.Serve.StoreErr, err, nil)
 		return
 	}
 
-	app.JsonResponse(ctx, errno.OK, nil)
+	rc.ResponseJsonOK(ctx, nil)
 	return
 }
 
-func (roleController) Update(ctx *gin.Context) {
+func (rc *roleController) Update(ctx *gin.Context) {
 	id, err := request.ShouldBindUriUintID(ctx)
 	if err != nil {
-		app.JsonResponse(ctx, errno.Api.ErrBind, nil)
+		rc.ResponseJsonErr(ctx, errno.Serve.BindErr, nil)
 		return
 	}
 
-	var r admin_request.UpdateAdminRole
+	var r = adminRequest.NewUpdateAdminRole()
 	if data, ok := r.Validate(ctx); !ok {
-		app.JsonResponse(ctx, errno.Api.ErrBind, data)
+		rc.ResponseJsonErr(ctx, errno.Serve.BindErr, data)
 		return
 	}
 
 	data := map[string]interface{}{
-		"sort":    r.Sort,
-		"status":  *r.Status,
-		"remark":  r.Remark,
-		"menuIDs": r.MenuIDs,
+		"name":           r.Name,
+		"type":           r.Type,
+		"sort":           r.Sort,
+		"status":         *r.Status,
+		"remark":         r.Remark,
+		"menuIDs":        r.MenuIDs,
+		"permissionsIDs": r.PermissionIDs,
 	}
+
 	err = service.AdminRoleService.Update(id, data)
 	if err != nil {
-		log.Log.Errorln(err)
-		app.JsonResponse(ctx, errno.Api.ErrUpdateAdminRole, nil)
+		rc.ResponseJsonErrLog(ctx, errno.Serve.UpdateErr, err, nil)
 		return
 	}
 
-	app.JsonResponse(ctx, errno.OK, nil)
+	// 清除角色关联菜单缓存
+	err = service.AdminRoleService.RemoveRoleMenusCache(id)
+	if err != nil {
+		rc.ResponseJsonErrLog(ctx, errno.Serve.UpdateErr, err, nil)
+		return
+	}
+
+	rc.ResponseJsonOK(ctx, nil)
 	return
 }
 
@@ -212,17 +224,17 @@ type updateAdminRoleStatus struct {
 	Status *uint8 `form:"status" json:"status" binding:"required,oneof=0 1"`
 }
 
-func (roleController) UpdateStatus(ctx *gin.Context) {
+func (rc *roleController) UpdateStatus(ctx *gin.Context) {
 	id, err := request.ShouldBindUriUintID(ctx)
 	if err != nil {
-		app.JsonResponse(ctx, errno.Api.ErrBind, nil)
+		rc.ResponseJsonErr(ctx, errno.Serve.BindErr, nil)
 		return
 	}
 
 	var r updateAdminRoleStatus
 	err = ctx.ShouldBind(&r)
 	if err != nil {
-		app.JsonResponse(ctx, errno.Api.ErrBind, nil)
+		rc.ResponseJsonErr(ctx, errno.Serve.BindErr, nil)
 		return
 	}
 	s := 0
@@ -232,32 +244,46 @@ func (roleController) UpdateStatus(ctx *gin.Context) {
 
 	err = service.AdminRoleService.UpdateStatus(id, s)
 	if err != nil {
-		app.JsonResponse(ctx, errno.Api.ErrUpdateAdminRole, nil)
+		rc.ResponseJsonErrLog(ctx, errno.Serve.UpdateErr, err, nil)
 		return
 	}
 
-	app.JsonResponse(ctx, errno.OK, nil)
+	rc.ResponseJsonOK(ctx, nil)
 	return
 }
 
-func (roleController) Roles(ctx *gin.Context) {
-
+func (rc *roleController) Roles(ctx *gin.Context) {
 	params := gin.H{
-		"sort": "sort desc",
+		"orderBy": "sort desc",
 	}
-	columns := []string{"id", "name",}
+	columns := []string{"id", "name"}
 
 	roles, err := service.AdminRoleService.List(params, columns, nil)
 	if err != nil {
-		log.Log.Errorln(err)
-		app.JsonResponse(ctx, errno.Api.ErrAdminRoleList, nil)
+		rc.ResponseJsonErrLog(ctx, errno.Serve.ListErr, err, nil)
 		return
 	}
 
-	data := admin_response.AdminSelectRoleList(roles...).Collection()
+	data := response.AdminSelectRoleList(roles...).Collection()
 
-	app.JsonResponse(ctx, errno.OK, gin.H{
+	rc.ResponseJsonOK(ctx, gin.H{
 		"roles": data,
 	})
 	return
+}
+
+func (rc *roleController) KeyExist(ctx *gin.Context) {
+	var r = adminRequest.NewRoleKeyExistRequest()
+	if data, ok := r.Validate(ctx); !ok {
+		rc.ResponseJsonErr(ctx, errno.Serve.BindErr, data)
+		return
+	}
+
+	ok := service.AdminRoleService.KeyExist(0, r.Key)
+	if !ok {
+		rc.ResponseJsonErr(ctx, errno.Serve.RoleKeyExistErr, nil)
+		return
+	}
+
+	rc.ResponseJsonOK(ctx, nil)
 }

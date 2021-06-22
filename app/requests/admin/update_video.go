@@ -2,19 +2,23 @@ package admin_request
 
 import (
 	"fagin/pkg/request"
-	"github.com/gin-gonic/gin"
 )
 
-type UpdateVideo struct {
-	Title       string `form:"title" json:"title" binding:"required"`
-	Path        string `form:"path" json:"path" binding:"required"`
-	Description string `form:"description" json:"description" binding:"required"`
-	Status      *uint8 `form:"status" json:"status" binding:"min=0,max=1"`
+type updateVideo struct {
+	Title              string `form:"title" json:"title" binding:"required"`
+	Path               string `form:"path" json:"path" binding:"required"`
+	Description        string `form:"description" json:"description" binding:"required"`
+	Status             *uint8 `form:"status" json:"status" binding:"min=0,max=1"`
+	request.Validation `binding:"-"`
 }
 
-var _ request.Request = &UpdateVideo{}
+func NewUpdateVideo() *updateVideo {
+	r := new(updateVideo)
+	r.Request = r
+	return r
+}
 
-func (UpdateVideo) Message() map[string]string {
+func (updateVideo) Message() map[string]string {
 	return map[string]string{
 		//"Title.required":       "标题不能为空",
 		//"Path.required":        "路径不能为空",
@@ -24,16 +28,11 @@ func (UpdateVideo) Message() map[string]string {
 	}
 }
 
-func (UpdateVideo) Attributes() map[string]string {
+func (updateVideo) Attributes() map[string]string {
 	return map[string]string{
 		"Title":       "标题",
 		"Path":        "路径",
 		"Description": "详情",
 		"Status":      "状态",
 	}
-}
-
-func (r *UpdateVideo) Validate(ctx *gin.Context) (map[string]string, bool) {
-	var v request.Validate
-	return v.Validate(r, ctx)
 }

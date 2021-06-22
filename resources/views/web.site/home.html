@@ -1,0 +1,67 @@
+[[ define "web.site.home" ]]
+[[template "web.layout.header" .]]
+<div id="app">
+    [[template "web.layout.nav" .]]
+    <main role="main">
+        <div class="top pt-2 pb-4">
+            <section class="container text-light">
+                <h1 class="pt-5">Business Name or Tagline</h1>
+                <p class="pb-5 pt-2">Lorem ipsum dolor sit ametconsecteturadipisicingelit. Non possimus
+                    alaboreprovidentmollitia.Idassumenda voluptatearum corporisfacere quibusdamquisquam istipsa cumque
+                    unde nisi,totamquas ipsam.
+                <p>
+            </section>
+        </div>
+        <section class="container">
+            <div class="row pt-5">
+                <div class="col-md-8 mb-5">
+                    [[ range $k, $v := .articles ]]
+                    <div class="row pb-5">
+                        <h4 class="col-lg-12">[[$v.Title]]</h4>
+                        <hr>
+                        <div class="col-lg-12">
+                            <span>[[$v.Author.Name]]</span>
+                            <span>[[$v.PostAt]]</span>
+                        </div>
+                        <div class="col-lg-12">
+                            [[ HtmlSafe $v.Summary ]]
+                        </div>
+                        <div class="col-lg-12">
+                            <a class="btn btn-primary btn-sm" href="/article/[[$v.ID]]">查看</a>
+                        </div>
+                        <div class="col-lg-12">
+                            <span><a href="/category/[[$v.Category.Name]]">[[$v.Category.Name]]</a></span>
+                            [[ range $i, $tag := $v.Tags ]]
+                            <span><a href="/tag/[[$tag.Name]]">[[$tag.Name]]</a></span>
+                            [[ end ]]
+                        </div>
+
+                    </div>
+                    [[ end ]]
+                </div>
+                <div class="col-md-4 mb-5">
+                    <div class="card h-50">
+                        <img class="card-img-top" src="" alt="">
+                        <div class="card-body">
+                            <h4 class="card-title">12121</h4>
+                            <p class="card-text">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Sapiente esse
+                                necessitatibus neque sequi doloribus.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+            </div>
+        </section>
+    </main>
+</div>
+<script>
+    Vue.prototype.$http = axios;
+    var app = new Vue({
+        el: "#app",
+        data: {},
+        methods: {}
+    })
+</script>
+[[template "web.layout.footer" .]]
+[[ end ]]

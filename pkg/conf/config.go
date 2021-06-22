@@ -1,34 +1,22 @@
 package conf
 
 import (
-	"fagin/pkg/path"
+	"fagin/pkg/paths"
 	"github.com/fsnotify/fsnotify"
-	"github.com/joho/godotenv"
 	"github.com/spf13/viper"
 )
 
 func init() {
-	envLoad()
 	configLoad()
 	watchConfig()
 }
 
-// 读取 env
-func envLoad() {
-	// 加载 .env 文件的配置
-	err := godotenv.Load(path.RootPath + "/.env")
-	if err != nil {
-		panic(err)
-	}
-
-}
-
 // 读取 config
 func configLoad() {
-	viper.AutomaticEnv()
+	//viper.AutomaticEnv()
 
-	viper.SetConfigName("config")
-	viper.AddConfigPath(path.RootPath)
+	viper.SetConfigName(".config")
+	viper.AddConfigPath(paths.RootPath)
 	viper.SetConfigType("yml")
 
 	err := viper.ReadInConfig()
@@ -45,8 +33,8 @@ func watchConfig() {
 	})
 }
 
-// 获取 env 配置，转换为 string 类型并返回
-func Env(name string, def string) string {
+// GetString 获取 string 类型并返回
+func GetString(name string, def string) string {
 	v := viper.GetString(name)
 	if v == "" {
 		return def
@@ -54,14 +42,13 @@ func Env(name string, def string) string {
 	return v
 }
 
-// 获取 env 配置，转换为 bool 类型并返回
-// def false
-func EnvBool(name string) bool {
+// GetBool 获取 bool 类型并返回 默认 false
+func GetBool(name string) bool {
 	return viper.GetBool(name)
 }
 
-// 获取 env 配置，转换为 int 类型并返回
-func EnvInt(name string, def int) int {
+// GetInt 获取 int 类型并返回
+func GetInt(name string, def int) int {
 	v := viper.GetInt(name)
 	if v == 0 {
 		return def
@@ -69,8 +56,8 @@ func EnvInt(name string, def int) int {
 	return v
 }
 
-// 获取 env 配置，转换为 float64 类型并返回
-func EnvFloat64(name string, def float64) float64 {
+// GetFloat64 获取 float64 类型并返回
+func GetFloat64(name string, def float64) float64 {
 	v := viper.GetFloat64(name)
 	if v == 0 {
 		return def

@@ -43,13 +43,13 @@ func CreateMigration(name string) error {
 	return nil
 }
 
-// 迁移数据库
+// Migration 迁移数据库
 func Migration() {
 	migrations := &migrate.FileMigrationSource{
 		Dir: config.App.MigrationsPath,
 	}
 
-	database, err := db.ORM.DB()
+	database, err := db.ORM().DB()
 	if err != nil {
 		panic(err)
 	}
@@ -62,13 +62,13 @@ func Migration() {
 	fmt.Printf("Applied %d migrations!\n", n)
 }
 
-// 重置最后一条迁移
+// Rollback 重置最后一条迁移
 func Rollback() {
 	source := &migrate.FileMigrationSource{
 		Dir: config.App.MigrationsPath,
 	}
 
-	database, err := db.ORM.DB()
+	database, err := db.ORM().DB()
 	if err != nil {
 		panic(err)
 	}
@@ -81,13 +81,13 @@ func Rollback() {
 	fmt.Printf("Applied 1 migration")
 }
 
-// 重置数据库
+// Reset 重置数据库
 func Reset() {
 	migrations := &migrate.FileMigrationSource{
 		Dir: config.App.MigrationsPath,
 	}
 
-	database, err := db.ORM.DB()
+	database, err := db.ORM().DB()
 	if err != nil {
 		panic(err)
 	}

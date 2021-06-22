@@ -1,12 +1,13 @@
 package cmd
 
 import (
+	"fagin/pkg/paths"
 	"fagin/pkg/request"
 	"fmt"
 	"github.com/spf13/cobra"
 )
 
-var requestCmd = &cobra.Command{
+var RequestCmd = &cobra.Command{
 	Use:   "request",
 	Short: "",
 	Long: ``,
@@ -16,11 +17,7 @@ var requestCmd = &cobra.Command{
 			fmt.Println("create request err")
 			return
 		}
-		path, name := Handle(args[0])
+		path, name := paths.GetPathAndUnderscore(args[0])
 		request.CreateRequestTemplate(path, name)
 	},
-}
-
-func init() {
-	rootCmd.AddCommand(requestCmd)
 }

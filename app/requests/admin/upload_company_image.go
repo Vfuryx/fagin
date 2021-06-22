@@ -7,28 +7,32 @@ import (
 	"mime/multipart"
 )
 
-type UploadCompanyImage struct {
-	File *multipart.FileHeader `form:"file" binding:"required"`
+type uploadCompanyImage struct {
+	File               *multipart.FileHeader `form:"file" binding:"required"`
+	request.Validation `binding:"-"`
 }
 
-var _ request.Request = &UploadCompanyImage{}
+func NewUploadCompanyImage() *uploadCompanyImage {
+	r := new(uploadCompanyImage)
+	r.Request = r
+	return r
+}
 
-func (UploadCompanyImage) Message() map[string]string {
+func (uploadCompanyImage) Message() map[string]string {
 	return map[string]string{
 		"File.required": "文件不能为空",
 	}
 }
 
-func (UploadCompanyImage) Attributes() map[string]string {
+func (uploadCompanyImage) Attributes() map[string]string {
 	return map[string]string{
 		"File": "文件",
 	}
 }
 
-func (r *UploadCompanyImage) Validate(ctx *gin.Context) (map[string]string, bool) {
+func (r *uploadCompanyImage) Validate(ctx *gin.Context) (map[string]string, bool) {
 	const maxFileSize int64 = 20 << 20 // 限定大小 20M
-	var v request.Validate
-	return v.FileValidate(r, ctx, maxFileSize, func() (map[string]string, bool) {
+	return request.FileValidate(r, ctx, maxFileSize, func() (map[string]string, bool) {
 		// 判断文件类型
 		fmt.Println(r.File.Header)
 		if r.File.Header.Get("Content-Type") != "image/jpeg" {

@@ -1,32 +1,32 @@
 package api
 
 import (
-	"fagin/app"
 	"fagin/app/errno"
 	"fagin/app/requests/api"
 	"fmt"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
-	"github.com/prometheus/common/log"
 	"net/http"
 )
 
-type indexController struct{}
+type indexController struct{
+	BaseController
+}
 
 var IndexController indexController
 
+// Index
 // @Summary Add new user to the database
 // @Description Add a new user
 // @securityDefinitions.basic BasicAuth
 // @Tags user
 // @Accept  json
 // @Produce  json
-func (indexController) Index(ctx *gin.Context) {
-	var v api_request.IndexRequest
-	data, ok := v.Validate(ctx)
-	if !ok {
-		app.JsonResponse(ctx, errno.Api.ErrBind, data)
-		ctx.Abort()
+func (ic *indexController) Index(ctx *gin.Context) {
+	var v = api_request.NewIndexRequest()
+
+	if data, ok := v.Validate(ctx); !ok {
+		ic.ResponseJsonErr(ctx, errno.Serve.BindErr, data)
 		return
 	}
 
@@ -38,7 +38,7 @@ func (indexController) Index(ctx *gin.Context) {
 		session.Set("user", 100)
 		// 将 sessionID 存入cookie
 		if err := session.Save(); err != nil {
-			log.Info(err)
+			fmt.Println(err)
 		}
 	}
 
@@ -51,25 +51,25 @@ func (indexController) Index(ctx *gin.Context) {
 	//	},
 	//}
 	//
-	//db.ORM.Create(&u)
+	//db.ORM().Create(&u)
 	//
-	//app.JsonResponse(ctx, nil, nil)
+	//app.ResponseJson(ctx, nil, nil)
 	//
 	//return
 
 	//cm := service.CasbinModel{RoleName:"admin",Path:"/api/v1/",Method:"get"}
 
-	//fmt.Println(service.Canbin.)
+	//fmt.Println(service.Casbin.)
 
-	//fmt.Println(service.Canbin.AddRoleForUser("1", "aome"))
-	//fmt.Println(service.Canbin.T())
-	//service.Canbin.AddCasbin(cm)
-	//service.Canbin.ReCasbin(cm)
+	//fmt.Println(service.Casbin.AddRoleForUser("1", "aome"))
+	//fmt.Println(service.Casbin.T())
+	//service.Casbin.AddCasbin(cm)
+	//service.Casbin.ReCasbin(cm)
 
 	//time.Sleep(1 * time.Second)
-	//fmt.Println(service.Canbin.E == nil)
+	//fmt.Println(service.Casbin.E == nil)
 
-	//app.JsonResponse(ctx, nil, gin.H{
+	//app.ResponseJson(ctx, nil, gin.H{
 	//	"id":       service.Login.ID,
 	//	"username": service.Login.Username,
 	//	"data":     1111,

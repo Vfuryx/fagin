@@ -28,12 +28,12 @@ func Dao() *dao {
 
 func (dao) All(columns []string) (*[]VideoInfo, error) {
 	var model []VideoInfo
-	err := db.ORM.Select(columns).Find(&model).Error
+	err := db.ORM().Select(columns).Find(&model).Error
 	return &model, err
 }
 
 func (d *dao) Query(params map[string]interface{}, columns []string, with map[string]interface{}) db.IDao {
-	model := db.ORM.Select(columns)
+	model := db.ORM().Select(columns)
 
 	var (
 		v  interface{}
@@ -62,5 +62,5 @@ func (d *dao) Query(params map[string]interface{}, columns []string, with map[st
 }
 
 func (d *dao) Deletes(ids []uint) error {
-	return db.ORM.Where("id in (?)", ids).Delete(d.M).Error
+	return db.ORM().Where("id in (?)", ids).Delete(d.M).Error
 }

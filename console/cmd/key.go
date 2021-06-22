@@ -3,20 +3,18 @@ package cmd
 import (
 	"bufio"
 	"bytes"
-	"fagin/app"
+	"fagin/app/utils"
 	"fagin/config"
-	"io/ioutil"
+	"github.com/spf13/cobra"
 	"log"
 	"os"
 	"strings"
-
-	"github.com/spf13/cobra"
 )
 
 const tag string = "APP_KEY="
 
 func createAppKey(filePath string) {
-	bs, err := ioutil.ReadFile(filePath)
+	bs, err := os.ReadFile(filePath)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -33,7 +31,7 @@ func createAppKey(filePath string) {
 
 	for s.Scan() {
 		if strings.HasPrefix(s.Text(), tag) {
-			str := app.RandString(32)
+			str := utils.RandString(32)
 			if _, err = w.WriteString(tag + str + "\n"); err != nil {
 				log.Fatal(err)
 			}
@@ -50,7 +48,7 @@ func createAppKey(filePath string) {
 	}
 }
 
-var keyCmd = &cobra.Command{
+var KeyCmd = &cobra.Command{
 	Use:   "key",
 	Short: "生成 key",
 	Long:  ``,
@@ -60,6 +58,3 @@ var keyCmd = &cobra.Command{
 	},
 }
 
-func init() {
-	rootCmd.AddCommand(keyCmd)
-}

@@ -2,10 +2,10 @@ package status
 
 import "fagin/pkg/constant"
 
-// 关闭
+// Disable 关闭
 const Disable = 0
 
-// 开启
+// Active 开启
 const Active = 1
 
 type status struct {

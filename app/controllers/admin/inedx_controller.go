@@ -9,7 +9,7 @@ type indexController struct{}
 
 var IndexController indexController
 
-// 后台首页
+// Index 后台首页
 func (indexController) Index(ctx *gin.Context) {
 	app.View(ctx, "admin.layout", nil)
 }

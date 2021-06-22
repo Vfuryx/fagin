@@ -2,8 +2,8 @@ package user
 
 import (
 	"fagin/app"
-	"fagin/app/errno"
 	"fagin/pkg/db"
+	"github.com/pkg/errors"
 )
 
 func New() *User {
@@ -30,12 +30,12 @@ func Dao() *dao {
 
 func (dao) All(columns []string) (*[]User, error) {
 	var model []User
-	err := db.ORM.Select(columns).Find(&model).Error
+	err := db.ORM().Select(columns).Find(&model).Error
 	return &model, err
 }
 
 func (d *dao) Query(params map[string]interface{}, columns []string, with map[string]interface{}) db.IDao {
-	model := db.ORM.Select(columns)
+	model := db.ORM().Select(columns)
 
 	var (
 		v  interface{}
@@ -61,11 +61,11 @@ func (d *dao) Query(params map[string]interface{}, columns []string, with map[st
 	return d
 }
 
-// 创建用户
+// Create 创建用户
 func (d *dao) Create(data interface{}) error {
 	u, ok := data.(*User)
 	if !ok {
-		return errno.Api.ErrAddUser
+		return errors.New("数据出错")
 	}
 	if u.Password != "" {
 		// 加密密码

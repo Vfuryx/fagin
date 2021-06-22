@@ -4,11 +4,17 @@ export GO111MODULE=on
 Name=$(name)
 
 default:
-	go run main.go
+	air -c ./.air.toml
 
 install:
 	go mod tidy
 	go mod vendor
+
+web:
+	cd ./resources/assets/admin2 && yarn run serve
+
+web\:build:
+	cd ./resources/assets/admin2 && yarn run build
 
 doc:
 #需要权限来修改文件
@@ -18,28 +24,37 @@ create-cmd:
 	cd ./console && cobra add ${name}
 
 request:
-	go run console/main.go request ${Name}
+	go run main.go -c request ${Name}
 
 response:
-	go run console/main.go response ${Name}
+	go run main.go -c response ${Name}
 
 model:
-	go run console/main.go model ${Name}
+	go run main.go -c model ${Name}
+
+cache:
+	go run main.go -c cache ${Name}
+
+controller:
+	go run main.go -c controller ${Name}
+
+service:
+	go run main.go -c service ${Name}
 
 create-admin:
-	go run console/main.go admin
+	go run main.go -c admin
 
 migrate:
-	go run console/main.go migrate
+	go run main.go -c migrate
 
 migrate\:create:
-	go run console/main.go migrate create ${Name}
+	go run main.go -c migrate create ${Name}
 
 migrate\:reset:
-	go run console/main.go migrate reset
+	go run main.go -c migrate reset
 
 migrate\:rollback:
-	go run console/main.go migrate rollback
+	go run main.go -c migrate rollback
 
 build:
 	go build main.go
@@ -113,4 +128,7 @@ help:
 	@echo "make request             - 生成 请求验证"
 	@echo "make response            - 生成 生成响应"
 	@echo "make model               - 生成 模型"
+	@echo "make cache               - 生成 缓存"
+	@echo "make controller          - 生成 控制器"
+	@echo "make service             - 生成 服务"
 	@echo "make pipeline            - 流水线"

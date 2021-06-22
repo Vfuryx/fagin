@@ -1,10 +1,12 @@
 .idea
 .DS_store
 .vscode
+.config.yml
 vendor
 fagin
 main
 fagin.log
 server.log
 .env
+tmp
 

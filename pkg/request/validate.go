@@ -16,7 +16,7 @@ import (
 // 定义一个全局翻译器T
 var trans ut.Translator
 
-// 初始化翻译器
+// InitTrans 初始化翻译器
 func InitTrans(locale string) (err error) {
 	v, ok := binding.Validator.Engine().(*validator.Validate)
 	if !ok {

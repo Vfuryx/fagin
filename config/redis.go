@@ -14,8 +14,8 @@ type redis struct {
 var Redis redis
 
 func init() {
-	Redis.Open = conf.EnvBool("REDIS_IS_OPEN")
-	Redis.Addr = conf.Env("REDIS_ADDRESS", "127.0.0.1")
-	Redis.Password = conf.Env("REDIS_PASSWORD", "")
-	Redis.Prefix = conf.Env("REDIS_PREFIX", "app:")
+	Redis.Open = conf.GetBool("redis.open")
+	Redis.Addr = conf.GetString("redis.address", "127.0.0.1")
+	Redis.Password = conf.GetString("redis.password", "")
+	Redis.Prefix = conf.GetString("redis.prefix", "app:")
 }
