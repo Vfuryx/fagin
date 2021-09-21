@@ -13,18 +13,18 @@ type updateUserRequest struct {
 
 func NewUpdateUserRequest() *updateUserRequest {
 	r := new(updateUserRequest)
-	r.Request = r
+	r.SetRequest(r)
 	return r
 }
 
-func (updateUserRequest) Message() map[string]string {
+func (*updateUserRequest) Message() map[string]string {
 	return map[string]string{
-		//"Status.min": "状态参数错误",
-		//"Status.max": "状态参数错误",
+		//"Status.min": ":attribute参数错误",
+		//"Status.max": ":attribute参数错误",
 	}
 }
 
-func (updateUserRequest) Attributes() map[string]string {
+func (*updateUserRequest) Attributes() map[string]string {
 	return map[string]string{
 		"Password": "密码",
 		"Status":   "状态",

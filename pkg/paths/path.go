@@ -1,21 +1,10 @@
 package paths
 
 import (
-	"fagin/app/utils"
+	"fagin/utils"
 	"os"
 	"strings"
 )
-
-var RootPath string
-
-// 获取项目根目录
-func init() {
-	var err error
-	RootPath, err = os.Getwd()
-	if err != nil {
-		panic(err)
-	}
-}
 
 func GetPathAndUnderscore(name string) (string, string) {
 	str := strings.Trim(name, " /\\")
@@ -25,4 +14,13 @@ func GetPathAndUnderscore(name string) (string, string) {
 	}
 	path := strings.Join(sl, "/")
 	return path, sl[len(sl)-1]
+}
+
+func FileExists(name string) bool {
+	if _, err := os.Stat(name); err != nil {
+		if os.IsNotExist(err) {
+			return false
+		}
+	}
+	return true
 }

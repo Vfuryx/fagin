@@ -6,8 +6,8 @@ import (
 
 func Handle(e *gin.Engine) {
 	webRoute(e.Group("/"))
-	adminRoute(e.Group("/admin"))
 	apiRoute(e.Group("/api"))
+	adminRoute(e.Group("/admin"))
 	swaggerRoute(e.Group("/swagger"))
 	//metricsRoute(e.Group("/metrics"))
 }

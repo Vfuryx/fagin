@@ -9,7 +9,7 @@ import (
 
 var CacheCmd = &cobra.Command{
 	Use:   "cache",
-	Short: "",
+	Short: "缓存",
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("cache called")

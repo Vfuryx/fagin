@@ -8,9 +8,9 @@ import (
 	response "fagin/app/responses/admin"
 	"fagin/app/service"
 	"fagin/app/service/admin_auth"
-	"fagin/app/utils"
 	"fagin/pkg/auths"
 	"fagin/pkg/cache"
+	"fagin/utils"
 	"github.com/gin-gonic/gin"
 	"strconv"
 )
@@ -25,13 +25,13 @@ var AuthController authController
 func (ac *authController) Login(ctx *gin.Context) {
 	var r = adminRequest.NewLoginRequest()
 	if data, ok := r.Validate(ctx); !ok {
-		ac.ResponseJsonErr(ctx, errno.Serve.BindErr, data)
+		ac.ResponseJsonErr(ctx, errno.ReqErr, data)
 		return
 	}
 
 	// 验证验证码
 	if !utils.VerifyCaptcha(r.ID, r.Code, true) {
-		ac.ResponseJsonErr(ctx, errno.Serve.ErrVerifyCaptcha, nil)
+		ac.ResponseJsonErr(ctx, errno.CtxVerifyCaptchaErr, nil)
 		return
 	}
 
@@ -43,7 +43,7 @@ func (ac *authController) Login(ctx *gin.Context) {
 
 	token, err := admin_auth.AdminAuth.Sign(userID, r.Name, "")
 	if err != nil {
-		ac.ResponseJsonErrLog(ctx, errno.Serve.ErrToken, err, nil)
+		ac.ResponseJsonErrLog(ctx, errno.CtxTokenInvalidErr, err, nil)
 		return
 	}
 
@@ -81,12 +81,12 @@ func (ac *authController) UpdateAdminUser(ctx *gin.Context) {
 	//id, err := request.ShouldBindUriUintID(ctx)
 	//if err != nil {
 	//	go app.Log().Errorln(err, string(debug.Stack()))
-	//	app.ResponseJson(ctx, errno.Serve.BindErr, nil)
+	//	app.ResponseJson(ctx, errno.ReqErr, nil)
 	//	return
 	//}
 	//r := new(admin_request.UpdateAdminUser)
 	//if data, ok := r.Validate(ctx); !ok {
-	//	app.ResponseJson(ctx, errno.Serve.BindErr, data)
+	//	app.ResponseJson(ctx, errno.ReqErr, data)
 	//	return
 	//}
 	//
@@ -113,7 +113,7 @@ func (ac *authController) UpdateAdminUser(ctx *gin.Context) {
 	//err = service.AdminUserService.UpdateAdminUser(id, data)
 	//if err != nil {
 	//	go app.Log().Errorln(err, string(debug.Stack()))
-	//	app.ResponseJson(ctx, errno.Serve.ErrUpdateUser, nil)
+	//	app.ResponseJson(ctx, errno.ErrUpdateUser, nil)
 	//	return
 	//}
 	//
@@ -125,7 +125,7 @@ func (ac *authController) GetCaptcha(ctx *gin.Context) {
 	id, b64s, err := utils.NewCaptcha()
 
 	if err != nil {
-		ac.ResponseJsonErr(ctx, errno.Serve.ErrGetCaptcha, nil)
+		ac.ResponseJsonErr(ctx, errno.CtxGetCaptchaErr, nil)
 	}
 
 	ac.ResponseJsonOK(ctx, gin.H{
@@ -139,7 +139,7 @@ func (ac *authController) Navs(ctx *gin.Context) {
 	// 获取userID
 	userID := auths.GetAdminID(ctx)
 
-	ca := caches.NewAdminNavsCache(func(key string) ([]byte, error) {
+	ca := caches.NewAdminNavsCache(func() ([]byte, error) {
 		navs, err := service.AdminUserService.GetNavs(uint(userID))
 		if err != nil {
 			return nil, err
@@ -149,14 +149,14 @@ func (ac *authController) Navs(ctx *gin.Context) {
 	})
 
 	data, err := ca.Get(strconv.FormatUint(userID, 10))
-	if err != nil && err != cache.NotOpenErr {
-		ac.ResponseJsonErrLog(ctx, errno.Serve.BindErr, err, nil)
+	if err != nil && err != cache.ErrNotOpen {
+		ac.ResponseJsonErrLog(ctx, errno.ReqErr, err, nil)
 		return
 	}
 	var res []map[string]interface{}
 	err = json.Unmarshal([]byte(data), &res)
 	if err != nil {
-		ac.ResponseJsonErrLog(ctx, errno.Serve.BindErr, err, nil)
+		ac.ResponseJsonErrLog(ctx, errno.ReqErr, err, nil)
 		return
 	}
 	ac.ResponseJsonOK(ctx, res)

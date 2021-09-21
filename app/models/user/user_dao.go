@@ -1,40 +1,40 @@
 package user
 
 import (
+	"errors"
 	"fagin/app"
 	"fagin/pkg/db"
-	"github.com/pkg/errors"
 )
 
 func New() *User {
 	return &User{}
 }
 
-type dao struct {
+type Dao struct {
 	db.Dao
 }
 
-var _ db.IDao = &dao{}
+var _ db.IDao = &Dao{}
 
-func (u *User) Dao() *dao {
-	dao := &dao{}
-	dao.Dao.M = u
+func (u *User) Dao() *Dao {
+	dao := &Dao{}
+	dao.Dao.SetModel(u)
 	return dao
 }
 
-func Dao() *dao {
-	dao := &dao{}
-	dao.Dao.M = New()
+func NewDao() *Dao {
+	dao := &Dao{}
+	dao.Dao.SetModel(New())
 	return dao
 }
 
-func (dao) All(columns []string) (*[]User, error) {
+func (d *Dao) All(columns []string) (*[]User, error) {
 	var model []User
 	err := db.ORM().Select(columns).Find(&model).Error
 	return &model, err
 }
 
-func (d *dao) Query(params map[string]interface{}, columns []string, with map[string]interface{}) db.IDao {
+func (d *Dao) Query(params map[string]interface{}, columns []string, with map[string]interface{}) db.IDao {
 	model := db.ORM().Select(columns)
 
 	var (
@@ -62,7 +62,7 @@ func (d *dao) Query(params map[string]interface{}, columns []string, with map[st
 }
 
 // Create 创建用户
-func (d *dao) Create(data interface{}) error {
+func (d *Dao) Create(data interface{}) error {
 	u, ok := data.(*User)
 	if !ok {
 		return errors.New("数据出错")
@@ -79,7 +79,7 @@ func (d *dao) Create(data interface{}) error {
 }
 
 // 更新用户
-func (d *dao) Update(id uint, data map[string]interface{}) error {
+func (d *Dao) Update(id uint, data map[string]interface{}) error {
 	if v, ok := data["password"]; ok && v != "" {
 		// 加密密码
 		p, err := app.Encrypt(v.(string))
@@ -91,9 +91,9 @@ func (d *dao) Update(id uint, data map[string]interface{}) error {
 	return d.Dao.Update(id, data)
 }
 
-func (d *dao) GetUserByEmail(email string) error {
+func (d *Dao) GetUserByEmail(email string) error {
 	params := map[string]interface{}{
 		"email": email,
 	}
-	return d.Query(params, []string{"*"}, nil).First(d.M)
+	return d.Query(params, []string{"*"}, nil).First(d.GetModel())
 }

@@ -22,7 +22,7 @@ func getAppName() string {
 	scanner.Scan()
 	s := strings.Split(scanner.Text(), " ")
 
-	if err := scanner.Err(); err != nil {
+	if err = scanner.Err(); err != nil {
 		panic(err)
 	}
 

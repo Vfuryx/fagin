@@ -14,16 +14,15 @@ type updateCompanyIntroduction struct {
 
 func NewUpdateCompanyIntroduction() *updateCompanyIntroduction {
 	r := new(updateCompanyIntroduction)
-	r.Request = r
+	r.SetRequest(r)
 	return r
 }
 
-func (updateCompanyIntroduction) Message() map[string]string {
-	return map[string]string{
-	}
+func (*updateCompanyIntroduction) Message() map[string]string {
+	return map[string]string{}
 }
 
-func (updateCompanyIntroduction) Attributes() map[string]string {
+func (*updateCompanyIntroduction) Attributes() map[string]string {
 	return map[string]string{
 		"Name":    "公司名称",
 		"Image":   "图片",

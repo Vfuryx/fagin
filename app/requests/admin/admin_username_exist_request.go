@@ -12,16 +12,15 @@ type adminUsernameExistRequest struct {
 
 func NewAdminUsernameExistRequest() *adminUsernameExistRequest {
 	r := new(adminUsernameExistRequest)
-	r.Request = r
+	r.SetRequest(r)
 	return r
 }
 
-func (adminUsernameExistRequest) Message() map[string]string {
-	return map[string]string{
-	}
+func (*adminUsernameExistRequest) Message() map[string]string {
+	return map[string]string{}
 }
 
-func (adminUsernameExistRequest) Attributes() map[string]string {
+func (*adminUsernameExistRequest) Attributes() map[string]string {
 	return map[string]string{
 		"ID":       "ID",
 		"Username": "用户名",

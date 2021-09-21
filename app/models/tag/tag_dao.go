@@ -8,33 +8,31 @@ func New() *Tag {
 	return &Tag{}
 }
 
-type dao struct {
+type Dao struct {
 	db.Dao
 }
 
-var _ db.IDao = &dao{}
+var _ db.IDao = &Dao{}
 
-func (m *Tag) Dao() *dao {
-	dao := &dao{}
-	dao.Dao.M = m
-	dao.DB = db.ORM()
+func (m *Tag) Dao() *Dao {
+	dao := &Dao{}
+	dao.Dao.SetModel(m)
 	return dao
 }
 
-func Dao() *dao {
-	dao := &dao{}
-	dao.Dao.M = New()
-	dao.Dao.DB = db.ORM()
+func NewDao() *Dao {
+	dao := &Dao{}
+	dao.Dao.SetModel(New())
 	return dao
 }
 
-func (dao) All(columns []string) (*[]Tag, error) {
+func (d *Dao) All(columns []string) (*[]Tag, error) {
 	var model []Tag
 	err := db.ORM().Select(columns).Find(&model).Error
 	return &model, err
 }
 
-func (d *dao) Query(params map[string]interface{}, columns []string, with map[string]interface{}) db.IDao {
+func (d *Dao) Query(params map[string]interface{}, columns []string, with map[string]interface{}) db.IDao {
 	model := db.ORM().Select(columns)
 
 	var (
@@ -56,6 +54,6 @@ func (d *dao) Query(params map[string]interface{}, columns []string, with map[st
 	return d
 }
 
-func (d *dao) Deletes(ids []uint) error {
-	return db.ORM().Where("id in (?)", ids).Delete(d.M).Error
+func (d *Dao) Deletes(ids []uint) error {
+	return db.ORM().Where("id in (?)", ids).Delete(d.GetModel()).Error
 }

@@ -18,16 +18,15 @@ type updateAdminRole struct {
 
 func NewUpdateAdminRole() *updateAdminRole {
 	r := new(updateAdminRole)
-	r.Request = r
+	r.SetRequest(r)
 	return r
 }
 
-func (updateAdminRole) Message() map[string]string {
-	return map[string]string{
-	}
+func (*updateAdminRole) Message() map[string]string {
+	return map[string]string{}
 }
 
-func (updateAdminRole) Attributes() map[string]string {
+func (*updateAdminRole) Attributes() map[string]string {
 	return map[string]string{
 		"Type":          "类型",
 		"Name":          "角色名称",

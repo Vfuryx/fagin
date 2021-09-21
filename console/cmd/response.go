@@ -9,7 +9,7 @@ import (
 
 var ResponseCmd = &cobra.Command{
 	Use:   "response",
-	Short: "",
+	Short: "响应",
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("response called")
@@ -21,4 +21,3 @@ var ResponseCmd = &cobra.Command{
 		response.CreateResponseTemplate(path, name)
 	},
 }
-

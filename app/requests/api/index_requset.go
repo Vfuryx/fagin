@@ -5,25 +5,26 @@ import (
 )
 
 type indexRequest struct {
-	Name               string `form:"name" json:"name"  binding:"required"`
-	Age                int    `form:"age" json:"age"  binding:""`
+	Name               string `form:"name" json:"name"  binding:"required,max=2"`
+	Age                int    `form:"age" json:"age"  binding:"required"`
 	request.Validation `binding:"-"`
 }
 
 func NewIndexRequest() *indexRequest {
 	r := new(indexRequest)
-	r.Request = r
+	r.SetRequest(r)
 	return r
 }
 
-func (indexRequest) Message() map[string]string {
+func (*indexRequest) Message() map[string]string {
 	return map[string]string{
-		//"Name.required": "名称不能为空",
-		//"Age.required":  "年龄不能为空",
+		"Name.required": ":attribute不能为空",
+		"Age.required":  ":attribute不能为空",
+		"Name.max":      ":attribute不能大于:max个字符",
 	}
 }
 
-func (indexRequest) Attributes() map[string]string {
+func (*indexRequest) Attributes() map[string]string {
 	return map[string]string{
 		"Name": "名称",
 		"Age":  "年龄",

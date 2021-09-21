@@ -1,1 +1,120 @@
 package cache
+
+import (
+	"bytes"
+	"encoding/gob"
+	"fagin/config"
+	"github.com/allegro/bigcache/v3"
+	"time"
+)
+
+type bigCache struct {
+	Cache *bigcache.BigCache
+}
+
+var _ iCache = &bigCache{}
+
+type BigConfig struct {
+	Eviction time.Duration // 失效时间
+}
+
+type Big struct {
+	Data       []byte
+	Expiration time.Time
+}
+
+const DriverBigCache = "big"
+
+func init() {
+	engineMap[DriverBigCache] = newBigCache
+}
+
+func NewBigCache(config BigConfig) (*bigCache, error) {
+	c, err := bigcache.NewBigCache(bigcache.DefaultConfig(config.Eviction))
+	if err != nil {
+		return nil, err
+	}
+	return &bigCache{Cache: c}, nil
+}
+
+func newBigCache() (iCache, error) {
+	var ok bool
+	var eviction string
+	var c map[string]string
+	var e time.Duration
+	var err error
+
+	if c, ok = config.Cache.Stores[DriverBigCache]; !ok {
+		return nil, ErrConfig
+	}
+	if eviction, ok = c["eviction"]; !ok {
+		return nil, ErrConfig
+	}
+	if e, err = time.ParseDuration(eviction + "s"); err != nil {
+		return nil, ErrConfig
+	}
+
+	return NewBigCache(BigConfig{
+		Eviction: e,
+	})
+}
+
+func (b *bigCache) Exists(key string) (bool, error) {
+	bs, err := b.Cache.Get(key)
+	if err != nil {
+		if err == bigcache.ErrEntryNotFound {
+			return false, nil
+		}
+		return false, err
+	}
+	var body Big
+	dec := gob.NewDecoder(bytes.NewBuffer(bs))
+	if err = dec.Decode(&body); err != nil {
+		return false, err
+	}
+
+	if body.Expiration.After(time.Now()) {
+		return true, nil
+	}
+	return false, nil
+}
+
+func (b *bigCache) Get(key string) ([]byte, error) {
+	bs, err := b.Cache.Get(key)
+	if err != nil {
+		return nil, err
+	}
+	var body Big
+	dec := gob.NewDecoder(bytes.NewBuffer(bs))
+	err = dec.Decode(&body)
+	if err != nil {
+		return nil, err
+	}
+
+	if body.Expiration.Before(time.Now()) {
+		return nil, bigcache.ErrEntryNotFound
+	}
+	return body.Data, nil
+}
+
+func (b *bigCache) Set(key string, value []byte, expiration time.Duration) (string, error) {
+	big := Big{
+		Data:       value,
+		Expiration: time.Now().Add(expiration),
+	}
+	buf := new(bytes.Buffer)
+	enc := gob.NewEncoder(buf)
+	err := enc.Encode(big)
+	if err != nil {
+		return "", err
+	}
+	return "ok", b.Cache.Set(key, buf.Bytes())
+}
+
+func (b *bigCache) Remove(key string) (int64, error) {
+	return 1, b.Cache.Delete(key)
+}
+
+func (b *bigCache) Close() error {
+	return nil
+}

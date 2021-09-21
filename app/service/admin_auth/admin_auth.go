@@ -1,12 +1,12 @@
 package admin_auth
 
 import (
-	"fagin/app/constants/status"
+	"fagin/app/enums"
 	"fagin/app/errno"
 	"fagin/app/models/admin_user"
 	"fagin/config"
-	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
+	"github.com/golang-jwt/jwt/v4"
 	"golang.org/x/crypto/bcrypt"
 	"strings"
 	"time"
@@ -17,25 +17,25 @@ type adminAuthService struct{}
 var AdminAuth adminAuthService
 
 // Login 登录
-func (adminAuthService) Login(name string, password string) (uint64, error) {
+func (*adminAuthService) Login(name string, password string) (uint64, error) {
 	params := map[string]interface{}{
 		"username": name,
-		"status":   status.Active,
+		"status":   enums.StatusActive,
 	}
 	columns := []string{"id", "username", "password", "status"}
 	adminUser := admin_user.New()
 	if err := adminUser.Dao().Query(params, columns, nil).
 		First(&adminUser); err != nil {
-		return 0, errno.Serve.ErrUserNotFound
+		return 0, errno.CtxUserNotFoundErr
 	}
 
 	if adminUser.Username != name {
-		return 0, errno.Serve.ErrPasswordIncorrect
+		return 0, errno.SerPasswordIncorrectErr
 	}
 
 	//匹配密码
 	if err := Compare(adminUser.Password, password); err != nil {
-		return 0, errno.Serve.ErrPasswordIncorrect
+		return 0, errno.SerPasswordIncorrectErr
 	}
 
 	adminUser.Dao().Login(adminUser.ID)
@@ -44,8 +44,8 @@ func (adminAuthService) Login(name string, password string) (uint64, error) {
 }
 
 // Logout 登出
-func (adminAuthService) Logout(id uint) error {
-	return admin_user.Dao().SetCheckInAt(id, time.Now().Unix())
+func (*adminAuthService) Logout(id uint) error {
+	return admin_user.NewDao().SetCheckInAt(id, time.Now().Unix())
 }
 
 // Encrypt encrypts the plain text with bcrypt.
@@ -69,14 +69,14 @@ type CustomClaims struct {
 // Valid 自定义验证方法
 func (cc CustomClaims) Valid() error {
 	if cc.Guard != admin_user.AdminUserGuard {
-		return errno.Serve.ErrTokenInvalid
+		return errno.SerTokenExpiredErr
 	}
 	// StandardClaims 基础验证方法
 	return cc.StandardClaims.Valid()
 }
 
 // Sign signs the context with the specified secret.
-func (adminAuthService) Sign(UserID uint64, AdminUser, secret string) (tokenString string, err error) {
+func (*adminAuthService) Sign(UserID uint64, AdminUser, secret string) (tokenString string, err error) {
 	// Load the jwt secret from the Gin config if the secret isn't specified.
 	if secret == "" {
 		secret = config.App.Key
@@ -90,8 +90,8 @@ func (adminAuthService) Sign(UserID uint64, AdminUser, secret string) (tokenStri
 		Guard:  admin_user.AdminUserGuard, // Guard
 		StandardClaims: &jwt.StandardClaims{
 			ExpiresAt: now.Add(time.Duration(maxAge) * time.Second).Unix(), // 过期时间，必须设置
-			Issuer:    AdminUser,                                                  // 非必须，也可以填充用户名，
-			IssuedAt:  now.Unix(),                                                  // 必须，签发时间，
+			Issuer:    AdminUser,                                           // 非必须，也可以填充用户名，
+			IssuedAt:  now.Unix(),                                          // 必须，签发时间，
 		},
 	}
 
@@ -103,23 +103,23 @@ func (adminAuthService) Sign(UserID uint64, AdminUser, secret string) (tokenStri
 }
 
 type context struct {
-	UserID    uint64 `json:"user_id"`
-	Name      string `json:"name"`
+	UserID uint64 `json:"user_id"`
+	Name   string `json:"name"`
 }
 
 var Login = &context{}
 
-func (auth adminAuthService) ParseRequest(ctx *gin.Context) (*context, error) {
+func (auth *adminAuthService) ParseRequest(ctx *gin.Context) (*context, error) {
 	head := ctx.Request.Header.Get("Authorization")
 	prefix := "Bearer "
 
 	// 空
-	if len(head) == 0 {
-		return Login, errno.Serve.ErrTokenInvalid
+	if head == "" {
+		return Login, errno.SerTokenNotFoundErr
 	}
 	// 格式不对
 	if !strings.HasPrefix(head, prefix) {
-		return Login, errno.Serve.ErrTokenInvalid
+		return Login, errno.SerTokenErr
 	}
 	// 截取token
 	token := head[strings.Index(head, prefix)+len(prefix):]
@@ -127,11 +127,11 @@ func (auth adminAuthService) ParseRequest(ctx *gin.Context) (*context, error) {
 	return auth.Parse(token, config.App.Key)
 }
 
-func (auth adminAuthService) Parse(token string, secret string) (ctx *context, err error) {
+func (auth *adminAuthService) Parse(token string, secret string) (ctx *context, err error) {
 	ctx = Login
 	t, err := jwt.ParseWithClaims(token, &CustomClaims{}, auth.secretFunc(secret))
 	if err != nil {
-		return ctx, errno.Serve.ErrTokenInvalid
+		return ctx, errno.SerTokenInvalidErr
 	}
 	if claims, ok := t.Claims.(*CustomClaims); ok && t.Valid {
 		// 验证签发时间
@@ -141,19 +141,19 @@ func (auth adminAuthService) Parse(token string, secret string) (ctx *context, e
 			return ctx, err
 		}
 		// token 签发时间 小于 用户最后签发的时间 代表 token 过期
-		if claims.IssuedAt < int64(adminUser.CheckInAt){
-			return ctx, errno.Serve.ErrTokenInvalid
+		if claims.IssuedAt < int64(adminUser.CheckInAt) {
+			return ctx, errno.SerTokenExpiredErr
 		}
 		ctx.Name = claims.Issuer
 		ctx.UserID = claims.UserID
 		return ctx, nil
 	} else {
-		return ctx, errno.Serve.ErrTokenInvalid
+		return ctx, errno.SerTokenErr
 	}
 }
 
 // secretFunc validates the secret format.
-func (adminAuthService) secretFunc(secret string) jwt.Keyfunc {
+func (*adminAuthService) secretFunc(secret string) jwt.Keyfunc {
 	return func(token *jwt.Token) (interface{}, error) {
 		// Make sure the `alg` is what we except.
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {

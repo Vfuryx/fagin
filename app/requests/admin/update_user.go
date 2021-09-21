@@ -18,16 +18,15 @@ type updateUser struct {
 
 func NewUpdateUser() *updateUser {
 	r := new(updateUser)
-	r.Request = r
+	r.SetRequest(r)
 	return r
 }
 
-func (updateUser) Message() map[string]string {
-	return map[string]string{
-	}
+func (*updateUser) Message() map[string]string {
+	return map[string]string{}
 }
 
-func (updateUser) Attributes() map[string]string {
+func (*updateUser) Attributes() map[string]string {
 	return map[string]string{
 		"NickName": "昵称",
 		"Phone":    "电话",

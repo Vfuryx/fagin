@@ -153,7 +153,7 @@ func (c *casbinService) DeleteRolesForUsers(userIDs []string) (bool, error) {
 	return true, nil
 }
 
-// 添加用户权限
+// AddPolicyForUser 添加用户权限
 func (c *casbinService) AddPolicyForUser(userId string, obj string, act string) (bool, error) {
 	cb, err := c.casbin()
 	if err != nil {
@@ -162,7 +162,7 @@ func (c *casbinService) AddPolicyForUser(userId string, obj string, act string) 
 	return cb.AddPermissionForUser(userId, obj, act)
 }
 
-// 添加角色权限
+// AddPolicyForRole 添加角色权限
 func (c *casbinService) AddPolicyForRole(role, obj, act string) (bool, error) {
 	cb, err := c.casbin()
 	if err != nil {
@@ -180,7 +180,7 @@ func (c *casbinService) AddPolicies(rules [][]string) (bool, error) {
 	return cb.AddPolicies(rules)
 }
 
-// 添加角色权限
+// AddCasbin 添加角色权限
 func (c *casbinService) AddCasbin(cm CasbinModel) (bool, error) {
 	cb, err := c.casbin()
 	if err != nil {
@@ -189,7 +189,7 @@ func (c *casbinService) AddCasbin(cm CasbinModel) (bool, error) {
 	return cb.AddPolicy(cm.RoleName, cm.Path, cm.Method)
 }
 
-// 删除权限
+// RemovePolicy 删除权限
 func (c *casbinService) RemovePolicy(role, obj, act string) (bool, error) {
 	cb, err := c.casbin()
 	if err != nil {

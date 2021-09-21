@@ -5,35 +5,41 @@ import (
 	"fagin/pkg/db"
 )
 
+// New 实例
 func New() *Article {
 	return &Article{}
 }
 
-type dao struct {
+// Dao New 实例
+type Dao struct {
 	db.Dao
 }
 
-var _ db.IDao = &dao{}
+var _ db.IDao = &Dao{}
 
-func (m *Article) Dao() *dao {
-	dao := &dao{}
-	dao.Dao.M = m
+// Dao New 实例
+func (m *Article) Dao() *Dao {
+	dao := &Dao{}
+	dao.Dao.SetModel(m)
 	return dao
 }
 
-func Dao() *dao {
-	dao := &dao{}
-	dao.Dao.M = New()
+// NewDao New 实例
+func NewDao() *Dao {
+	dao := &Dao{}
+	dao.Dao.SetModel(New())
 	return dao
 }
 
-func (dao) All(columns []string) (*[]Article, error) {
+// All New 实例
+func (d *Dao) All(columns []string) (*[]Article, error) {
 	var model []Article
 	err := db.ORM().Select(columns).Find(&model).Error
 	return &model, err
 }
 
-func (d *dao) Query(params map[string]interface{}, columns []string, with map[string]interface{}) db.IDao {
+// Query New 实例
+func (d *Dao) Query(params map[string]interface{}, columns []string, with map[string]interface{}) db.IDao {
 	model := db.ORM().Select(columns)
 
 	var (
@@ -64,12 +70,14 @@ func (d *dao) Query(params map[string]interface{}, columns []string, with map[st
 	return d
 }
 
-func (d *dao) Deletes(ids []uint) error {
+// Deletes New 实例
+func (d *Dao) Deletes(ids []uint) error {
 	var a Article
 	return db.ORM().Where("id in (?)", ids).Delete(&a).Error
 }
 
-func (d *dao) Update(id uint, data map[string]interface{}) error {
+// Update New 实例
+func (d *Dao) Update(id uint, data map[string]interface{}) error {
 	err := d.FindById(id, []string{"id"})
 	if err != nil {
 		return err
@@ -82,5 +90,5 @@ func (d *dao) Update(id uint, data map[string]interface{}) error {
 		_ = db.ORM().Model(&Article{ID: id}).Association("Tags").Append(v.([]tag.Tag))
 		delete(data, "Tags")
 	}
-	return db.ORM().Model(d.M).Where("id = ?", id).Updates(data).Error
+	return db.ORM().Model(d.GetModel()).Where("id = ?", id).Updates(data).Error
 }

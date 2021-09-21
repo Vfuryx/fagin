@@ -16,7 +16,7 @@ var _ response.IResponse = &groupPermissionList{}
 
 func GroupPermissionList(models ...group.AdminPermissionGroup) *groupPermissionList {
 	res := groupPermissionList{ms: models}
-	res.Collect.IResponse = &res
+	res.SetCollect(&res)
 	return &res
 }
 
@@ -26,13 +26,13 @@ func (res *groupPermissionList) Serialize() []map[string]interface{} {
 	sm := make([]map[string]interface{}, 0, 20)
 	for _, model := range res.ms {
 		params["gid"] = model.ID
-		_ = p.Dao().Query(params, []string{"id", "name", "method"}, nil).Find(&permissions)
+		_ = p.NewDao().Query(params, []string{"id", "name", "method"}, nil).Find(&permissions)
 		ps := make([]map[string]interface{}, 0, 20)
 		item := gin.H{}
 		for _, permission := range permissions {
 			item = gin.H{
-				"id": permission.ID,
-				"name": permission.Name,
+				"id":     permission.ID,
+				"name":   permission.Name,
 				"method": permission.Method,
 			}
 			ps = append(ps, item)

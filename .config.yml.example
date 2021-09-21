@@ -32,12 +32,16 @@ jwt:
 cdn:
   host: ""
 
-# redis 配置
-redis:
-  open: false
-  address: "127.0.0.1:6379"
-  password: ""
-  prefix: "fagin:"
+# cache 配置
+cache:
+  open: true
+  prefix: "app:"
+  driver: "big"
+  big:
+    eviction: "3600"
+  redis:
+    address: "127.0.0.1:6379"
+    password: ""
 
 casbin:
   model: !!omap

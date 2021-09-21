@@ -8,6 +8,7 @@ import (
 	"fagin/app/service"
 	"fagin/pkg/db"
 	"fagin/pkg/request"
+
 	"github.com/gin-gonic/gin"
 )
 
@@ -19,16 +20,16 @@ var TagController tagController
 
 // Index 列表
 func (tc *tagController) Index(ctx *gin.Context) {
-	paginator := db.NewPaginator(ctx, 1, 15)
+	paginator := db.NewPaginatorWithCtx(ctx, 1, 15)
 
 	params := gin.H{
 		"orderBy": "id asc",
 	}
 	columns := []string{"id", "name", "status"}
 	with := gin.H{}
-	result, err := service.Tag.Index(params, columns, with, &paginator)
+	result, err := service.Tag.Index(params, columns, with, paginator)
 	if err != nil {
-		tc.ResponseJsonErrLog(ctx, errno.Serve.ListErr, err, nil)
+		tc.ResponseJsonErrLog(ctx, errno.CtxListErr, err, nil)
 		return
 	}
 
@@ -45,14 +46,14 @@ func (tc *tagController) Index(ctx *gin.Context) {
 func (tc *tagController) Show(ctx *gin.Context) {
 	id, err := request.ShouldBindUriUintID(ctx)
 	if err != nil {
-		tc.ResponseJsonErr(ctx, errno.Serve.BindErr, nil)
+		tc.ResponseJsonErr(ctx, errno.ReqErr, nil)
 		return
 	}
 
 	columns := []string{"id", "name", "status"}
 	data, err := service.Tag.Show(id, columns)
 	if err != nil {
-		tc.ResponseJsonErrLog(ctx, errno.Serve.ShowErr, err, nil)
+		tc.ResponseJsonErrLog(ctx, errno.CtxShowErr, err, nil)
 		return
 	}
 
@@ -68,7 +69,7 @@ func (tc *tagController) Show(ctx *gin.Context) {
 func (tc *tagController) Store(ctx *gin.Context) {
 	var r = admin_request.NewCreateTag()
 	if data, ok := r.Validate(ctx); !ok {
-		tc.ResponseJsonErr(ctx, errno.Serve.BindErr, data)
+		tc.ResponseJsonErr(ctx, errno.ReqErr, data)
 		return
 	}
 
@@ -79,7 +80,7 @@ func (tc *tagController) Store(ctx *gin.Context) {
 
 	err := service.Tag.Create(&c)
 	if err != nil {
-		tc.ResponseJsonErrLog(ctx, errno.Serve.StoreErr, err, nil)
+		tc.ResponseJsonErrLog(ctx, errno.CtxStoreErr, err, nil)
 		return
 	}
 
@@ -91,13 +92,13 @@ func (tc *tagController) Store(ctx *gin.Context) {
 func (tc *tagController) Update(ctx *gin.Context) {
 	id, err := request.ShouldBindUriUintID(ctx)
 	if err != nil {
-		tc.ResponseJsonErr(ctx, errno.Serve.BindErr, nil)
+		tc.ResponseJsonErr(ctx, errno.ReqErr, nil)
 		return
 	}
 
 	var r = admin_request.NewCreateTag()
 	if data, ok := r.Validate(ctx); !ok {
-		tc.ResponseJsonErr(ctx, errno.Serve.BindErr, data)
+		tc.ResponseJsonErr(ctx, errno.ReqErr, data)
 		return
 	}
 	data := map[string]interface{}{
@@ -106,7 +107,7 @@ func (tc *tagController) Update(ctx *gin.Context) {
 	}
 	err = service.Tag.Update(id, data)
 	if err != nil {
-		tc.ResponseJsonErrLog(ctx, errno.Serve.UpdateErr, err, nil)
+		tc.ResponseJsonErrLog(ctx, errno.CtxUpdateErr, err, nil)
 		return
 	}
 
@@ -118,13 +119,13 @@ func (tc *tagController) Update(ctx *gin.Context) {
 func (tc *tagController) Del(ctx *gin.Context) {
 	id, err := request.ShouldBindUriUintID(ctx)
 	if err != nil {
-		tc.ResponseJsonErr(ctx, errno.Serve.BindErr, nil)
+		tc.ResponseJsonErr(ctx, errno.ReqErr, nil)
 		return
 	}
 
 	err = service.Tag.Delete(id)
 	if err != nil {
-		tc.ResponseJsonErrLog(ctx, errno.Serve.DeleteErr, err, nil)
+		tc.ResponseJsonErrLog(ctx, errno.CtxDeleteErr, err, nil)
 		return
 	}
 
@@ -140,13 +141,13 @@ func (tc *tagController) Deletes(ctx *gin.Context) {
 	var ids R
 	err := ctx.ShouldBind(&ids)
 	if err != nil {
-		tc.ResponseJsonErr(ctx, errno.Serve.BindErr, nil)
+		tc.ResponseJsonErr(ctx, errno.ReqErr, nil)
 		return
 	}
 
 	err = service.Tag.Deletes(ids.IDs)
 	if err != nil {
-		tc.ResponseJsonErrLog(ctx, errno.Serve.DeleteErr, err, nil)
+		tc.ResponseJsonErrLog(ctx, errno.CtxDeleteErr, err, nil)
 		return
 	}
 
@@ -157,14 +158,14 @@ func (tc *tagController) Deletes(ctx *gin.Context) {
 // All 所有
 func (tc *tagController) All(ctx *gin.Context) {
 	params := gin.H{
-		"status": 1,
-		"orderBy":   "id asc",
+		"status":  1,
+		"orderBy": "id asc",
 	}
 	columns := []string{"id", "name", "status"}
 	with := gin.H{}
 	result, err := service.Tag.All(params, columns, with)
 	if err != nil {
-		tc.ResponseJsonErrLog(ctx, errno.Serve.ListErr, err, nil)
+		tc.ResponseJsonErrLog(ctx, errno.CtxListErr, err, nil)
 		return
 	}
 

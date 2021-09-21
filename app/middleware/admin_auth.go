@@ -18,7 +18,7 @@ type adminAuth struct{}
 var AdminAuth adminAuth
 
 // IsLogin 验证后台管理员是否登录
-func (adminAuth) IsLogin() gin.HandlerFunc {
+func (*adminAuth) IsLogin() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		c, err := admin_auth.AdminAuth.ParseRequest(ctx)
 		if err != nil {
@@ -35,13 +35,13 @@ func (adminAuth) IsLogin() gin.HandlerFunc {
 }
 
 // AuthCheckRole 权限检查中间件
-func (adminAuth) AuthCheckRole() gin.HandlerFunc {
+func (*adminAuth) AuthCheckRole() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		userID := auths.GetAdminID(c)
 
 		roles, err := casbins.Casbin.GetRolesForUser(strconv.FormatUint(userID, 10))
 		if err != nil {
-			response.JsonErr(c, errno.Serve.ErrAuthCheckRole, nil)
+			response.JsonErr(c, errno.MidAuthCheckRoleErr, nil)
 			c.Abort()
 			return
 		}
@@ -60,7 +60,7 @@ func (adminAuth) AuthCheckRole() gin.HandlerFunc {
 			if ok && err == nil {
 				c.Next()
 			} else {
-				response.JsonErr(c, errno.Serve.ErrAuthCheckRole, nil)
+				response.JsonErr(c, errno.MidAuthCheckRoleErr, nil)
 				c.Abort()
 				return
 			}
@@ -70,12 +70,12 @@ func (adminAuth) AuthCheckRole() gin.HandlerFunc {
 }
 
 // AuthCheckRoleCache 权限检查中间件 有缓存
-func (adminAuth) AuthCheckRoleCache() gin.HandlerFunc {
+func (*adminAuth) AuthCheckRoleCache() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		uid := auths.GetAdminID(c)
 		strUID := strconv.FormatUint(uid, 10)
 
-		roleCache := caches.NewAdminCasbin(func(key string) ([]byte, error) {
+		roleCache := caches.NewAdminCasbin(func() ([]byte, error) {
 			// 缓存用户的角色
 			roles, err := casbins.Casbin.GetRolesForUser(strUID)
 			if err != nil {
@@ -83,17 +83,17 @@ func (adminAuth) AuthCheckRoleCache() gin.HandlerFunc {
 			}
 			return json.Marshal(roles)
 		})
-		str, err := roleCache.Get("roles::uid::" + strUID)
+		str, err := roleCache.Get(strUID)
 		if err != nil {
-			response.JsonErr(c, errno.Serve.ErrAuthCheckRole, nil)
+			response.JsonErr(c, errno.MidAuthCheckRoleErr, nil)
 			c.Abort()
 			return
 		}
 
 		var roles []string
-		err = json.Unmarshal([]byte(str), &roles)
+		err = json.Unmarshal(str, &roles)
 		if err != nil {
-			response.JsonErr(c, errno.Serve.ErrAuthCheckRole, nil)
+			response.JsonErr(c, errno.MidAuthCheckRoleErr, nil)
 			c.Abort()
 			return
 		}
@@ -111,7 +111,7 @@ func (adminAuth) AuthCheckRoleCache() gin.HandlerFunc {
 		} else {
 			fullPath := c.FullPath()
 			method := c.Request.Method
-			rbacCache := caches.NewAdminCasbin(func(key string) ([]byte, error) {
+			rbacCache := caches.NewAdminRBAC(func() ([]byte, error) {
 				ok, err := casbins.Casbin.CheckRoles(roles, fullPath, method)
 				if err != nil {
 					return nil, err
@@ -122,11 +122,11 @@ func (adminAuth) AuthCheckRoleCache() gin.HandlerFunc {
 				return []byte{'0'}, nil
 			})
 			// 缓存用户的授权
-			str, err = rbacCache.Get("rbac::UID::" + strUID + "::" + method + ":" + fullPath)
-			if str == "1" && err == nil {
+			str, err = rbacCache.Get(strUID, method, fullPath)
+			if string(str) == "1" && err == nil {
 				c.Next()
 			} else {
-				response.JsonErr(c, errno.Serve.ErrAuthCheckRole, nil)
+				response.JsonErr(c, errno.MidAuthCheckRoleErr, nil)
 				c.Abort()
 				return
 			}

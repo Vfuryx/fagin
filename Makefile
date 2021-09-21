@@ -17,11 +17,14 @@ web\:build:
 	cd ./resources/assets/admin2 && yarn run build
 
 doc:
-#需要权限来修改文件
-	sudo swag init
+	#需要权限来修改文件
+	sudo swag init -o ./docs/swag
 
 create-cmd:
 	cd ./console && cobra add ${name}
+
+enum:
+	go run main.go -c enum ${Name}
 
 request:
 	go run main.go -c request ${Name}
@@ -57,37 +60,37 @@ migrate\:rollback:
 	go run main.go -c migrate rollback
 
 build:
-	go build main.go
+	go build -o ${Name} .
 
 build\:winamd64:
-	CGO_ENABLED=0 GOOS=windows GOARCH=amd64 go build .
+	CGO_ENABLED=0 GOOS=windows GOARCH=amd64 go build -o ${Name} .
 
 build\:win386:
-	CGO_ENABLED=0 GOOS=windows GOARCH=386 go build .
+	CGO_ENABLED=0 GOOS=windows GOARCH=386 go build -o ${Name} .
 
 build\:darwin386:
-	CGO_ENABLED=0 GOOS=darwin GOARCH=386 go build .
+	CGO_ENABLED=0 GOOS=darwin GOARCH=386 go build -o ${Name} .
 
 build\:darwinamd64:
-	CGO_ENABLED=0 GOOS=darwin GOARCH=amd64 go build .
+	CGO_ENABLED=0 GOOS=darwin GOARCH=amd64 go build -o ${Name} .
 
 build\:darwinarm:
-	CGO_ENABLED=0 GOOS=darwin GOARCH=arm go build .
+	CGO_ENABLED=0 GOOS=darwin GOARCH=arm go build -o ${Name} .
 
 build\:darwinarm64:
-	CGO_ENABLED=0 GOOS=darwin GOARCH=arm64 go build .
+	CGO_ENABLED=0 GOOS=darwin GOARCH=arm64 go build -o ${Name} .
 
 build\:linux386:
-	CGO_ENABLED=0 GOOS=linux GOARCH=386 go build .
+	CGO_ENABLED=0 GOOS=linux GOARCH=386 go build -o ${Name} .
 
 build\:linuxamd64:
-	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build .
+	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o ${Name} .
 
 build\:linuxarm:
-	CGO_ENABLED=0 GOOS=linux GOARCH=arm go build .
+	CGO_ENABLED=0 GOOS=linux GOARCH=arm go build -o ${Name} .
 
 build\:linuxarm64:
-	CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build .
+	CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -o ${Name} .
 
 key\:generate:
 	go run console/main.go key
@@ -98,10 +101,16 @@ jwt-secret:
 pipeline:
 	go env -w GOPROXY=https://goproxy.cn,direct
 	go mod tidy
-	go run console/main.go migrate
-	go build -o fagin ./main.go
-	sh admin.sh restart fagin
-	sh ./admin.sh status fagin
+	go run main.go -c migrate
+	go build -o ${Name} .
+	sh admin.sh restart ${Name}
+	sh admin.sh status ${Name}
+
+start:
+	sh admin.sh restart ${Name}
+
+stop:
+	sh admin.sh stop ${Name}
 
 help:
 	@echo "make                     - 运行服务"
@@ -125,6 +134,7 @@ help:
 	@echo "make migrate:rollback    - 数据库迁移回滚"
 	@echo "make jwt-secret          - 生成 jwt 密钥"
 	@echo "make key:generate        - 生成 key"
+	@echo "make enum            	- 生成 枚举"
 	@echo "make request             - 生成 请求验证"
 	@echo "make response            - 生成 生成响应"
 	@echo "make model               - 生成 模型"
@@ -132,3 +142,5 @@ help:
 	@echo "make controller          - 生成 控制器"
 	@echo "make service             - 生成 服务"
 	@echo "make pipeline            - 流水线"
+	@echo "make start            	- 运行服务"
+	@echo "make stop            	- 关闭服务"

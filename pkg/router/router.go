@@ -5,7 +5,6 @@ import (
 	"fagin/app/middleware"
 	"fagin/config"
 	"fagin/pkg/router/no_router"
-	"fagin/pkg/session"
 	"fagin/pkg/view"
 	"fagin/routes"
 	"github.com/gin-contrib/cors"
@@ -15,14 +14,7 @@ import (
 	"net/http"
 )
 
-// engine 路由引擎
-var engine *gin.Engine
-
 func New() *gin.Engine {
-	if engine != nil {
-		return engine
-	}
-
 	e := gin.New()
 
 	// 加载模版
@@ -47,7 +39,7 @@ func New() *gin.Engine {
 	e.StaticFS(config.Template.StaticRouter, http.FS(config.Template.StaticEmbed))
 
 	// 全局实例Session
-	e.Use(session.Sessions())
+	//e.Use(session.Sessions())
 
 	// 支持跨域
 	if config.DefaultRouter.IsCors {
@@ -59,7 +51,7 @@ func New() *gin.Engine {
 	}
 
 	// 限定表单占用内存
-	//engine.MaxMultipartMemory = 32 << 20
+	//e.MaxMultipartMemory = 32 << 20
 
 	// 配置 404 模块
 	e.NoRoute(no_router.NoRouteHandle)
@@ -68,10 +60,6 @@ func New() *gin.Engine {
 	setPprof(e)
 
 	return e
-}
-
-func Group(name string) *gin.RouterGroup {
-	return New().Group(name)
 }
 
 // 设置 Pprof
@@ -91,8 +79,8 @@ func setPprof(e *gin.Engine) {
 // 加载模版
 func loadHTMLGlobFS(e *gin.Engine) *template.Template {
 	temp := template.Must(template.New("").
-		Delims(config.Template.DelimitersL, config.Template.DelimitersR). // 1 设置定界符
-		Funcs(config.Template.FuncMap). // 2 注册模版函数
+		Delims(config.Template.DelimitersL, config.Template.DelimitersR).         // 1 设置定界符
+		Funcs(config.Template.FuncMap).                                           // 2 注册模版函数
 		ParseFS(config.Template.TemplatesEmbed, config.Template.TemplatePattern)) // 3 导入模版
 
 	e.SetHTMLTemplate(temp)

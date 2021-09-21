@@ -7,29 +7,32 @@ import (
 	"strings"
 )
 
+// New 实例
 func New() *AdminMenu {
 	return &AdminMenu{}
 }
 
-type dao struct {
+type Dao struct {
 	db.Dao
 }
 
-var _ db.IDao = &dao{}
+var _ db.IDao = &Dao{}
 
-func (m *AdminMenu) Dao() *dao {
-	dao := &dao{}
-	dao.Dao.M = m
+// Dao 实例DAO
+func (m *AdminMenu) Dao() *Dao {
+	dao := &Dao{}
+	dao.Dao.SetModel(m)
 	return dao
 }
 
-func Dao() *dao {
-	dao := &dao{}
-	dao.Dao.M = New()
+// NewDao 实例
+func NewDao() *Dao {
+	dao := &Dao{}
+	dao.Dao.SetModel(New())
 	return dao
 }
 
-func (dao) All(params gin.H, columns []string) (*[]AdminMenu, error) {
+func (d *Dao) All(params gin.H, columns []string) (*[]AdminMenu, error) {
 	var model []AdminMenu
 	m := db.ORM().Select(columns)
 	if v, ok := params["type"]; ok {
@@ -39,7 +42,7 @@ func (dao) All(params gin.H, columns []string) (*[]AdminMenu, error) {
 	return &model, err
 }
 
-func (d *dao) Query(params map[string]interface{}, columns []string, with map[string]interface{}) db.IDao {
+func (d *Dao) Query(params map[string]interface{}, columns []string, with map[string]interface{}) db.IDao {
 	model := db.ORM().Select(columns)
 
 	var (
@@ -93,7 +96,7 @@ func (d *dao) Query(params map[string]interface{}, columns []string, with map[st
 	return d
 }
 
-func (d *dao) Update(id uint, data map[string]interface{}) error {
+func (d *Dao) Update(id uint, data map[string]interface{}) error {
 	var m AdminMenu
 	err := db.ORM().Select([]string{"id", "parent_id", "paths"}).Where("id = ?", id).First(&m).Error
 	if err != nil {
@@ -101,7 +104,7 @@ func (d *dao) Update(id uint, data map[string]interface{}) error {
 	}
 
 	if v, ok := data["parent_id"]; ok {
-		if v != m.ParentId {
+		if v != m.ParentID {
 			paths := ""
 			if v.(uint) == 0 {
 				paths = "0-" + strconv.FormatUint(uint64(m.ID), 10)
@@ -125,10 +128,10 @@ func (d *dao) Update(id uint, data map[string]interface{}) error {
 		}
 	}
 
-	return db.ORM().Model(d.M).Where("id = ?", id).Updates(data).Error
+	return db.ORM().Model(d.GetModel()).Where("id = ?", id).Updates(data).Error
 }
 
-func (d *dao) Delete(id uint) error {
+func (d *Dao) Delete(id uint) error {
 	var m AdminMenu
 	err := db.ORM().Select([]string{"id", "paths"}).Where("id = ?", id).First(&m).Error
 	if err != nil {

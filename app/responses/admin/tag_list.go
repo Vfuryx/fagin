@@ -14,7 +14,7 @@ var _ response.IResponse = &tagList{}
 
 func TagList(models ...tag.Tag) *tagList {
 	res := tagList{Ms: models}
-	res.Collect.IResponse = &res
+	res.SetCollect(&res)
 	return &res
 }
 

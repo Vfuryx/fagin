@@ -8,10 +8,10 @@ import (
 
 type auth struct{}
 
-var Auth = auth{}
+var Auth auth
 
 // IsLogin 验证用户是否登录
-func (auth) IsLogin() gin.HandlerFunc {
+func (*auth) IsLogin() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 
 		c, err := service.Token.ParseRequest(ctx)
@@ -29,7 +29,7 @@ func (auth) IsLogin() gin.HandlerFunc {
 }
 
 // AuthCheckRole 验证用户是否有权限访问
-func (auth) AuthCheckRole() gin.HandlerFunc {
+func (*auth) AuthCheckRole() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 
 		//role := strconv.Itoa(int(service.Login.ID))
@@ -41,7 +41,7 @@ func (auth) AuthCheckRole() gin.HandlerFunc {
 		//if ok {
 		//	ctx.Next()
 		//} else {
-		//	app.ResponseJson(ctx, errno.Serve.ErrPermissionDenied, nil)
+		//	app.ResponseJson(ctx, errno.MidPermissionDeniedErr, nil)
 		//	ctx.Abort()
 		//}
 		//return

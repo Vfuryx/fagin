@@ -7,6 +7,7 @@ type uriUintIdRequest struct {
 	Id uint `uri:"id" binding:"required,min=1"`
 }
 
+// ShouldBindUriUintID 绑定 uri uintID
 func ShouldBindUriUintID(ctx *gin.Context) (uint, error) {
 	var uri uriUintIdRequest
 	err := ctx.ShouldBindUri(&uri)
@@ -18,6 +19,7 @@ type uriUint64IdRequest struct {
 	Id uint64 `uri:"id" binding:"required,min=1"`
 }
 
+// ShouldBindUriUint64ID 绑定 uri uint64ID
 func ShouldBindUriUint64ID(ctx *gin.Context) (uint64, error) {
 	var uri uriUint64IdRequest
 	err := ctx.ShouldBindUri(&uri)

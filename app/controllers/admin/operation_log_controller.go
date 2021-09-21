@@ -1,13 +1,14 @@
 package admin
 
 import (
-	"fagin/app"
+	"fagin/app/enums"
 	"fagin/app/errno"
 	adminRequest "fagin/app/requests/admin"
 	response "fagin/app/responses/admin"
 	"fagin/app/service"
 	"fagin/pkg/db"
 	"fagin/pkg/request"
+
 	"github.com/gin-gonic/gin"
 )
 
@@ -18,11 +19,11 @@ type operationLogController struct {
 var OperationLogController operationLogController
 
 func (oc *operationLogController) Index(ctx *gin.Context) {
-	paginator := db.NewPaginator(ctx, 1, 15)
+	paginator := db.NewPaginatorWithCtx(ctx, 1, 15)
 
 	r := adminRequest.NewAdminOperationLogList()
 	if data, ok := r.Validate(ctx); !ok {
-		oc.ResponseJsonErr(ctx, errno.Serve.BindErr, data)
+		oc.ResponseJsonErr(ctx, errno.ReqErr, data)
 		return
 	}
 
@@ -44,9 +45,9 @@ func (oc *operationLogController) Index(ctx *gin.Context) {
 
 	columns := []string{"id", "user", "method", "path", "ip", "operation", "created_at", "module"}
 
-	logs, err := service.AdminOperationLog.List(params, columns, nil, &paginator)
+	logs, err := service.AdminOperationLog.List(params, columns, nil, paginator)
 	if err != nil {
-		oc.ResponseJsonErrLog(ctx, errno.InternalServerError, err, nil)
+		oc.ResponseJsonErrLog(ctx, errno.InternalServerErr, err, nil)
 		return
 	}
 
@@ -60,7 +61,7 @@ func (oc *operationLogController) Index(ctx *gin.Context) {
 func (oc *operationLogController) Show(ctx *gin.Context) {
 	id, err := request.ShouldBindUriUintID(ctx)
 	if err != nil {
-		oc.ResponseJsonErr(ctx, errno.Serve.BindErr, nil)
+		oc.ResponseJsonErr(ctx, errno.ReqErr, nil)
 		return
 	}
 
@@ -70,7 +71,7 @@ func (oc *operationLogController) Show(ctx *gin.Context) {
 	}
 	l, err := service.AdminOperationLog.ShowLog(id, columns)
 	if err != nil {
-		oc.ResponseJsonErrLog(ctx, errno.Serve.ShowErr, err, nil)
+		oc.ResponseJsonErrLog(ctx, errno.CtxShowErr, err, nil)
 		return
 	}
 	oc.ResponseJsonOK(ctx, gin.H{
@@ -82,7 +83,7 @@ func (oc *operationLogController) Show(ctx *gin.Context) {
 		"operation":    l.Operation,
 		"input":        l.Input,
 		"module":       l.Module,
-		"created_at":   l.CreatedAt.Format(app.TimeFormat),
+		"created_at":   l.CreatedAt.Format(enums.TimeFormatDef.Get()),
 		"user_agent":   l.UserAgent,
 		"latency_time": l.LatencyTime,
 		"location":     l.Location,

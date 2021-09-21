@@ -32,7 +32,7 @@ func TestFindById(t *testing.T) {
 }
 
 func TestAll(t *testing.T) {
-	users, err := Dao().All([]string{"*"})
+	users, err := NewDao().All([]string{"*"})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -46,7 +46,7 @@ func TestStore(t *testing.T) {
 		Status:   1,
 	}
 
-	err := Dao().Create(&user)
+	err := NewDao().Create(&user)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -54,7 +54,7 @@ func TestStore(t *testing.T) {
 }
 
 func TestUpdate(t *testing.T) {
-	err := Dao().Update(1, map[string]interface{}{
+	err := NewDao().Update(1, map[string]interface{}{
 		"user_name": "",
 	})
 	if err != nil {
@@ -63,7 +63,7 @@ func TestUpdate(t *testing.T) {
 }
 
 func TestDestroy(t *testing.T) {
-	err := Dao().Destroy(1)
+	err := NewDao().Destroy(1)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -83,7 +83,7 @@ func TestQuery(t *testing.T) {
 		"status": 1,
 	}
 	columns := []string{"*"}
-	err := Dao().Query(params, columns, nil).Find(&users)
+	err := NewDao().Query(params, columns, nil).Find(&users)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -98,11 +98,8 @@ func TestPaginator(t *testing.T) {
 		"status": 1,
 	}
 	columns := []string{"*"}
-	p := db.Paginator{
-		CurrentPage: 1,
-		PageSize:     2,
-	}
-	err := Dao().Query(params, columns, nil).Paginator(&users, &p)
+	p := db.NewPaginator(1, 2)
+	err := NewDao().Query(params, columns, nil).Paginate(&users, p)
 	if err != nil {
 		t.Fatal(err)
 	}

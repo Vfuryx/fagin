@@ -12,7 +12,7 @@ func GetAdminID(ctx *gin.Context) uint64 {
 func GetAdmin(ctx *gin.Context) (*admin_user.AdminUser, error) {
 	uid := ctx.GetUint64(admin_user.AdminUserIdKey)
 	admin := admin_user.New()
-	err := admin_user.Dao().FindById(uint(uid), []string{"*"})
+	err := admin_user.NewDao().FindById(uint(uid), []string{"*"})
 	if err != nil {
 		return nil, err
 	}

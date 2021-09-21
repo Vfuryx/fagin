@@ -10,35 +10,34 @@ type tagService struct{}
 
 var Tag tagService
 
-func (tagService) Index(params gin.H, columns []string, with gin.H, p *db.Paginator) (ms []tag.Tag, err error) {
-	err = tag.Dao().Query(params, columns, with).Paginator(&ms, p)
+func (*tagService) Index(params gin.H, columns []string, with gin.H, p *db.Paginator) (ms []tag.Tag, err error) {
+	err = tag.NewDao().Query(params, columns, with).Paginate(&ms, p)
 	return
 }
 
-func (tagService) Show(id uint, columns []string) (*tag.Tag, error) {
+func (*tagService) Show(id uint, columns []string) (*tag.Tag, error) {
 	b := tag.New()
 	err := b.Dao().FindById(id, columns)
 	return b, err
 }
 
-func (tagService) Create(m *tag.Tag) error {
-	return tag.Dao().Create(m)
+func (*tagService) Create(m *tag.Tag) error {
+	return tag.NewDao().Create(m)
 }
 
-func (tagService) Update(id uint, data gin.H) error {
-	return tag.Dao().Update(id, data)
+func (*tagService) Update(id uint, data gin.H) error {
+	return tag.NewDao().Update(id, data)
 }
 
-func (tagService) Delete(id uint) error {
-	return tag.Dao().Destroy(id)
+func (*tagService) Delete(id uint) error {
+	return tag.NewDao().Destroy(id)
 }
 
-func (tagService) Deletes(ids []uint) error {
-	return tag.Dao().Deletes(ids)
+func (*tagService) Deletes(ids []uint) error {
+	return tag.NewDao().Deletes(ids)
 }
 
-
-func (tagService) All(params gin.H, columns []string, with gin.H) (ms []tag.Tag, err error) {
-	err = tag.Dao().Query(params, columns, with).Find(&ms)
+func (*tagService) All(params gin.H, columns []string, with gin.H) (ms []tag.Tag, err error) {
+	err = tag.NewDao().Query(params, columns, with).Find(&ms)
 	return
 }

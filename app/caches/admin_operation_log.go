@@ -5,26 +5,12 @@ import (
 	"time"
 )
 
-// 后台操作缓存管理
-type adminOperationLog struct {
-	cache.SCache
-}
+// NewAdminOperationLog 后台操作缓存管理
+func NewAdminOperationLog(f cache.GetterFunc) *cache.SCache {
+	var c = new(cache.SCache)
+	c.SetConfPrefix("admin:menu:log:%s:%s")
+	c.SetConfLifeTime(30 * time.Second)
+	c.SetFunc(f)
 
-func NewAdminOperationLog(f cache.GetterFunc) *adminOperationLog {
-	var c = new(adminOperationLog)
-	c.Prefix = "admin::menu::"
-	c.LifeTime = 30 * time.Second
-	c.Content = f
-	c.SetFunc(c)
 	return c
-}
-
-// Key 获取键名称
-func (c *adminOperationLog) Key(value string) string {
-	return c.Prefix + value
-}
-
-// Lift 默认存在时间
-func (c *adminOperationLog) Lift() time.Duration {
-	return c.LifeTime
 }

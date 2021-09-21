@@ -12,17 +12,15 @@ type permissionGroupList struct {
 
 func NewPermissionGroupList() *permissionGroupList {
 	r := new(permissionGroupList)
-	r.Request = r
+	r.SetRequest(r)
 	return r
 }
 
-func (permissionGroupList) Message() map[string]string {
-	return map[string]string{
-
-	}
+func (*permissionGroupList) Message() map[string]string {
+	return map[string]string{}
 }
 
-func (permissionGroupList) Attributes() map[string]string {
+func (*permissionGroupList) Attributes() map[string]string {
 	return map[string]string{
 		"Name": "名称",
 		"Type": "类型",

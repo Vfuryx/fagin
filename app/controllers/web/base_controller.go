@@ -24,7 +24,7 @@ func (bc BaseController) ResponseJsonErr(ctx *gin.Context, err error, errors int
 func (bc BaseController) ResponseJsonErrLog(ctx *gin.Context, err error, errLog interface{}, errors interface{}) {
 	go app.Log().Println(err, errLog, string(debug.Stack()))
 
-	if err == errno.Serve.BindErr {
+	if err == errno.ReqErr {
 		response.JsonErr(ctx, err, errors)
 	} else {
 		// 数据未找到

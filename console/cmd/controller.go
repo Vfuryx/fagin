@@ -9,7 +9,7 @@ import (
 
 var ControllerCmd = &cobra.Command{
 	Use:   "controller",
-	Short: "",
+	Short: "控制器",
 	Long: `
 该子命令支持生成控制器模版，用法如下：
 go run console/main.go controller path

@@ -11,6 +11,7 @@ import (
 	"fagin/app/service"
 	"fagin/pkg/db"
 	"fagin/pkg/request"
+
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 )
@@ -19,10 +20,11 @@ type articleController struct {
 	BaseController
 }
 
+// ArticleController 文章控制器
 var ArticleController articleController
 
 func (ac *articleController) Index(ctx *gin.Context) {
-	paginator := db.NewPaginator(ctx, 1, 15)
+	paginator := db.NewPaginatorWithCtx(ctx, 1, 15)
 
 	params := gin.H{
 		"orderBy": "post_at desc, id asc",
@@ -35,9 +37,9 @@ func (ac *articleController) Index(ctx *gin.Context) {
 			return db.Where("status = ?", 1)
 		},
 	}
-	articles, err := service.Article.Index(params, columns, with, &paginator)
+	articles, err := service.Article.Index(params, columns, with, paginator)
 	if err != nil {
-		ac.ResponseJsonErrLog(ctx, errno.Serve.ListErr, err, nil)
+		ac.ResponseJsonErrLog(ctx, errno.CtxListErr, err, nil)
 		return
 	}
 
@@ -53,14 +55,14 @@ func (ac *articleController) Index(ctx *gin.Context) {
 func (ac *articleController) Show(ctx *gin.Context) {
 	id, err := request.ShouldBindUriUintID(ctx)
 	if err != nil {
-		ac.ResponseJsonErr(ctx, errno.Serve.BindErr, nil)
+		ac.ResponseJsonErr(ctx, errno.ReqErr, nil)
 		return
 	}
 
 	columns := []string{"id", "title", "author_id", "category_id", "post_at", "status", "content", "summary"}
 	data, err := service.Article.Show(id, columns)
 	if err != nil {
-		ac.ResponseJsonErrLog(ctx, errno.Serve.ShowErr, err, nil)
+		ac.ResponseJsonErrLog(ctx, errno.CtxShowErr, err, nil)
 		return
 	}
 	tags := make([]map[string]interface{}, 0, 20)
@@ -90,7 +92,7 @@ func (ac *articleController) Show(ctx *gin.Context) {
 func (ac *articleController) Store(ctx *gin.Context) {
 	var r = adminRequest.NewCreateArticle()
 	if data, ok := r.Validate(ctx); !ok {
-		ac.ResponseJsonErr(ctx, errno.Serve.BindErr, data)
+		ac.ResponseJsonErr(ctx, errno.ReqErr, data)
 		return
 	}
 
@@ -98,7 +100,7 @@ func (ac *articleController) Store(ctx *gin.Context) {
 	a := author.New()
 	err := a.Dao().Query(gin.H{"id": r.AuthorID}, []string{"1"}, nil).First(&a)
 	if err != nil {
-		ac.ResponseJsonErrLog(ctx, errno.Serve.StoreErr, err, nil)
+		ac.ResponseJsonErrLog(ctx, errno.CtxStoreErr, err, nil)
 		return
 	}
 
@@ -106,15 +108,15 @@ func (ac *articleController) Store(ctx *gin.Context) {
 	c := category.New()
 	err = c.Dao().Query(gin.H{"id": r.CategoryID}, []string{"1"}, nil).First(&c)
 	if err != nil {
-		ac.ResponseJsonErrLog(ctx, errno.Serve.StoreErr, err, nil)
+		ac.ResponseJsonErrLog(ctx, errno.CtxStoreErr, err, nil)
 		return
 	}
 
 	// 获取标签
 	var tags []tag.Tag
-	err = tag.Dao().Query(gin.H{"in_id": r.Tags, "status": 1}, []string{"id"}, nil).Find(&tags)
+	err = tag.NewDao().Query(gin.H{"in_id": r.Tags, "status": 1}, []string{"id"}, nil).Find(&tags)
 	if err != nil {
-		ac.ResponseJsonErrLog(ctx, errno.Serve.StoreErr, err, nil)
+		ac.ResponseJsonErrLog(ctx, errno.CtxStoreErr, err, nil)
 		return
 	}
 
@@ -131,7 +133,7 @@ func (ac *articleController) Store(ctx *gin.Context) {
 
 	err = service.Article.Create(&b)
 	if err != nil {
-		ac.ResponseJsonErrLog(ctx, errno.Serve.StoreErr, err, nil)
+		ac.ResponseJsonErrLog(ctx, errno.CtxStoreErr, err, nil)
 		return
 	}
 
@@ -142,13 +144,13 @@ func (ac *articleController) Store(ctx *gin.Context) {
 func (ac *articleController) Update(ctx *gin.Context) {
 	id, err := request.ShouldBindUriUintID(ctx)
 	if err != nil {
-		ac.ResponseJsonErr(ctx, errno.Serve.BindErr, nil)
+		ac.ResponseJsonErr(ctx, errno.ReqErr, nil)
 		return
 	}
 
 	var r = adminRequest.NewCreateArticle()
 	if data, ok := r.Validate(ctx); !ok {
-		ac.ResponseJsonErr(ctx, errno.Serve.BindErr, data)
+		ac.ResponseJsonErr(ctx, errno.ReqErr, data)
 		return
 	}
 
@@ -156,7 +158,7 @@ func (ac *articleController) Update(ctx *gin.Context) {
 	a := author.New()
 	err = a.Dao().Query(gin.H{"id": r.AuthorID}, []string{"1"}, nil).First(&a)
 	if err != nil {
-		ac.ResponseJsonErrLog(ctx, errno.Serve.UpdateErr, err, nil)
+		ac.ResponseJsonErrLog(ctx, errno.CtxUpdateErr, err, nil)
 		return
 	}
 
@@ -164,15 +166,15 @@ func (ac *articleController) Update(ctx *gin.Context) {
 	c := category.New()
 	err = c.Dao().Query(gin.H{"id": r.CategoryID}, []string{"1"}, nil).First(&c)
 	if err != nil {
-		ac.ResponseJsonErrLog(ctx, errno.Serve.UpdateErr, err, nil)
+		ac.ResponseJsonErrLog(ctx, errno.CtxUpdateErr, err, nil)
 		return
 	}
 
 	// 获取标签
 	var tags []tag.Tag
-	err = tag.Dao().Query(gin.H{"in_id": r.Tags, "status": 1}, []string{"*"}, nil).Find(&tags)
+	err = tag.NewDao().Query(gin.H{"in_id": r.Tags, "status": 1}, []string{"*"}, nil).Find(&tags)
 	if err != nil {
-		ac.ResponseJsonErrLog(ctx, errno.Serve.UpdateErr, err, nil)
+		ac.ResponseJsonErrLog(ctx, errno.CtxUpdateErr, err, nil)
 		return
 	}
 
@@ -188,7 +190,7 @@ func (ac *articleController) Update(ctx *gin.Context) {
 	}
 	err = service.Article.Update(id, data)
 	if err != nil {
-		ac.ResponseJsonErrLog(ctx, errno.Serve.UpdateErr, err, nil)
+		ac.ResponseJsonErrLog(ctx, errno.CtxUpdateErr, err, nil)
 		return
 	}
 
@@ -199,13 +201,13 @@ func (ac *articleController) Update(ctx *gin.Context) {
 func (ac *articleController) Del(ctx *gin.Context) {
 	id, err := request.ShouldBindUriUintID(ctx)
 	if err != nil {
-		ac.ResponseJsonErr(ctx, errno.Serve.BindErr, nil)
+		ac.ResponseJsonErr(ctx, errno.ReqErr, nil)
 		return
 	}
 
 	err = service.Article.Delete(id)
 	if err != nil {
-		ac.ResponseJsonErrLog(ctx, errno.Serve.DeleteErr, err, nil)
+		ac.ResponseJsonErrLog(ctx, errno.CtxDeleteErr, err, nil)
 		return
 	}
 
@@ -220,13 +222,13 @@ func (ac *articleController) Deletes(ctx *gin.Context) {
 	var ids R
 	err := ctx.ShouldBind(&ids)
 	if err != nil {
-		ac.ResponseJsonErr(ctx, errno.Serve.BindErr, nil)
+		ac.ResponseJsonErr(ctx, errno.ReqErr, nil)
 		return
 	}
 
 	err = service.Article.Deletes(ids.IDs)
 	if err != nil {
-		ac.ResponseJsonErrLog(ctx, errno.Serve.DeleteErr, err, nil)
+		ac.ResponseJsonErrLog(ctx, errno.CtxDeleteErr, err, nil)
 		return
 	}
 

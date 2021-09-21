@@ -15,19 +15,19 @@ type webNavbar struct{}
 
 var WebNavbar webNavbar
 
-func (webNavbar) WebNavbar() gin.HandlerFunc {
+func (*webNavbar) WebNavbar() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		navbar := caches.NewHomeNavbar(func(key string) ([]byte, error) {
+		navbar := caches.NewHomeNavbar(func() ([]byte, error) {
 			c, err := service.Category.All(gin.H{"status": 1, "orderBy": "sort desc"}, []string{"id", "name"}, nil)
 			if err != nil {
 				return nil, err
 			}
 			return json.Marshal(c)
 		})
-		str, err := navbar.Get("cate")
+		str, err := navbar.Get()
 		if err != nil {
-			go app.Log().Println(errno.Serve.ListErr, err, string(debug.Stack()))
-			response.JsonErr(ctx, errno.Serve.ListErr, nil)
+			go app.Log().Println(errno.MidErr, err, string(debug.Stack()))
+			response.JsonErr(ctx, errno.MidErr, nil)
 			ctx.Abort()
 			return
 		}

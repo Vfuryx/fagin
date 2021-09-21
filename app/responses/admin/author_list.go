@@ -14,7 +14,7 @@ var _ response.IResponse = &authorList{}
 
 func AuthorList(models ...author.Author) *authorList {
 	res := authorList{Ms: models}
-	res.Collect.IResponse = &res
+	res.SetCollect(&res)
 	return &res
 }
 

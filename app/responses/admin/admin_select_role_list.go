@@ -14,7 +14,7 @@ var _ response.IResponse = &adminSelectRoleList{}
 
 func AdminSelectRoleList(models ...admin_role.AdminRole) *adminSelectRoleList {
 	res := adminSelectRoleList{Ms: models}
-	res.Collect.IResponse = &res
+	res.SetCollect(&res)
 	return &res
 }
 

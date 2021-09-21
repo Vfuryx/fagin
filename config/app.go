@@ -1,11 +1,10 @@
 package config
 
 import (
-	"fagin/app/constants/time_format"
 	"fagin/pkg/conf"
-	"fagin/pkg/paths"
 	"reflect"
 	"strings"
+	"time"
 )
 
 type app struct {
@@ -17,23 +16,21 @@ type app struct {
 	MigrationsPath string
 	ResourcePath   string
 
-	Name   string
-	Env    string
-	Port   string
-	Key    string
-	Debug  bool
-	Url    string
-	Locale string
-
-	TimeFormat string
-	Timezone   string
+	Name     string
+	Env      string
+	Port     string
+	Key      string
+	Debug    bool
+	Url      string
+	Locale   string
+	Timezone *time.Location
 }
 
 var App app
 
 func init() {
 	// 初始化项目路径
-	App.RootPath = paths.RootPath
+	App.RootPath = conf.RootPath
 	App.AppPath = App.RootPath + "/app"
 	App.PublicPath = App.RootPath + "/public"
 	App.StaticPath = App.RootPath + "/static"
@@ -49,10 +46,8 @@ func init() {
 	App.Debug = conf.GetBool("app.debug")
 	App.Locale = conf.GetString("app.local", "zh")
 
-	// 默认时间格式
-	App.TimeFormat = time_format.Def
 	// 默认时区
-	App.Timezone = "PRC"
+	App.Timezone = time.FixedZone("CST", 8*3600)
 }
 
 func (app app) GetName() string {

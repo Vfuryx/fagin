@@ -1,15 +1,16 @@
 package admin
 
 import (
-	"fagin/app/constants/time_format"
+	"fagin/app/enums"
 	"fagin/app/errno"
 	"fagin/app/models/admin_permission"
 	"fagin/app/models/admin_permission_group"
-	"fagin/app/requests/admin"
+	admin_request "fagin/app/requests/admin"
 	response "fagin/app/responses/admin"
 	"fagin/app/service"
 	"fagin/pkg/db"
 	"fagin/pkg/request"
+
 	"github.com/gin-gonic/gin"
 )
 
@@ -26,18 +27,18 @@ func (pc *permissionController) GroupPermissions(ctx *gin.Context) {
 	}
 	var r = admin_request.NewPermissionList()
 	if data, ok := r.Validate(ctx); !ok {
-		pc.ResponseJsonErr(ctx, errno.Serve.BindErr, data)
+		pc.ResponseJsonErr(ctx, errno.ReqErr, data)
 		return
 	}
 
 	params := gin.H{
 		"orderBy": "sort desc, id asc",
-		"type": r.Type,
+		"type":    r.Type,
 	}
 	group, err := service.AdminPermissionService.
 		GroupPermissions(params, columns, nil)
 	if err != nil {
-		pc.ResponseJsonErrLog(ctx, errno.Serve.ListErr, nil, nil)
+		pc.ResponseJsonErrLog(ctx, errno.CtxListErr, nil, nil)
 		return
 	}
 
@@ -47,17 +48,17 @@ func (pc *permissionController) GroupPermissions(ctx *gin.Context) {
 }
 
 func (pc *permissionController) Index(ctx *gin.Context) {
-	paginator := db.NewPaginator(ctx, 1, 15)
+	paginator := db.NewPaginatorWithCtx(ctx, 1, 15)
 
 	var r = admin_request.NewPermissionList()
 	if data, ok := r.Validate(ctx); !ok {
-		pc.ResponseJsonErr(ctx, errno.Serve.BindErr, data)
+		pc.ResponseJsonErr(ctx, errno.ReqErr, data)
 		return
 	}
 
 	params := gin.H{
 		"orderBy": "sort desc, id asc",
-		"type": r.Type,
+		"type":    r.Type,
 	}
 
 	if r.Name != "" {
@@ -74,9 +75,9 @@ func (pc *permissionController) Index(ctx *gin.Context) {
 	}
 
 	permissions, err := service.AdminPermissionService.
-		PermissionList(params, columns, with, &paginator)
+		PermissionList(params, columns, with, paginator)
 	if err != nil {
-		pc.ResponseJsonErrLog(ctx, errno.Serve.ListErr, err, nil)
+		pc.ResponseJsonErrLog(ctx, errno.CtxListErr, err, nil)
 		return
 	}
 
@@ -92,14 +93,14 @@ func (pc *permissionController) Index(ctx *gin.Context) {
 func (pc *permissionController) Show(ctx *gin.Context) {
 	id, err := request.ShouldBindUriUintID(ctx)
 	if err != nil {
-		pc.ResponseJsonErr(ctx, errno.Serve.BindErr, nil)
+		pc.ResponseJsonErr(ctx, errno.ReqErr, nil)
 		return
 	}
 
 	columns := []string{"*"}
 	m, err := service.AdminPermissionService.PermissionShow(id, columns)
 	if err != nil {
-		pc.ResponseJsonErrLog(ctx, errno.Serve.StoreErr, err, nil)
+		pc.ResponseJsonErrLog(ctx, errno.CtxStoreErr, err, nil)
 		return
 	}
 
@@ -120,7 +121,7 @@ func (pc *permissionController) Show(ctx *gin.Context) {
 func (pc *permissionController) Store(ctx *gin.Context) {
 	var r = admin_request.NewUpdatePermission()
 	if data, ok := r.Validate(ctx); !ok {
-		pc.ResponseJsonErr(ctx, errno.Serve.BindErr, data)
+		pc.ResponseJsonErr(ctx, errno.ReqErr, data)
 		return
 	}
 
@@ -136,7 +137,7 @@ func (pc *permissionController) Store(ctx *gin.Context) {
 
 	err := service.AdminPermissionService.PermissionCreate(&b)
 	if err != nil {
-		pc.ResponseJsonErrLog(ctx, errno.Serve.StoreErr, err, nil)
+		pc.ResponseJsonErrLog(ctx, errno.CtxStoreErr, err, nil)
 		return
 	}
 
@@ -147,13 +148,13 @@ func (pc *permissionController) Store(ctx *gin.Context) {
 func (pc *permissionController) Update(ctx *gin.Context) {
 	id, err := request.ShouldBindUriUintID(ctx)
 	if err != nil {
-		pc.ResponseJsonErr(ctx, errno.Serve.BindErr, nil)
+		pc.ResponseJsonErr(ctx, errno.ReqErr, nil)
 		return
 	}
 
 	var r = admin_request.NewUpdatePermission()
 	if data, ok := r.Validate(ctx); !ok {
-		pc.ResponseJsonErr(ctx, errno.Serve.BindErr, data)
+		pc.ResponseJsonErr(ctx, errno.ReqErr, data)
 		return
 	}
 
@@ -168,7 +169,7 @@ func (pc *permissionController) Update(ctx *gin.Context) {
 	}
 	err = service.AdminPermissionService.PermissionUpdate(id, data)
 	if err != nil {
-		pc.ResponseJsonErrLog(ctx, errno.Serve.UpdateErr, err, nil)
+		pc.ResponseJsonErrLog(ctx, errno.CtxUpdateErr, err, nil)
 		return
 	}
 
@@ -179,17 +180,17 @@ func (pc *permissionController) Update(ctx *gin.Context) {
 func (pc *permissionController) Delete(ctx *gin.Context) {
 	id, err := request.ShouldBindUriUintID(ctx)
 	if err != nil {
-		pc.ResponseJsonErr(ctx, errno.Serve.BindErr, nil)
+		pc.ResponseJsonErr(ctx, errno.ReqErr, nil)
 		return
 	}
 
 	err = service.AdminPermissionService.PermissionDelete(id)
 	if err != nil {
-		if err == errno.Serve.PermissionRelationExistErr {
-			pc.ResponseJsonErr(ctx, errno.Serve.PermissionRelationExistErr, nil)
+		if err == errno.SerPermissionRelationExistErr {
+			pc.ResponseJsonErr(ctx, errno.SerPermissionRelationExistErr, nil)
 			return
 		}
-		pc.ResponseJsonErrLog(ctx, errno.Serve.DeleteErr, err, nil)
+		pc.ResponseJsonErrLog(ctx, errno.CtxDeleteErr, err, nil)
 		return
 	}
 
@@ -198,11 +199,11 @@ func (pc *permissionController) Delete(ctx *gin.Context) {
 }
 
 func (pc *permissionController) GIndex(ctx *gin.Context) {
-	paginator := db.NewPaginator(ctx, 1, 15)
+	paginator := db.NewPaginatorWithCtx(ctx, 1, 15)
 
 	var r = admin_request.NewPermissionGroupList()
 	if data, ok := r.Validate(ctx); !ok {
-		pc.ResponseJsonErr(ctx, errno.Serve.BindErr, data)
+		pc.ResponseJsonErr(ctx, errno.ReqErr, data)
 		return
 	}
 
@@ -218,9 +219,9 @@ func (pc *permissionController) GIndex(ctx *gin.Context) {
 	columns := []string{"id", "name", "type", "sort", "created_at"}
 
 	groups, err := service.AdminPermissionService.
-		PermissionGroupList(params, columns, nil, &paginator)
+		PermissionGroupList(params, columns, nil, paginator)
 	if err != nil {
-		pc.ResponseJsonErrLog(ctx, errno.Serve.ListErr, err, nil)
+		pc.ResponseJsonErrLog(ctx, errno.CtxListErr, err, nil)
 		return
 	}
 
@@ -236,7 +237,7 @@ func (pc *permissionController) GIndex(ctx *gin.Context) {
 func (pc *permissionController) GAll(ctx *gin.Context) {
 	var r = admin_request.NewPermissionGroupList()
 	if data, ok := r.Validate(ctx); !ok {
-		pc.ResponseJsonErr(ctx, errno.Serve.BindErr, data)
+		pc.ResponseJsonErr(ctx, errno.ReqErr, data)
 		return
 	}
 	params := gin.H{
@@ -246,7 +247,7 @@ func (pc *permissionController) GAll(ctx *gin.Context) {
 	columns := []string{"id", "name", "sort", "created_at"}
 	groups, err := service.AdminPermissionService.PermissionGroupAll(params, columns)
 	if err != nil {
-		pc.ResponseJsonErrLog(ctx, errno.Serve.ListErr, err, nil)
+		pc.ResponseJsonErrLog(ctx, errno.CtxListErr, err, nil)
 		return
 	}
 
@@ -259,14 +260,14 @@ func (pc *permissionController) GAll(ctx *gin.Context) {
 func (pc *permissionController) GShow(ctx *gin.Context) {
 	id, err := request.ShouldBindUriUintID(ctx)
 	if err != nil {
-		pc.ResponseJsonErr(ctx, errno.Serve.BindErr, nil)
+		pc.ResponseJsonErr(ctx, errno.ReqErr, nil)
 		return
 	}
 
 	columns := []string{"*"}
 	m, err := service.AdminPermissionService.PermissionGroupShow(id, columns)
 	if err != nil {
-		pc.ResponseJsonErrLog(ctx, errno.Serve.ShowErr, err, nil)
+		pc.ResponseJsonErrLog(ctx, errno.CtxShowErr, err, nil)
 		return
 	}
 
@@ -275,7 +276,7 @@ func (pc *permissionController) GShow(ctx *gin.Context) {
 		"name":       m.Name,
 		"sort":       m.Sort,
 		"type":       m.Type,
-		"created_at": m.CreatedAt.Format(time_format.Def),
+		"created_at": m.CreatedAt.Format(enums.TimeFormatDef.Get()),
 	})
 	return
 }
@@ -283,7 +284,7 @@ func (pc *permissionController) GShow(ctx *gin.Context) {
 func (pc *permissionController) GStore(ctx *gin.Context) {
 	var r = admin_request.NewUpdatePermissionGroup()
 	if data, ok := r.Validate(ctx); !ok {
-		pc.ResponseJsonErr(ctx, errno.Serve.BindErr, data)
+		pc.ResponseJsonErr(ctx, errno.ReqErr, data)
 		return
 	}
 
@@ -296,7 +297,7 @@ func (pc *permissionController) GStore(ctx *gin.Context) {
 	err := service.AdminPermissionService.
 		PermissionGroupCreate(&b)
 	if err != nil {
-		pc.ResponseJsonErrLog(ctx, errno.Serve.StoreErr, err, nil)
+		pc.ResponseJsonErrLog(ctx, errno.CtxStoreErr, err, nil)
 		return
 	}
 
@@ -307,13 +308,13 @@ func (pc *permissionController) GStore(ctx *gin.Context) {
 func (pc *permissionController) GUpdate(ctx *gin.Context) {
 	id, err := request.ShouldBindUriUintID(ctx)
 	if err != nil {
-		pc.ResponseJsonErr(ctx, errno.Serve.BindErr, nil)
+		pc.ResponseJsonErr(ctx, errno.ReqErr, nil)
 		return
 	}
 
 	var r = admin_request.NewUpdatePermissionGroup()
 	if data, ok := r.Validate(ctx); !ok {
-		pc.ResponseJsonErr(ctx, errno.Serve.BindErr, data)
+		pc.ResponseJsonErr(ctx, errno.ReqErr, data)
 		return
 	}
 
@@ -325,7 +326,7 @@ func (pc *permissionController) GUpdate(ctx *gin.Context) {
 	err = service.AdminPermissionService.
 		PermissionGroupUpdate(id, data)
 	if err != nil {
-		pc.ResponseJsonErrLog(ctx, errno.Serve.UpdateErr, err, nil)
+		pc.ResponseJsonErrLog(ctx, errno.CtxUpdateErr, err, nil)
 		return
 	}
 

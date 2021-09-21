@@ -1,7 +1,7 @@
 package logger
 
 import (
-	"fagin/app/constants/time_format"
+	"fagin/app/enums"
 	"fagin/config"
 	"github.com/lestrrat/go-file-rotatelogs"
 	"github.com/rifflock/lfshook"
@@ -62,12 +62,12 @@ func NewLfHook(path string) (*lfshook.LfsHook, error) {
 		logrus.InfoLevel:  logWriter,
 		logrus.WarnLevel:  logWriter,
 		logrus.ErrorLevel: logWriter,
-		logrus.FatalLevel: logWriter,
-		logrus.PanicLevel: logWriter,
+		//logrus.FatalLevel: logWriter,
+		//logrus.PanicLevel: logWriter,
 	}
 
 	lfHook := lfshook.NewHook(writeMap, &Formatter{
-		TimestampFormat: time_format.Def,
+		TimestampFormat: enums.TimeFormatDef.Get(),
 		NoColors:        true,
 		TrimMessages:    false,
 	})

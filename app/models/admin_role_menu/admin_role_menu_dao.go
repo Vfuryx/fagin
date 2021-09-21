@@ -8,31 +8,31 @@ func New() *AdminRoleMenu {
 	return &AdminRoleMenu{}
 }
 
-type dao struct {
+type Dao struct {
 	db.Dao
 }
 
-var _ db.IDao = &dao{}
+var _ db.IDao = &Dao{}
 
-func (m *AdminRoleMenu) Dao() *dao {
-	dao := &dao{}
-	dao.Dao.M = m
+func (m *AdminRoleMenu) Dao() *Dao {
+	dao := &Dao{}
+	dao.Dao.SetModel(m)
 	return dao
 }
 
-func Dao() *dao {
-	dao := &dao{}
-	dao.Dao.M = New()
+func NewDao() *Dao {
+	dao := &Dao{}
+	dao.Dao.SetModel(New())
 	return dao
 }
 
-func (dao) All(columns []string) (*[]AdminRoleMenu, error) {
+func (d *Dao) All(columns []string) (*[]AdminRoleMenu, error) {
 	var model []AdminRoleMenu
 	err := db.ORM().Select(columns).Find(&model).Error
 	return &model, err
 }
 
-func (d *dao) Query(params map[string]interface{}, columns []string, with map[string]interface{}) db.IDao {
+func (d *Dao) Query(params map[string]interface{}, columns []string, with map[string]interface{}) db.IDao {
 	model := db.ORM().Select(columns)
 
 	var (
@@ -51,9 +51,9 @@ func (d *dao) Query(params map[string]interface{}, columns []string, with map[st
 }
 
 // MenuRelationExist 是否存在菜单关联
-func (d *dao) MenuRelationExist(menuID uint) (bool, error) {
+func (d *Dao) MenuRelationExist(menuID uint) (bool, error) {
 	var count int64
-	err := db.ORM().Model(d.M).Where("menu_id = ?", menuID).Count(&count).Error
+	err := db.ORM().Model(d.GetModel()).Where("menu_id = ?", menuID).Count(&count).Error
 	if err != nil {
 		return false, err
 	}

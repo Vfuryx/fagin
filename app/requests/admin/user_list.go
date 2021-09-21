@@ -13,18 +13,18 @@ type userList struct {
 
 func NewUserList() *userList {
 	r := new(userList)
-	r.Request = r
+	r.SetRequest(r)
 	return r
 }
 
-func (userList) Message() map[string]string {
+func (*userList) Message() map[string]string {
 	return map[string]string{
 		//"Username.max": "用户名称不能大于128位",
 		//"Phone.max":    "手机号码不能大于128位",
 	}
 }
 
-func (userList) Attributes() map[string]string {
+func (*userList) Attributes() map[string]string {
 	return map[string]string{
 		"Username": "用户名称",
 		"Phone":    "手机号码",

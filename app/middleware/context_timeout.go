@@ -21,7 +21,7 @@ func ContextTimeout(t time.Duration) func(c *gin.Context) {
 		case <-ctx.Done():
 			cancel()
 			if err := ctx.Err(); err != nil {
-				app.ResponseJsonWithStatus(c, http.StatusOK, errno.Serve.RequestTimeoutErr, nil, nil)
+				app.ResponseJsonWithStatus(c, http.StatusOK, errno.ReqRequestTimeoutErr, nil, nil)
 				c.Abort()
 				return
 			}

@@ -2,8 +2,7 @@ package service
 
 import (
 	"fagin/app"
-	"fagin/app/constants/admin_menu_type"
-	"fagin/app/constants/status"
+	"fagin/app/enums"
 	"fagin/app/errno"
 	"fagin/app/models/admin_menu"
 	"fagin/app/models/admin_role"
@@ -19,10 +18,10 @@ type adminUserService struct{}
 
 var AdminUserService adminUserService
 
-func (adminUserService) Index(params gin.H, columns []string, with gin.H, p *db.Paginator) ([]admin_user.AdminUser, error) {
+func (*adminUserService) Index(params gin.H, columns []string, with gin.H, p *db.Paginator) ([]admin_user.AdminUser, error) {
 	var users []admin_user.AdminUser
 
-	err := admin_user.Dao().Query(params, columns, with).Paginator(&users, p)
+	err := admin_user.NewDao().Query(params, columns, with).Paginate(&users, p)
 	if err != nil {
 		return nil, err
 	}
@@ -30,15 +29,15 @@ func (adminUserService) Index(params gin.H, columns []string, with gin.H, p *db.
 	return users, err
 }
 
-func (adminUserService) Show(id uint, columns []string, with gin.H) (*admin_user.AdminUser, error) {
+func (*adminUserService) Show(id uint, columns []string, with gin.H) (*admin_user.AdminUser, error) {
 	m := admin_user.New()
 	err := m.Dao().Query(gin.H{"id": id}, columns, with).First(&m)
 	return m, err
 }
 
 // Create 创建管理员
-func (adminUserService) Create(u *admin_user.AdminUser, roles []admin_role.AdminRole) error {
-	err := admin_user.Dao().Create(u)
+func (*adminUserService) Create(u *admin_user.AdminUser, roles []admin_role.AdminRole) error {
+	err := admin_user.NewDao().Create(u)
 	if err != nil {
 		return err
 	}
@@ -54,12 +53,12 @@ func (adminUserService) Create(u *admin_user.AdminUser, roles []admin_role.Admin
 }
 
 // Update 编辑管理员
-func (adminUserService) Update(id uint, data gin.H) (err error) {
+func (*adminUserService) Update(id uint, data gin.H) (err error) {
 	if v, ok := data["role_ids"]; ok {
 		params := gin.H{"in_id": v, "type": 0}
 		// 获取权限组
 		var roles []admin_role.AdminRole
-		err = admin_role.Dao().
+		err = admin_role.NewDao().
 			Query(params, []string{"*"}, nil).
 			Find(&roles)
 		// 角色不存在
@@ -88,20 +87,20 @@ func (adminUserService) Update(id uint, data gin.H) (err error) {
 		}
 		delete(data, "role_ids")
 	}
-	return admin_user.Dao().Update(id, data)
+	return admin_user.NewDao().Update(id, data)
 }
 
-func (adminUserService) Delete(id uint) error {
+func (*adminUserService) Delete(id uint) error {
 	uid := strconv.FormatUint(uint64(id), 10)
 	// 删除角色
 	_, err := casbins.Casbin.DeleteRolesForUser(uid)
 	if err != nil {
 		return err
 	}
-	return admin_user.Dao().Destroy(id)
+	return admin_user.NewDao().Destroy(id)
 }
 
-func (adminUserService) Deletes(ids []uint) error {
+func (*adminUserService) Deletes(ids []uint) error {
 	uIDs := make([]string, 0, 20)
 	for _, id := range ids {
 		uid := strconv.FormatUint(uint64(id), 10)
@@ -112,42 +111,42 @@ func (adminUserService) Deletes(ids []uint) error {
 	if err != nil {
 		return err
 	}
-	return admin_user.Dao().Deletes(ids)
+	return admin_user.NewDao().Deletes(ids)
 }
 
-func (adminUserService) UpdateStatus(id uint, status int) error {
-	return admin_user.Dao().Update(id, gin.H{
+func (*adminUserService) UpdateStatus(id uint, status int) error {
+	return admin_user.NewDao().Update(id, gin.H{
 		"status": status,
 	})
 }
 
-func (adminUserService) UserInfoById(id uint, columns []string) (*admin_user.AdminUser, error) {
+func (*adminUserService) UserInfoById(id uint, columns []string) (*admin_user.AdminUser, error) {
 	params := map[string]interface{}{
 		"id":     id,
-		"status": status.Active,
+		"status": enums.StatusActive,
 	}
 	au := admin_user.New()
 	err := au.Dao().Query(params, columns, nil).First(au)
 	return au, err
 }
 
-func (adminUserService) UpdateAdminUser(id uint, data map[string]interface{}) error {
-	return admin_user.Dao().Update(id, data)
+func (*adminUserService) UpdateAdminUser(id uint, data map[string]interface{}) error {
+	return admin_user.NewDao().Update(id, data)
 }
 
-func (adminUserService) CheckPassword(id uint, old string) error {
+func (*adminUserService) CheckPassword(id uint, old string) error {
 	au := admin_user.New()
 	err := au.Dao().FindById(id, []string{"id", "password"})
 	if err != nil {
 		return err
 	}
 	if err = app.Compare(au.Password, old); err != nil {
-		return errno.Serve.ErrPasswordIncorrect
+		return errno.SerPasswordIncorrectErr
 	}
 	return nil
 }
 
-func (adminUserService) GetNavs(userID uint) ([]admin_menu.AdminMenu, error) {
+func (*adminUserService) GetNavs(userID uint) ([]admin_menu.AdminMenu, error) {
 	var err error
 	params := gin.H{"id": userID}
 	with := gin.H{"Roles": func(db *gorm.DB) *gorm.DB {
@@ -169,14 +168,14 @@ func (adminUserService) GetNavs(userID uint) ([]admin_menu.AdminMenu, error) {
 	with = gin.H{
 		"Menus": func(db *gorm.DB) *gorm.DB {
 			return db.
-				Where("type = ?", admin_menu_type.TypeAdmin).
-				Where("status = ?", status.Active).
+				Where("type = ?", enums.AdminMenuTypeAdmin).
+				Where("status = ?", enums.StatusActive).
 				Order("sort desc, id asc")
 		},
 	}
 	columns := []string{"*"}
 	var roles []admin_role.AdminRole
-	err = admin_role.Dao().Query(params, columns, with).Find(&roles)
+	err = admin_role.NewDao().Query(params, columns, with).Find(&roles)
 	if err != nil {
 		return nil, err
 	}
@@ -195,14 +194,14 @@ func (adminUserService) GetNavs(userID uint) ([]admin_menu.AdminMenu, error) {
 }
 
 // UsernameExist 用户名是否已存在
-func (adminUserService) UsernameExist(username string, uid uint) bool {
+func (*adminUserService) UsernameExist(username string, uid uint) bool {
 	params := gin.H{
-		"username":  username,
+		"username": username,
 	}
 	if uid > 0 {
 		params["ne_id"] = uid
 	}
-	err := admin_user.Dao().Query(params, []string{"1"}, nil).First(&admin_user.AdminUser{})
+	err := admin_user.NewDao().Query(params, []string{"1"}, nil).First(&admin_user.AdminUser{})
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
 			return true

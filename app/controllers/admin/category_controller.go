@@ -8,6 +8,7 @@ import (
 	"fagin/app/service"
 	"fagin/pkg/db"
 	"fagin/pkg/request"
+
 	"github.com/gin-gonic/gin"
 )
 
@@ -18,16 +19,16 @@ type categoryController struct {
 var CategoryController categoryController
 
 func (cc *categoryController) Index(ctx *gin.Context) {
-	paginator := db.NewPaginator(ctx, 1, 15)
+	paginator := db.NewPaginatorWithCtx(ctx, 1, 15)
 
 	params := gin.H{
 		"orderBy": "sort desc, id asc",
 	}
 	columns := []string{"id", "name", "sort", "status"}
 
-	categories, err := service.Category.Index(params, columns, nil, &paginator)
+	categories, err := service.Category.Index(params, columns, nil, paginator)
 	if err != nil {
-		cc.ResponseJsonErrLog(ctx, errno.Serve.ListErr, err, nil)
+		cc.ResponseJsonErrLog(ctx, errno.CtxListErr, err, nil)
 		return
 	}
 
@@ -43,14 +44,14 @@ func (cc *categoryController) Index(ctx *gin.Context) {
 func (cc *categoryController) Show(ctx *gin.Context) {
 	id, err := request.ShouldBindUriUintID(ctx)
 	if err != nil {
-		cc.ResponseJsonErr(ctx, errno.Serve.BindErr, nil)
+		cc.ResponseJsonErr(ctx, errno.ReqErr, nil)
 		return
 	}
 
 	columns := []string{"id", "name", "sort", "status"}
 	b, err := service.Category.Show(id, columns)
 	if err != nil {
-		cc.ResponseJsonErrLog(ctx, errno.Serve.ShowErr, err, nil)
+		cc.ResponseJsonErrLog(ctx, errno.CtxShowErr, err, nil)
 		return
 	}
 
@@ -66,7 +67,7 @@ func (cc *categoryController) Show(ctx *gin.Context) {
 func (cc *categoryController) Store(ctx *gin.Context) {
 	var r = admin_request.NewCreateCategory()
 	if data, ok := r.Validate(ctx); !ok {
-		cc.ResponseJsonErr(ctx, errno.Serve.BindErr, data)
+		cc.ResponseJsonErr(ctx, errno.ReqErr, data)
 		return
 	}
 
@@ -78,7 +79,7 @@ func (cc *categoryController) Store(ctx *gin.Context) {
 
 	err := service.Category.Create(&c)
 	if err != nil {
-		cc.ResponseJsonErrLog(ctx, errno.Serve.StoreErr, err, nil)
+		cc.ResponseJsonErrLog(ctx, errno.CtxStoreErr, err, nil)
 		return
 	}
 
@@ -89,13 +90,13 @@ func (cc *categoryController) Store(ctx *gin.Context) {
 func (cc *categoryController) Update(ctx *gin.Context) {
 	id, err := request.ShouldBindUriUintID(ctx)
 	if err != nil {
-		cc.ResponseJsonErr(ctx, errno.Serve.BindErr, nil)
+		cc.ResponseJsonErr(ctx, errno.ReqErr, nil)
 		return
 	}
 
-	var r  = admin_request.NewCreateCategory()
+	var r = admin_request.NewCreateCategory()
 	if data, ok := r.Validate(ctx); !ok {
-		cc.ResponseJsonErr(ctx, errno.Serve.BindErr, data)
+		cc.ResponseJsonErr(ctx, errno.ReqErr, data)
 		return
 	}
 	data := map[string]interface{}{
@@ -105,7 +106,7 @@ func (cc *categoryController) Update(ctx *gin.Context) {
 	}
 	err = service.Category.Update(id, data)
 	if err != nil {
-		cc.ResponseJsonErrLog(ctx, errno.Serve.UpdateErr, err, nil)
+		cc.ResponseJsonErrLog(ctx, errno.CtxUpdateErr, err, nil)
 		return
 	}
 
@@ -116,13 +117,13 @@ func (cc *categoryController) Update(ctx *gin.Context) {
 func (cc *categoryController) Del(ctx *gin.Context) {
 	id, err := request.ShouldBindUriUintID(ctx)
 	if err != nil {
-		cc.ResponseJsonErr(ctx, errno.Serve.BindErr, nil)
+		cc.ResponseJsonErr(ctx, errno.ReqErr, nil)
 		return
 	}
 
 	err = service.Category.Delete(id)
 	if err != nil {
-		cc.ResponseJsonErrLog(ctx, errno.Serve.DeleteErr, err, nil)
+		cc.ResponseJsonErrLog(ctx, errno.CtxDeleteErr, err, nil)
 		return
 	}
 
@@ -138,13 +139,13 @@ func (cc *categoryController) Deletes(ctx *gin.Context) {
 	var ids CategoryIDs
 	err := ctx.ShouldBind(&ids)
 	if err != nil {
-		cc.ResponseJsonErr(ctx, errno.Serve.BindErr, nil)
+		cc.ResponseJsonErr(ctx, errno.ReqErr, nil)
 		return
 	}
 
 	err = service.Category.Deletes(ids.IDs)
 	if err != nil {
-		cc.ResponseJsonErrLog(ctx, errno.Serve.DeleteErr, err, nil)
+		cc.ResponseJsonErrLog(ctx, errno.CtxDeleteErr, err, nil)
 		return
 	}
 
@@ -154,14 +155,14 @@ func (cc *categoryController) Deletes(ctx *gin.Context) {
 
 func (cc *categoryController) All(ctx *gin.Context) {
 	params := gin.H{
-		"status": 1,
-		"orderBy":   "sort desc, id asc",
+		"status":  1,
+		"orderBy": "sort desc, id asc",
 	}
 	columns := []string{"id", "name", "sort", "status"}
 
 	categories, err := service.Category.All(params, columns, nil)
 	if err != nil {
-		cc.ResponseJsonErrLog(ctx, errno.Serve.ListErr, err, nil)
+		cc.ResponseJsonErrLog(ctx, errno.CtxListErr, err, nil)
 		return
 	}
 

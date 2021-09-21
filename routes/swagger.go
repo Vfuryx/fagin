@@ -3,7 +3,7 @@ package routes
 import (
 	"fagin/app"
 	"fagin/app/errno"
-	_ "fagin/docs"
+	_ "fagin/docs/swag"
 	"fagin/pkg/router/no_router"
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"
@@ -18,9 +18,9 @@ var swaggerRoute = func(Swagger *gin.RouterGroup) {
 	}
 
 	no_router.NoRoute(Swagger.BasePath(), func(ctx *gin.Context) {
-		app.ResponseJsonWithStatus(ctx, http.StatusNotFound, errno.Serve.NotFound, nil, gin.H{"m": "swagger 404"})
+		app.ResponseJsonWithStatus(ctx, http.StatusNotFound, errno.NotFound, nil, gin.H{"m": "swagger 404"})
 	})
 
-	// use ginSwagger middleware to
+	// 访问 swagger 首页必须是 /swagger/index.html
 	Swagger.GET("/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 }

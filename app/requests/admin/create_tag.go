@@ -12,16 +12,15 @@ type createTag struct {
 
 func NewCreateTag() *createTag {
 	r := new(createTag)
-	r.Request = r
+	r.SetRequest(r)
 	return r
 }
 
-func (createTag) Message() map[string]string {
-	return map[string]string{
-	}
+func (*createTag) Message() map[string]string {
+	return map[string]string{}
 }
 
-func (createTag) Attributes() map[string]string {
+func (*createTag) Attributes() map[string]string {
 	return map[string]string{
 		"Name":   "名称",
 		"Status": "状态",

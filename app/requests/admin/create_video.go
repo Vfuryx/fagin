@@ -14,11 +14,11 @@ type createVideo struct {
 
 func NewCreateVideo() *createVideo {
 	r := new(createVideo)
-	r.Request = r
+	r.SetRequest(r)
 	return r
 }
 
-func (createVideo) Message() map[string]string {
+func (*createVideo) Message() map[string]string {
 	return map[string]string{
 		//"Title.required":       "标题不能为空",
 		//"Path.required":        "路径不能为空",
@@ -28,7 +28,7 @@ func (createVideo) Message() map[string]string {
 	}
 }
 
-func (createVideo) Attributes() map[string]string {
+func (*createVideo) Attributes() map[string]string {
 	return map[string]string{
 		"Title":       "标题",
 		"Path":        "路径",

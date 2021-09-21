@@ -2,6 +2,7 @@ package utils
 
 import (
 	"math/rand"
+	"strconv"
 	"strings"
 	"time"
 	"unicode"
@@ -59,4 +60,8 @@ func RandString(n int) string {
 		b[i] = letterBytes[rand.Int63()%int64(len(letterBytes))]
 	}
 	return string(b)
+}
+
+func StrToInt64(str string) (int64, error) {
+	return strconv.ParseInt(str, 10, 64)
 }

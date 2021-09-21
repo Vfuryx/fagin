@@ -13,6 +13,7 @@ var (
 	Err error
 )
 
+// Init 初始化
 func Init() {
 	link := config.DB.GetConnectLink()
 
@@ -60,14 +61,11 @@ func ORM() *gorm.DB {
 	return orm
 }
 
-func Close() error {
+func Close() {
 	db, err := orm.DB()
 	if err != nil {
-		return err
+		return
 	}
-	err = db.Close()
-	if err != nil {
-		panic(err)
-	}
-	return err
+	db.Close()
+	return
 }

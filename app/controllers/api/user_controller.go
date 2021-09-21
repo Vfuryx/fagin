@@ -1,7 +1,7 @@
 package api
 
 import (
-	"fagin/app/constants/status"
+	"fagin/app/enums"
 	"fagin/app/errno"
 	"fagin/app/models/user"
 	"fagin/app/requests/api"
@@ -28,18 +28,18 @@ func (uc *userController) Register(ctx *gin.Context) {
 	var v = api_request.NewAddUserRequest()
 
 	if msg, ok := v.Validate(ctx); !ok {
-		uc.ResponseJsonErr(ctx, errno.Serve.BindErr, msg)
+		uc.ResponseJsonErr(ctx, errno.ReqErr, msg)
 		return
 	}
 
 	u := user.User{
 		Username: v.UserName,
 		Password: v.Password,
-		Status:   status.Active,
+		Status:   enums.StatusActive.Get(),
 	}
 	err := service.User.AddUser(&u).Error
 	if err != nil {
-		uc.ResponseJsonErrLog(ctx, errno.Serve.StoreErr, err, nil)
+		uc.ResponseJsonErrLog(ctx, errno.CtxStoreErr, err, nil)
 		return
 	}
 
@@ -49,31 +49,18 @@ func (uc *userController) Register(ctx *gin.Context) {
 }
 
 func (uc *userController) UserList(ctx *gin.Context) {
-	page := ctx.DefaultQuery("page", "1")
-	per := ctx.DefaultQuery("per", "15")
-	currentPage, err := strconv.Atoi(page)
-	if err != nil {
-		currentPage = 1
-	}
-	perPage, err := strconv.Atoi(per)
-	if err != nil {
-		perPage = 15
-	}
-
 	// 分页管理器
-	p := db.Paginator{
-		CurrentPage: currentPage,
-		PageSize:    perPage,
-	}
+	p := db.NewPaginatorWithCtx(ctx, 1, 15)
+
 	// 查询条件
 	params := map[string]interface{}{
-		"status": status.Active,
+		"status": enums.StatusActive,
 	}
 	// 查询字段
 	columns := []string{"id", "username", "status"}
-	users, err := service.User.UserList(params, columns, nil, &p)
+	users, err := service.User.UserList(params, columns, nil, p)
 	if err != nil {
-		uc.ResponseJsonErrLog(ctx, errno.Serve.ListErr, err, nil)
+		uc.ResponseJsonErrLog(ctx, errno.CtxListErr, err, nil)
 		return
 	}
 	urs := apiResponses.UserResponse(users...).Collection()
@@ -88,14 +75,14 @@ func (uc *userController) ShowUser(ctx *gin.Context) {
 
 	id, err := strconv.ParseUint(i, 10, 64)
 	if err != nil || id <= 0 {
-		uc.ResponseJsonErr(ctx, errno.Serve.BindErr, nil)
+		uc.ResponseJsonErr(ctx, errno.ReqErr, nil)
 		return
 	}
 
 	columns := []string{"id", "username", "status"}
 	u, err := service.User.ShowUser(uint(id), columns)
-	if err != nil || u.Status == status.Disable {
-		uc.ResponseJsonErrLog(ctx, errno.Serve.ShowErr, err, nil)
+	if err != nil || u.Status == enums.StatusDisable.Get() {
+		uc.ResponseJsonErrLog(ctx, errno.CtxShowErr, err, nil)
 		return
 	}
 	ru := apiResponses.UserResponse(*u).Item()
@@ -105,14 +92,14 @@ func (uc *userController) ShowUser(ctx *gin.Context) {
 func (uc *userController) UpdateUser(ctx *gin.Context) {
 	id, err := request.ShouldBindUriUintID(ctx)
 	if err != nil {
-		uc.ResponseJsonErr(ctx, errno.Serve.BindErr, nil)
+		uc.ResponseJsonErr(ctx, errno.ReqErr, nil)
 		return
 	}
 
 	var r = api_request.NewUpdateUserRequest()
 
 	if msg, ok := r.Validate(ctx); !ok {
-		uc.ResponseJsonErr(ctx, errno.Serve.BindErr, msg)
+		uc.ResponseJsonErr(ctx, errno.ReqErr, msg)
 		return
 	}
 
@@ -126,7 +113,7 @@ func (uc *userController) UpdateUser(ctx *gin.Context) {
 
 	err = service.User.UpdateUser(id, data)
 	if err != nil {
-		uc.ResponseJsonErrLog(ctx, errno.Serve.UpdateErr, err, nil)
+		uc.ResponseJsonErrLog(ctx, errno.CtxUpdateErr, err, nil)
 		return
 	}
 
@@ -136,13 +123,13 @@ func (uc *userController) UpdateUser(ctx *gin.Context) {
 func (uc *userController) DestroyUser(ctx *gin.Context) {
 	id, err := request.ShouldBindUriUintID(ctx)
 	if err != nil {
-		uc.ResponseJsonErr(ctx, errno.Serve.BindErr, nil)
+		uc.ResponseJsonErr(ctx, errno.ReqErr, nil)
 		return
 	}
 
 	err = service.User.DestroyUser(id)
 	if err != nil {
-		uc.ResponseJsonErrLog(ctx, errno.Serve.DeleteErr, err, nil)
+		uc.ResponseJsonErrLog(ctx, errno.CtxDeleteErr, err, nil)
 		return
 	}
 

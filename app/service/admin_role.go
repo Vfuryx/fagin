@@ -17,10 +17,10 @@ type adminRoleService struct{}
 
 var AdminRoleService adminRoleService
 
-func (adminRoleService) Index(params gin.H, columns []string, with gin.H, p *db.Paginator) ([]admin_role.AdminRole, error) {
+func (*adminRoleService) Index(params gin.H, columns []string, with gin.H, p *db.Paginator) ([]admin_role.AdminRole, error) {
 	var roles []admin_role.AdminRole
 
-	err := admin_role.Dao().Query(params, columns, with).Paginator(&roles, p)
+	err := admin_role.NewDao().Query(params, columns, with).Paginate(&roles, p)
 	if err != nil {
 		return nil, err
 	}
@@ -28,12 +28,12 @@ func (adminRoleService) Index(params gin.H, columns []string, with gin.H, p *db.
 	return roles, err
 }
 
-func (adminRoleService) Show(id uint, columns []string) (*admin_role.AdminRole, error) {
-	return admin_role.Dao().Show(id, columns)
+func (*adminRoleService) Show(id uint, columns []string) (*admin_role.AdminRole, error) {
+	return admin_role.NewDao().Show(id, columns)
 }
 
-func (adminRoleService) Create(r *admin_role.AdminRole) error {
-	err := admin_role.Dao().Create(r)
+func (*adminRoleService) Create(r *admin_role.AdminRole) error {
+	err := admin_role.NewDao().Create(r)
 	if err != nil {
 		return err
 	}
@@ -46,8 +46,8 @@ func (adminRoleService) Create(r *admin_role.AdminRole) error {
 	return nil
 }
 
-func (adminRoleService) Update(id uint, data gin.H) error {
-	err := admin_role.Dao().Update(id, data)
+func (*adminRoleService) Update(id uint, data gin.H) error {
+	err := admin_role.NewDao().Update(id, data)
 	if err != nil {
 		return err
 	}
@@ -92,14 +92,14 @@ func addPolicies(role *admin_role.AdminRole) error {
 	return nil
 }
 
-func (adminRoleService) Delete(id uint) error {
+func (*adminRoleService) Delete(id uint) error {
 	// 检查角色是否还存在关联
-	ok, err := admin_user_role.Dao().RoleRelationExist(id)
+	ok, err := admin_user_role.NewDao().RoleRelationExist(id)
 	if err != nil {
 		return err
 	}
 	if ok {
-		return errno.Serve.RoleRelationExistErr
+		return errno.SerRoleRelationExistErr
 	}
 
 	adminRole := admin_role.New()
@@ -120,10 +120,10 @@ func (adminRoleService) Delete(id uint) error {
 	return adminRole.Dao().Delete(id)
 }
 
-func (adminRoleService) Deletes(ids []uint) error {
+func (*adminRoleService) Deletes(ids []uint) error {
 	var roles []admin_role.AdminRole
 
-	err := admin_role.Dao().Query(gin.H{"in_id": ids}, []string{"*"}, nil).Find(&roles)
+	err := admin_role.NewDao().Query(gin.H{"in_id": ids}, []string{"*"}, nil).Find(&roles)
 	if err != nil {
 		return err
 	}
@@ -135,19 +135,19 @@ func (adminRoleService) Deletes(ids []uint) error {
 		}
 	}
 
-	return admin_role.Dao().Deletes(ids)
+	return admin_role.NewDao().Deletes(ids)
 }
 
-func (adminRoleService) UpdateStatus(id uint, status int) error {
-	return admin_role.Dao().Update(id, gin.H{
+func (*adminRoleService) UpdateStatus(id uint, status int) error {
+	return admin_role.NewDao().Update(id, gin.H{
 		"status": status,
 	})
 }
 
-func (adminRoleService) List(params gin.H, columns []string, with gin.H) ([]admin_role.AdminRole, error) {
+func (*adminRoleService) List(params gin.H, columns []string, with gin.H) ([]admin_role.AdminRole, error) {
 	var roles []admin_role.AdminRole
 
-	err := admin_role.Dao().Query(params, columns, with).Find(&roles)
+	err := admin_role.NewDao().Query(params, columns, with).Find(&roles)
 	if err != nil {
 		return nil, err
 	}
@@ -156,13 +156,13 @@ func (adminRoleService) List(params gin.H, columns []string, with gin.H) ([]admi
 }
 
 // RemoveRoleMenusCache 清除角色关联菜单缓存
-func (adminRoleService) RemoveRoleMenusCache(roleID uint) error {
+func (*adminRoleService) RemoveRoleMenusCache(roleID uint) error {
 	var admins []admin_user_role.AdminUserRole
 	// 获取角色关联的用户
 	params := gin.H{
 		"role_id": roleID,
 	}
-	err := admin_user_role.Dao().Query(params, []string{"admin_id"}, nil).Find(&admins)
+	err := admin_user_role.NewDao().Query(params, []string{"admin_id"}, nil).Find(&admins)
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
 			return nil
@@ -174,7 +174,7 @@ func (adminRoleService) RemoveRoleMenusCache(roleID uint) error {
 	// 清除用户关联菜单的缓存
 	for _, admin := range admins {
 		_, err = ca.Remove(strconv.FormatUint(uint64(admin.AdminID), 10))
-		if err != nil && err != cache.NotOpenErr {
+		if err != nil && err != cache.ErrNotOpen {
 			return err
 		}
 	}
@@ -182,12 +182,12 @@ func (adminRoleService) RemoveRoleMenusCache(roleID uint) error {
 }
 
 // KeyExist key是否存在
-func (adminRoleService) KeyExist(t uint, ket string) bool {
+func (*adminRoleService) KeyExist(t uint, ket string) bool {
 	params := gin.H{
 		"type": t,
 		"key":  ket,
 	}
-	err := admin_role.Dao().Query(params, []string{"1"}, nil).First(&admin_role.AdminRole{})
+	err := admin_role.NewDao().Query(params, []string{"1"}, nil).First(&admin_role.AdminRole{})
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
 			return true

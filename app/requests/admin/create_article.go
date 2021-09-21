@@ -37,16 +37,15 @@ type createArticle struct {
 
 func NewCreateArticle() *createArticle {
 	r := new(createArticle)
-	r.Request = r
+	r.SetRequest(r)
 	return r
 }
 
-func (createArticle) Message() map[string]string {
-	return map[string]string{
-	}
+func (*createArticle) Message() map[string]string {
+	return map[string]string{}
 }
 
-func (createArticle) Attributes() map[string]string {
+func (*createArticle) Attributes() map[string]string {
 	return map[string]string{
 		"Title":      "标题",
 		"Content":    "内容",

@@ -3,8 +3,8 @@ package cmd
 import (
 	"bufio"
 	"bytes"
-	"fagin/app/utils"
 	"fagin/config"
+	"fagin/utils"
 	"github.com/spf13/cobra"
 	"log"
 	"os"
@@ -57,4 +57,3 @@ var KeyCmd = &cobra.Command{
 		log.Printf("key generate run successfully")
 	},
 }
-

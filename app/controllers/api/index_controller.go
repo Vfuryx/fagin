@@ -4,12 +4,10 @@ import (
 	"fagin/app/errno"
 	"fagin/app/requests/api"
 	"fmt"
-	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
-	"net/http"
 )
 
-type indexController struct{
+type indexController struct {
 	BaseController
 }
 
@@ -26,23 +24,23 @@ func (ic *indexController) Index(ctx *gin.Context) {
 	var v = api_request.NewIndexRequest()
 
 	if data, ok := v.Validate(ctx); !ok {
-		ic.ResponseJsonErr(ctx, errno.Serve.BindErr, data)
+		ic.ResponseJsonErr(ctx, errno.ReqErr, data)
 		return
 	}
 
 	fmt.Println(v)
 
-	// 获取 session
-	session := sessions.Default(ctx)
-	if id := session.Get("user"); id == nil {
-		session.Set("user", 100)
-		// 将 sessionID 存入cookie
-		if err := session.Save(); err != nil {
-			fmt.Println(err)
-		}
-	}
-
-	ctx.String(http.StatusOK, "%v", session.Get("user"))
+	//// 获取 session
+	//session := sessions.Default(ctx)
+	//if id := session.Get("user"); id == nil {
+	//	session.Set("user", 100)
+	//	// 将 sessionID 存入cookie
+	//	if err := session.Save(); err != nil {
+	//		fmt.Println(err)
+	//	}
+	//}
+	//
+	//ctx.String(http.StatusOK, "%v", session.Get("user"))
 
 	//u := user.User{
 	//	Username:	"xfy",

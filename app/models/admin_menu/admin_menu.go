@@ -5,13 +5,14 @@ import (
 	"time"
 )
 
+// AdminMenu 后台菜单
 type AdminMenu struct {
 	ID          uint `gorm:"primarykey"`
 	CreatedAt   time.Time
 	UpdatedAt   time.Time
 	DeletedAt   gorm.DeletedAt `gorm:"index"`
 	Type        uint8          `gorm:"type:tinyint(4) unsigned;not null;default:0;comment:'菜单类型 0:总后台 1:商家后台 2:集团后台';column:type;"`
-	ParentId    uint           `gorm:"type:int(10) unsigned;not null;default:0;comment:'父菜单id';column:parent_id;"`
+	ParentID    uint           `gorm:"type:int(10) unsigned;not null;default:0;comment:'父菜单id';column:parent_id;"`
 	Paths       string         `gorm:"type:varchar(128);not null;default:'';comment:'菜单层级路径 0-1-2';column:paths;"`
 	Title       string         `gorm:"type:varchar(32);not null;default:'';comment:'菜单标题';column:title;"`
 	Name        string         `gorm:"type:varchar(32);not null;default:'';comment:'菜单名称';column:name;"`

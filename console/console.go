@@ -18,4 +18,5 @@ func Handle(cobra *cobra.Command) {
 	cobra.AddCommand(cmd.RequestCmd)
 	cobra.AddCommand(cmd.ResponseCmd)
 	cobra.AddCommand(cmd.ServiceCmd)
+	cobra.AddCommand(cmd.EnumCmd)
 }

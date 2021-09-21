@@ -13,16 +13,15 @@ type createCategory struct {
 
 func NewCreateCategory() *createCategory {
 	r := new(createCategory)
-	r.Request = r
+	r.SetRequest(r)
 	return r
 }
 
-func (createCategory) Message() map[string]string {
-	return map[string]string{
-	}
+func (*createCategory) Message() map[string]string {
+	return map[string]string{}
 }
 
-func (createCategory) Attributes() map[string]string {
+func (*createCategory) Attributes() map[string]string {
 	return map[string]string{
 		"Name":   "名称",
 		"Sort":   "排序",

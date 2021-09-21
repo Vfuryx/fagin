@@ -18,16 +18,16 @@ type updateWebsiteConfig struct {
 	PublicSecurityRecord string `form:"public_security_record" json:"public_security_record" binding:"required,max=32"`
 	WebLogo              string `form:"web_logo" json:"web_logo" binding:"required,max=255"`
 	QRCode               string `form:"qr_code" json:"qr_code" binding:"required,max=255"`
-	request.Validation `binding:"-"`
+	request.Validation   `binding:"-"`
 }
 
 func NewUpdateWebsiteConfig() *updateWebsiteConfig {
 	r := new(updateWebsiteConfig)
-	r.Request = r
+	r.SetRequest(r)
 	return r
 }
 
-func (updateWebsiteConfig) Message() map[string]string {
+func (*updateWebsiteConfig) Message() map[string]string {
 	return map[string]string{
 		//"WebName.required":              "网站名称不能为空",
 		//"WebName.max":                   "网站名称不能大于32位",
@@ -59,7 +59,7 @@ func (updateWebsiteConfig) Message() map[string]string {
 	}
 }
 
-func (updateWebsiteConfig) Attributes() map[string]string {
+func (*updateWebsiteConfig) Attributes() map[string]string {
 	return map[string]string{
 		"WebName":              "网站名称",
 		"WebEnName":            "网站英文名称",

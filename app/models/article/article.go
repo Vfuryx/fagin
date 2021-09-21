@@ -14,8 +14,8 @@ type Article struct {
 	UpdatedAt  time.Time
 	DeletedAt  gorm.DeletedAt    `gorm:"index"`
 	Title      string            `gorm:"type:varchar(128);not null;default:'';comment:'标题';column:title"`
-	Content    string            `gorm:"type:test;not null;comment:'内容';column:content"`
-	Summary    string            `gorm:"type:test;not null;comment:'摘要';column:summary"`
+	Content    string            `gorm:"type:text;not null;comment:'内容';column:content"`
+	Summary    string            `gorm:"type:text;not null;comment:'摘要';column:summary"`
 	AuthorID   uint              `gorm:"index;not null;default:0;comment:'作者id';column:author_id"`
 	CategoryID uint              `gorm:"index;not null;default:0;comment:'作者id';column:category_id"`
 	Status     uint8             `gorm:"not null;default:1;comment:'状态 0:隐藏 1显示';column:status"`

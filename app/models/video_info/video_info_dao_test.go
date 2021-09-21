@@ -22,7 +22,7 @@ func TestUserDaoFlow(t *testing.T) {
 }
 
 func TestAll(t *testing.T) {
-	videoInfo, err := Dao().All([]string{"*"})
+	videoInfo, err := NewDao().All([]string{"*"})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -30,7 +30,7 @@ func TestAll(t *testing.T) {
 }
 
 func TestDestroy(t *testing.T) {
-	err := Dao().Destroy(1)
+	err := NewDao().Destroy(1)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -58,7 +58,7 @@ func TestQuery(t *testing.T) {
 		"status": 1,
 	}
 	columns := []string{"*"}
-	err := Dao().Query(params, columns, nil).Find(&videoInfos)
+	err := NewDao().Query(params, columns, nil).Find(&videoInfos)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -73,7 +73,7 @@ func TestStore(t *testing.T) {
 		Description: "....",
 		Status:      1,
 	}
-	err := Dao().Create(&videoInfo)
+	err := NewDao().Create(&videoInfo)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -81,7 +81,7 @@ func TestStore(t *testing.T) {
 }
 
 func TestUpdate(t *testing.T) {
-	err := Dao().Update(1, map[string]interface{}{
+	err := NewDao().Update(1, map[string]interface{}{
 		"Description": "测试详情",
 	})
 	if err != nil {
@@ -95,11 +95,8 @@ func TestPaginator(t *testing.T) {
 		"status": 1,
 	}
 	columns := []string{"*"}
-	p := db.Paginator{
-		CurrentPage: 1,
-		PerPage:     2,
-	}
-	err := Dao().Query(params, columns, nil).Paginator(&videoInfos, &p)
+	p := db.NewPaginator(1, 2)
+	err := NewDao().Query(params, columns, nil).Paginate(&videoInfos, p)
 	if err != nil {
 		t.Fatal(err)
 	}

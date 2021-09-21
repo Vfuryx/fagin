@@ -5,26 +5,12 @@ import (
 	"time"
 )
 
-// 网站配置缓存管理
-type adminNavsCache struct {
-	cache.SCache
-}
+// NewAdminNavsCache 网站配置缓存管理
+func NewAdminNavsCache(f cache.GetterFunc) *cache.SCache {
+	var c = new(cache.SCache)
+	c.SetConfPrefix("admin:navs:uid:%s")
+	c.SetConfLifeTime(60 * 60 * 24 * time.Second)
+	c.SetFunc(f)
 
-func NewAdminNavsCache(f cache.GetterFunc) *adminNavsCache {
-	var c = new(adminNavsCache)
-	c.Prefix = "admin::navs::uid::"
-	c.LifeTime = 60 * 60 * 24 * time.Second
-	c.Content = f
-	c.SetFunc(c)
 	return c
-}
-
-// Key 获取键名称
-func (c *adminNavsCache) Key(value string) string {
-	return c.Prefix + value
-}
-
-// Lift 默认存在时间
-func (c *adminNavsCache) Lift() time.Duration {
-	return c.LifeTime
 }

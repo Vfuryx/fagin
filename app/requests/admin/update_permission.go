@@ -17,17 +17,15 @@ type updatePermission struct {
 
 func NewUpdatePermission() *updatePermission {
 	r := new(updatePermission)
-	r.Request = r
+	r.SetRequest(r)
 	return r
 }
 
-func (updatePermission) Message() map[string]string {
-	return map[string]string{
-
-	}
+func (*updatePermission) Message() map[string]string {
+	return map[string]string{}
 }
 
-func (updatePermission) Attributes() map[string]string {
+func (*updatePermission) Attributes() map[string]string {
 	return map[string]string{
 		"Name":   "名称",
 		"GID":    "权限分组",
