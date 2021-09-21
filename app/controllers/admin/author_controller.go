@@ -8,6 +8,7 @@ import (
 	"fagin/app/service"
 	"fagin/pkg/db"
 	"fagin/pkg/request"
+
 	"github.com/gin-gonic/gin"
 )
 
@@ -18,16 +19,16 @@ type authorController struct {
 var AuthorController authorController
 
 func (ac *authorController) Index(ctx *gin.Context) {
-	paginator := db.NewPaginator(ctx, 1, 15)
+	paginator := db.NewPaginatorWithCtx(ctx, 1, 15)
 
 	params := gin.H{
 		"orderBy": "id asc",
 	}
 	columns := []string{"id", "name", "sort", "status"}
 
-	authors, err := service.Author.Index(params, columns, nil, &paginator)
+	authors, err := service.Author.Index(params, columns, nil, paginator)
 	if err != nil {
-		ac.ResponseJsonErrLog(ctx, errno.Serve.ListErr, err, nil)
+		ac.ResponseJsonErrLog(ctx, errno.CtxListErr, err, nil)
 		return
 	}
 
@@ -43,14 +44,14 @@ func (ac *authorController) Index(ctx *gin.Context) {
 func (ac *authorController) Show(ctx *gin.Context) {
 	id, err := request.ShouldBindUriUintID(ctx)
 	if err != nil {
-		ac.ResponseJsonErr(ctx, errno.Serve.BindErr, nil)
+		ac.ResponseJsonErr(ctx, errno.ReqErr, nil)
 		return
 	}
 
 	columns := []string{"id", "name", "status"}
 	b, err := service.Author.Show(id, columns)
 	if err != nil {
-		ac.ResponseJsonErrLog(ctx, errno.Serve.ShowErr, err, nil)
+		ac.ResponseJsonErrLog(ctx, errno.CtxShowErr, err, nil)
 		return
 	}
 
@@ -65,7 +66,7 @@ func (ac *authorController) Show(ctx *gin.Context) {
 func (ac *authorController) Store(ctx *gin.Context) {
 	var r = admin_request.NewCreateAuthor()
 	if data, ok := r.Validate(ctx); !ok {
-		ac.ResponseJsonErr(ctx, errno.Serve.BindErr, data)
+		ac.ResponseJsonErr(ctx, errno.ReqErr, data)
 		return
 	}
 
@@ -76,7 +77,7 @@ func (ac *authorController) Store(ctx *gin.Context) {
 
 	err := service.Author.Create(&c)
 	if err != nil {
-		ac.ResponseJsonErrLog(ctx, errno.Serve.StoreErr, err, nil)
+		ac.ResponseJsonErrLog(ctx, errno.CtxStoreErr, err, nil)
 		return
 	}
 
@@ -87,13 +88,13 @@ func (ac *authorController) Store(ctx *gin.Context) {
 func (ac *authorController) Update(ctx *gin.Context) {
 	id, err := request.ShouldBindUriUintID(ctx)
 	if err != nil {
-		ac.ResponseJsonErr(ctx, errno.Serve.BindErr, nil)
+		ac.ResponseJsonErr(ctx, errno.ReqErr, nil)
 		return
 	}
 
 	var r = admin_request.NewCreateAuthor()
 	if data, ok := r.Validate(ctx); !ok {
-		ac.ResponseJsonErr(ctx, errno.Serve.BindErr, data)
+		ac.ResponseJsonErr(ctx, errno.ReqErr, data)
 		return
 	}
 	data := map[string]interface{}{
@@ -102,7 +103,7 @@ func (ac *authorController) Update(ctx *gin.Context) {
 	}
 	err = service.Author.Update(id, data)
 	if err != nil {
-		ac.ResponseJsonErrLog(ctx, errno.Serve.UpdateErr, err, nil)
+		ac.ResponseJsonErrLog(ctx, errno.CtxUpdateErr, err, nil)
 		return
 	}
 
@@ -113,13 +114,13 @@ func (ac *authorController) Update(ctx *gin.Context) {
 func (ac *authorController) Del(ctx *gin.Context) {
 	id, err := request.ShouldBindUriUintID(ctx)
 	if err != nil {
-		ac.ResponseJsonErr(ctx, errno.Serve.BindErr, nil)
+		ac.ResponseJsonErr(ctx, errno.ReqErr, nil)
 		return
 	}
 
 	err = service.Author.Delete(id)
 	if err != nil {
-		ac.ResponseJsonErrLog(ctx, errno.Serve.DeleteErr, err, nil)
+		ac.ResponseJsonErrLog(ctx, errno.CtxDeleteErr, err, nil)
 		return
 	}
 
@@ -135,13 +136,13 @@ func (ac *authorController) Deletes(ctx *gin.Context) {
 	var ids AuthorIDs
 	err := ctx.ShouldBind(&ids)
 	if err != nil {
-		ac.ResponseJsonErr(ctx, errno.Serve.BindErr, nil)
+		ac.ResponseJsonErr(ctx, errno.ReqErr, nil)
 		return
 	}
 
 	err = service.Author.Deletes(ids.IDs)
 	if err != nil {
-		ac.ResponseJsonErrLog(ctx, errno.Serve.DeleteErr, err, nil)
+		ac.ResponseJsonErrLog(ctx, errno.CtxDeleteErr, err, nil)
 		return
 	}
 
@@ -151,14 +152,14 @@ func (ac *authorController) Deletes(ctx *gin.Context) {
 
 func (ac *authorController) All(ctx *gin.Context) {
 	params := gin.H{
-		"status": 1,
-		"orderBy":   "id asc",
+		"status":  1,
+		"orderBy": "id asc",
 	}
 	columns := []string{"id", "name", "status"}
 
 	authors, err := service.Author.All(params, columns, nil)
 	if err != nil {
-		ac.ResponseJsonErrLog(ctx, errno.Serve.ListErr, err, nil)
+		ac.ResponseJsonErrLog(ctx, errno.CtxListErr, err, nil)
 		return
 	}
 

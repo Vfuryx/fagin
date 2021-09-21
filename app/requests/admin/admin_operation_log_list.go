@@ -15,16 +15,15 @@ type adminOperationLogList struct {
 
 func NewAdminOperationLogList() *adminOperationLogList {
 	r := new(adminOperationLogList)
-	r.Request = r
+	r.SetRequest(r)
 	return r
 }
 
-func (adminOperationLogList) Message() map[string]string {
-	return map[string]string{
-	}
+func (*adminOperationLogList) Message() map[string]string {
+	return map[string]string{}
 }
 
-func (adminOperationLogList) Attributes() map[string]string {
+func (*adminOperationLogList) Attributes() map[string]string {
 	return map[string]string{
 		"Path":      "路径",
 		"Method":    "方法",

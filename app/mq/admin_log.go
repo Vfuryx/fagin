@@ -2,6 +2,7 @@ package mq
 
 import (
 	"encoding/json"
+	"errors"
 	"fagin/app"
 	"fagin/app/caches"
 	"fagin/app/models/admin_operation_log"
@@ -10,7 +11,6 @@ import (
 	"fagin/pkg/logger"
 	"fagin/pkg/rabbitmq"
 	"fmt"
-	"github.com/pkg/errors"
 	"github.com/streadway/amqp"
 	"runtime/debug"
 	"sync"
@@ -164,7 +164,7 @@ func LogStore(
 			"PUT":    admin_operation_log.OperationUpdate,
 			"DELETE": admin_operation_log.OperationDelete,
 		}[reqMethod]
-		menuCache := caches.NewAdminOperationLog(func(key string) ([]byte, error) {
+		menuCache := caches.NewAdminOperationLog(func() ([]byte, error) {
 			// 缓存菜单
 			m, err := service.AdminPermissionService.
 				FindByPath(reqMethod, path, []string{"name"})
@@ -173,11 +173,11 @@ func LogStore(
 			}
 			return []byte(m.Name), nil
 		})
-		str, err := menuCache.Get("log::" + reqMethod + ":" + path)
+		str, err := menuCache.Get(reqMethod, path)
 		if err != nil {
 			log.Module = ""
 		} else {
-			log.Module = str
+			log.Module = string(str)
 		}
 		log.Input = string(body)
 	}

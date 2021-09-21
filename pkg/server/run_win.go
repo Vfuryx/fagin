@@ -1,53 +1,23 @@
+//go:build windows
+// +build windows
+
 package server
 
 import (
 	"context"
 	"fagin/app"
-	"fagin/app/mq"
 	"fagin/config"
-	"fagin/pkg/cache"
-	"fagin/pkg/casbins"
-	"fagin/pkg/db"
-	"fagin/pkg/request"
 	"fagin/pkg/router"
 	"fmt"
 	"log"
 	"net/http"
 	"os"
 	"os/signal"
+	"syscall"
 	"time"
 )
 
-func Run() {
-	db.Init()
-	// 关闭orm
-	defer func() {
-		err := db.Close()
-		if err != nil {
-			fmt.Println(err)
-		}
-	}()
-
-	casbins.Init()
-
-	// 初始化redis并且延迟关闭redis
-	defer func() {
-		if cache.Redis != nil {
-			cache.Redis.Close()
-		}
-	}()
-
-	// 初始化翻译器
-	if err := request.InitTrans(config.App.Locale); err != nil {
-		fmt.Printf("init trans failed, err:%v\n", err)
-		return
-	}
-
-	// MQ
-	if config.AMQP.Open {
-		mq.InitMQ()
-	}
-
+func listenAndServe() {
 	// 设置服务
 	srv := &http.Server{
 		Addr:    "127.0.0.1:" + config.App.Port,
@@ -73,14 +43,22 @@ func Run() {
 	// Wait for interrupt signal to gracefully shutdown the server with
 	// a timeout of 5 seconds.
 	quit := make(chan os.Signal)
-	signal.Notify(quit, os.Interrupt)
+	// kill (no param) default send syscanll.SIGTERM
+	// kill -2 is syscall.SIGINT
+	// kill -9 is syscall. SIGKILL but can"t be catch, so don't need add it
+	signal.Notify(quit, syscall.SIGHUP, syscall.SIGINT, syscall.SIGTERM)
 	<-quit
 	log.Println("Shutdown Server ...")
 
-	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
 	defer cancel()
 	if err := srv.Shutdown(ctx); err != nil {
 		log.Fatal("Server Shutdown:", err)
+	}
+	// catching ctx.Done(). timeout of 1 seconds.
+	select {
+	case <-ctx.Done():
+		log.Println("timeout of 1 seconds.")
 	}
 	log.Println("Server exiting")
 }

@@ -11,16 +11,15 @@ type tagList struct {
 
 func NewTagList() *tagList {
 	r := new(tagList)
-	r.Request = r
+	r.SetRequest(r)
 	return r
 }
 
-func (tagList) Message() map[string]string {
-	return map[string]string{
-	}
+func (*tagList) Message() map[string]string {
+	return map[string]string{}
 }
 
-func (tagList) Attributes() map[string]string {
+func (*tagList) Attributes() map[string]string {
 	return map[string]string{
 		"Tag": "名称",
 	}

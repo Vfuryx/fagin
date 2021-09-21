@@ -18,17 +18,17 @@ type createAdminRole struct {
 
 func NewCreateAdminRole() *createAdminRole {
 	r := new(createAdminRole)
-	r.Request = r
+	r.SetRequest(r)
 	return r
 }
 
-func (createAdminRole) Message() map[string]string {
+func (*createAdminRole) Message() map[string]string {
 	return map[string]string{
 		//"Name.required":   "角色名称不能为空",
 	}
 }
 
-func (createAdminRole) Attributes() map[string]string {
+func (*createAdminRole) Attributes() map[string]string {
 	return map[string]string{
 		"Type":          "类型",
 		"Name":          "角色名称",

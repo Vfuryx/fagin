@@ -12,16 +12,14 @@ type permissionList struct {
 
 func NewPermissionList() *permissionList {
 	r := new(permissionList)
-	r.Request = r
+	r.SetRequest(r)
 	return r
 }
-func (permissionList) Message() map[string]string {
-	return map[string]string{
-
-	}
+func (*permissionList) Message() map[string]string {
+	return map[string]string{}
 }
 
-func (permissionList) Attributes() map[string]string {
+func (*permissionList) Attributes() map[string]string {
 	return map[string]string{
 		"Name": "名称",
 	}

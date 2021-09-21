@@ -19,18 +19,18 @@ type createUser struct {
 
 func NewCreateUser() *createUser {
 	r := new(createUser)
-	r.Request = r
+	r.SetRequest(r)
 	return r
 }
 
-func (createUser) Message() map[string]string {
+func (*createUser) Message() map[string]string {
 	return map[string]string{
 		//"NickName.required": "昵称不能为空",
 		//"NickName.max":      "昵称不能大于64位",
 	}
 }
 
-func (createUser) Attributes() map[string]string {
+func (*createUser) Attributes() map[string]string {
 	return map[string]string{
 		"NickName": "昵称",
 		"Phone":    "电话",

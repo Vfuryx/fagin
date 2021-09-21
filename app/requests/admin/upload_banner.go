@@ -14,17 +14,17 @@ type uploadBanner struct {
 
 func NewUploadBanner() *uploadBanner {
 	r := new(uploadBanner)
-	r.Request = r
+	r.SetRequest(r)
 	return r
 }
 
-func (uploadBanner) Message() map[string]string {
+func (*uploadBanner) Message() map[string]string {
 	return map[string]string{
 		//"File.required": "文件不能为空",
 	}
 }
 
-func (uploadBanner) Attributes() map[string]string {
+func (*uploadBanner) Attributes() map[string]string {
 	return map[string]string{
 		"File": "文件",
 	}

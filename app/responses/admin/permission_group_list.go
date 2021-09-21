@@ -1,7 +1,7 @@
 package admin_responses
 
 import (
-	"fagin/app/constants/time_format"
+	"fagin/app"
 	"fagin/app/models/admin_permission_group"
 	"fagin/pkg/response"
 )
@@ -15,7 +15,7 @@ var _ response.IResponse = &permissionGroupList{}
 
 func PermissionGroupList(models ...admin_permission_group.AdminPermissionGroup) *permissionGroupList {
 	res := permissionGroupList{ms: models}
-	res.Collect.IResponse = &res
+	res.SetCollect(&res)
 	return &res
 }
 
@@ -27,7 +27,7 @@ func (res *permissionGroupList) Serialize() []map[string]interface{} {
 			"name":       model.Name,
 			"type":       model.Type,
 			"sort":       model.Sort,
-			"created_at": model.CreatedAt.Format(time_format.Def),
+			"created_at": app.TimeToStr(model.CreatedAt),
 		}
 		sm = append(sm, m)
 	}

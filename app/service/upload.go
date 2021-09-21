@@ -1,7 +1,7 @@
 package service
 
 import (
-	"fagin/app/utils"
+	"fagin/utils"
 	"mime/multipart"
 	"path"
 	"time"

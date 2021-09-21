@@ -14,7 +14,7 @@ var _ response.IResponse = &adminNavList{}
 
 func AdminNavList(models ...admin_menu.AdminMenu) *adminNavList {
 	res := adminNavList{ms: models}
-	res.Collect.IResponse = &res
+	res.SetCollect(&res)
 	return &res
 }
 
@@ -36,7 +36,7 @@ func (res *adminNavList) Serialize() []map[string]interface{} {
 		m := map[string]interface{}{
 			"id":        model.ID,
 			"name":      model.Name,
-			"parentId":  model.ParentId,
+			"parentId":  model.ParentID,
 			"path":      model.Path,
 			"component": model.Component,
 			"redirect":  model.Redirect,

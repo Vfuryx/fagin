@@ -1,8 +1,8 @@
 package service
 
 import (
-	"fagin/app/utils"
 	"fagin/config"
+	"fagin/utils"
 	"fmt"
 	"log"
 	"os"
@@ -45,30 +45,30 @@ type %[2]sService struct{}
 
 var %[3]s %[2]sService
 
-func (%[2]sService) Index(params gin.H, columns []string, with gin.H, p *db.Paginator) (ms []%[2]s.%[3]s, err error) {
-	err = %[2]s.Dao().Query(params, columns, with).Paginator(&ms, p)
+func (*%[2]sService) Index(params gin.H, columns []string, with gin.H, p *db.Paginator) (ms []%[2]s.%[3]s, err error) {
+	err = %[2]s.NewDao().Query(params, columns, with).Paginate(&ms, p)
 	return
 }
 
-func (%[2]sService) Show(id uint, columns []string) (*%[2]s.%[3]s, error) {
+func (*%[2]sService) Show(id uint, columns []string) (*%[2]s.%[3]s, error) {
 	b := %[2]s.New()
-	err := b.Dao().FindById(id, columns)
+	err := b.NewDao().FindById(id, columns)
 	return b, err
 }
 
-func (%[2]sService) Create(m *%[2]s.%[3]s) error {
+func (*%[2]sService) Create(m *%[2]s.%[3]s) error {
 	return %[2]s.Dao().Create(m)
 }
 
-func (%[2]sService) Update(id uint, data gin.H) error {
+func (*%[2]sService) Update(id uint, data gin.H) error {
 	return %[2]s.Dao().Update(id, data)
 }
 
-func (%[2]sService) Delete(id uint) error {
+func (*%[2]sService) Delete(id uint) error {
 	return %[2]s.Dao().Destroy(id)
 }
 
-func (%[2]sService) Deletes(ids []uint) error {
+func (*%[2]sService) Deletes(ids []uint) error {
 	return %[2]s.Dao().Deletes(ids)
 }
 `

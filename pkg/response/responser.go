@@ -1,7 +1,8 @@
 package response
 
 import (
-	"fagin/app/errno"
+	errNo "fagin/app/errno"
+	"fagin/pkg/errno"
 	"github.com/gin-gonic/gin"
 	"net/http"
 )
@@ -15,6 +16,10 @@ type IResponse interface {
 
 type Collect struct {
 	IResponse
+}
+
+func (c *Collect) SetCollect(res IResponse) {
+	c.IResponse = res
 }
 
 func (c Collect) Handle() []map[string]interface{} {
@@ -37,8 +42,9 @@ type Response struct {
 }
 
 func JsonOK(ctx *gin.Context, data interface{}) {
-	Json(ctx, errno.OK, data, nil, http.StatusOK)
+	Json(ctx, errNo.OK, data, nil, http.StatusOK)
 }
+
 func JsonErr(ctx *gin.Context, err error, errors interface{}) {
 	Json(ctx, err, nil, errors, http.StatusOK)
 }
@@ -48,7 +54,7 @@ func JsonWithStatus(ctx *gin.Context, statusCode int, err error, data interface{
 }
 
 func Json(ctx *gin.Context, err error, data interface{}, errors interface{}, statusCode int) {
-	code, msg := errno.DecodeErr(err)
+	code, msg := errno.Decode(err)
 	ctx.JSON(statusCode, Response{
 		Code:    code,
 		Message: msg,

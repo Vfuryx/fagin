@@ -9,4 +9,5 @@ fagin.log
 server.log
 .env
 tmp
+*.pid
 

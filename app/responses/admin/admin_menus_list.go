@@ -1,9 +1,9 @@
 package admin_responses
 
 import (
+	"fagin/app"
 	"fagin/app/models/admin_menu"
 	"fagin/pkg/response"
-	"time"
 )
 
 type adminMenusList struct {
@@ -15,7 +15,7 @@ var _ response.IResponse = &adminMenusList{}
 
 func AdminMenusList(models ...admin_menu.AdminMenu) *adminMenusList {
 	res := adminMenusList{ms: models}
-	res.Collect.IResponse = &res
+	res.SetCollect(&res)
 	return &res
 }
 
@@ -32,7 +32,7 @@ func getMenuTree(data []admin_menu.AdminMenu) []map[string]interface{} {
 		m := make(map[string]interface{})
 		m["children"] = mc
 		m["id"] = menu.ID
-		m["parent_id"] = menu.ParentId
+		m["parent_id"] = menu.ParentID
 		m["paths"] = menu.Paths
 		m["name"] = menu.Name
 		m["title"] = menu.Title
@@ -46,7 +46,7 @@ func getMenuTree(data []admin_menu.AdminMenu) []map[string]interface{} {
 		m["target"] = menu.Target
 		m["status"] = menu.Status
 		m["is_hide_child"] = menu.IsHideChild
-		m["created_at"] = menu.CreatedAt.Format(time.RFC3339)
+		m["created_at"] = app.TimeToStr(menu.CreatedAt)
 		sm = append(sm, m)
 	}
 	return sm

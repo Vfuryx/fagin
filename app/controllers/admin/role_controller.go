@@ -10,8 +10,9 @@ import (
 	"fagin/app/service"
 	"fagin/pkg/db"
 	"fagin/pkg/request"
-	"github.com/gin-gonic/gin"
 	"time"
+
+	"github.com/gin-gonic/gin"
 )
 
 type roleController struct {
@@ -21,11 +22,11 @@ type roleController struct {
 var RoleController roleController
 
 func (rc *roleController) Index(ctx *gin.Context) {
-	paginator := db.NewPaginator(ctx, 1, 15)
+	paginator := db.NewPaginatorWithCtx(ctx, 1, 15)
 
 	var r = adminRequest.NewAdminRoleList()
 	if data, ok := r.Validate(ctx); !ok {
-		rc.ResponseJsonErr(ctx, errno.Serve.BindErr, data)
+		rc.ResponseJsonErr(ctx, errno.ReqErr, data)
 		return
 	}
 
@@ -44,9 +45,9 @@ func (rc *roleController) Index(ctx *gin.Context) {
 	var columns []string
 	with := gin.H{"Menus": nil}
 
-	roles, err := service.AdminRoleService.Index(params, columns, with, &paginator)
+	roles, err := service.AdminRoleService.Index(params, columns, with, paginator)
 	if err != nil {
-		rc.ResponseJsonErrLog(ctx, errno.Serve.ListErr, err, nil)
+		rc.ResponseJsonErrLog(ctx, errno.CtxListErr, err, nil)
 		return
 	}
 
@@ -62,14 +63,14 @@ func (rc *roleController) Index(ctx *gin.Context) {
 func (rc *roleController) Show(ctx *gin.Context) {
 	id, err := request.ShouldBindUriUintID(ctx)
 	if err != nil {
-		rc.ResponseJsonErr(ctx, errno.Serve.BindErr, nil)
+		rc.ResponseJsonErr(ctx, errno.ReqErr, nil)
 		return
 	}
 
 	columns := []string{"*"}
 	r, err := service.AdminRoleService.Show(id, columns)
 	if err != nil {
-		rc.ResponseJsonErrLog(ctx, errno.Serve.ShowErr, err, nil)
+		rc.ResponseJsonErrLog(ctx, errno.CtxShowErr, err, nil)
 		return
 	}
 
@@ -109,17 +110,17 @@ func getPermissions(p []admin_permission.AdminPermission) []gin.H {
 func (rc *roleController) Delete(ctx *gin.Context) {
 	id, err := request.ShouldBindUriUintID(ctx)
 	if err != nil || id == 1 {
-		rc.ResponseJsonErr(ctx, errno.Serve.BindErr, nil)
+		rc.ResponseJsonErr(ctx, errno.ReqErr, nil)
 		return
 	}
 
 	err = service.AdminRoleService.Delete(id)
 	if err != nil {
-		if err == errno.Serve.RoleRelationExistErr {
-			rc.ResponseJsonErr(ctx, errno.Serve.RoleRelationExistErr, nil)
+		if err == errno.SerRoleRelationExistErr {
+			rc.ResponseJsonErr(ctx, errno.SerRoleRelationExistErr, nil)
 			return
 		}
-		rc.ResponseJsonErrLog(ctx, errno.Serve.DeleteErr, err, nil)
+		rc.ResponseJsonErrLog(ctx, errno.CtxDeleteErr, err, nil)
 		return
 	}
 
@@ -130,32 +131,32 @@ func (rc *roleController) Delete(ctx *gin.Context) {
 func (rc *roleController) Store(ctx *gin.Context) {
 	var r = adminRequest.NewCreateAdminRole()
 	if data, ok := r.Validate(ctx); !ok {
-		rc.ResponseJsonErr(ctx, errno.Serve.BindErr, data)
+		rc.ResponseJsonErr(ctx, errno.ReqErr, data)
 		return
 	}
 
 	ok := service.AdminRoleService.KeyExist(0, r.Key)
 	if !ok {
-		rc.ResponseJsonErr(ctx, errno.Serve.RoleKeyExistErr, nil)
+		rc.ResponseJsonErr(ctx, errno.CtxRoleKeyExistErr, nil)
 		return
 	}
 
 	// 获取菜单组
 	var menus []admin_menu.AdminMenu
-	err := admin_menu.Dao().
+	err := admin_menu.NewDao().
 		Query(gin.H{"in_id": r.MenuIDs}, []string{"*"}, nil).
 		Find(&menus)
 	if err != nil {
-		rc.ResponseJsonErrLog(ctx, errno.Serve.StoreErr, err, nil)
+		rc.ResponseJsonErrLog(ctx, errno.CtxStoreErr, err, nil)
 		return
 	}
 	// 获取权限组
 	var permissions []admin_permission.AdminPermission
-	err = admin_permission.Dao().
+	err = admin_permission.NewDao().
 		Query(gin.H{"in_id": r.PermissionIDs}, []string{"*"}, nil).
 		Find(&permissions)
 	if err != nil {
-		rc.ResponseJsonErrLog(ctx, errno.Serve.StoreErr, err, nil)
+		rc.ResponseJsonErrLog(ctx, errno.CtxStoreErr, err, nil)
 		return
 	}
 
@@ -172,7 +173,7 @@ func (rc *roleController) Store(ctx *gin.Context) {
 
 	err = service.AdminRoleService.Create(&role)
 	if err != nil {
-		rc.ResponseJsonErrLog(ctx, errno.Serve.StoreErr, err, nil)
+		rc.ResponseJsonErrLog(ctx, errno.CtxStoreErr, err, nil)
 		return
 	}
 
@@ -183,13 +184,13 @@ func (rc *roleController) Store(ctx *gin.Context) {
 func (rc *roleController) Update(ctx *gin.Context) {
 	id, err := request.ShouldBindUriUintID(ctx)
 	if err != nil {
-		rc.ResponseJsonErr(ctx, errno.Serve.BindErr, nil)
+		rc.ResponseJsonErr(ctx, errno.ReqErr, nil)
 		return
 	}
 
 	var r = adminRequest.NewUpdateAdminRole()
 	if data, ok := r.Validate(ctx); !ok {
-		rc.ResponseJsonErr(ctx, errno.Serve.BindErr, data)
+		rc.ResponseJsonErr(ctx, errno.ReqErr, data)
 		return
 	}
 
@@ -205,14 +206,14 @@ func (rc *roleController) Update(ctx *gin.Context) {
 
 	err = service.AdminRoleService.Update(id, data)
 	if err != nil {
-		rc.ResponseJsonErrLog(ctx, errno.Serve.UpdateErr, err, nil)
+		rc.ResponseJsonErrLog(ctx, errno.CtxUpdateErr, err, nil)
 		return
 	}
 
 	// 清除角色关联菜单缓存
 	err = service.AdminRoleService.RemoveRoleMenusCache(id)
 	if err != nil {
-		rc.ResponseJsonErrLog(ctx, errno.Serve.UpdateErr, err, nil)
+		rc.ResponseJsonErrLog(ctx, errno.CtxUpdateErr, err, nil)
 		return
 	}
 
@@ -227,14 +228,14 @@ type updateAdminRoleStatus struct {
 func (rc *roleController) UpdateStatus(ctx *gin.Context) {
 	id, err := request.ShouldBindUriUintID(ctx)
 	if err != nil {
-		rc.ResponseJsonErr(ctx, errno.Serve.BindErr, nil)
+		rc.ResponseJsonErr(ctx, errno.ReqErr, nil)
 		return
 	}
 
 	var r updateAdminRoleStatus
 	err = ctx.ShouldBind(&r)
 	if err != nil {
-		rc.ResponseJsonErr(ctx, errno.Serve.BindErr, nil)
+		rc.ResponseJsonErr(ctx, errno.ReqErr, nil)
 		return
 	}
 	s := 0
@@ -244,7 +245,7 @@ func (rc *roleController) UpdateStatus(ctx *gin.Context) {
 
 	err = service.AdminRoleService.UpdateStatus(id, s)
 	if err != nil {
-		rc.ResponseJsonErrLog(ctx, errno.Serve.UpdateErr, err, nil)
+		rc.ResponseJsonErrLog(ctx, errno.CtxUpdateErr, err, nil)
 		return
 	}
 
@@ -260,7 +261,7 @@ func (rc *roleController) Roles(ctx *gin.Context) {
 
 	roles, err := service.AdminRoleService.List(params, columns, nil)
 	if err != nil {
-		rc.ResponseJsonErrLog(ctx, errno.Serve.ListErr, err, nil)
+		rc.ResponseJsonErrLog(ctx, errno.CtxListErr, err, nil)
 		return
 	}
 
@@ -275,13 +276,13 @@ func (rc *roleController) Roles(ctx *gin.Context) {
 func (rc *roleController) KeyExist(ctx *gin.Context) {
 	var r = adminRequest.NewRoleKeyExistRequest()
 	if data, ok := r.Validate(ctx); !ok {
-		rc.ResponseJsonErr(ctx, errno.Serve.BindErr, data)
+		rc.ResponseJsonErr(ctx, errno.ReqErr, data)
 		return
 	}
 
 	ok := service.AdminRoleService.KeyExist(0, r.Key)
 	if !ok {
-		rc.ResponseJsonErr(ctx, errno.Serve.RoleKeyExistErr, nil)
+		rc.ResponseJsonErr(ctx, errno.CtxRoleKeyExistErr, nil)
 		return
 	}
 

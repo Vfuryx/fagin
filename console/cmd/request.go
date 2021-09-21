@@ -9,8 +9,8 @@ import (
 
 var RequestCmd = &cobra.Command{
 	Use:   "request",
-	Short: "",
-	Long: ``,
+	Short: "表单验证",
+	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("request called")
 		if len(args) <= 0 {

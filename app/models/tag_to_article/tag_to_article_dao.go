@@ -8,31 +8,31 @@ func New() *TagToArticle {
 	return &TagToArticle{}
 }
 
-type dao struct {
+type Dao struct {
 	db.Dao
 }
 
-var _ db.IDao = &dao{}
+var _ db.IDao = &Dao{}
 
-func (m *TagToArticle) Dao() *dao {
-	dao := &dao{}
-	dao.Dao.M = m
+func (m *TagToArticle) Dao() *Dao {
+	dao := &Dao{}
+	dao.Dao.SetModel(m)
 	return dao
 }
 
-func Dao() *dao {
-	dao := &dao{}
-	dao.Dao.M = New()
+func NewDao() *Dao {
+	dao := &Dao{}
+	dao.Dao.SetModel(New())
 	return dao
 }
 
-func (dao) All(columns []string) (*[]TagToArticle, error) {
+func (d *Dao) All(columns []string) (*[]TagToArticle, error) {
 	var model []TagToArticle
 	err := db.ORM().Select(columns).Find(&model).Error
 	return &model, err
 }
 
-func (d *dao) Query(params map[string]interface{}, columns []string, with map[string]interface{}) db.IDao {
+func (d *Dao) Query(params map[string]interface{}, columns []string, with map[string]interface{}) db.IDao {
 	model := db.ORM().Select(columns)
 
 	var (

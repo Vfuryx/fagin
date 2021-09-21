@@ -1,8 +1,8 @@
 package response
 
 import (
-	"fagin/app/utils"
 	"fagin/config"
+	"fagin/utils"
 	"fmt"
 	"log"
 	"os"
@@ -48,7 +48,7 @@ var _ response.IResponse = &%[2]s{}
 
 func %[3]s(models ...M.m) *%[2]s {
 	res := %[2]s{ms:models}
-	res.Collect.IResponse = &res
+	res.SetCollect(&res)
 	return &res
 }
 

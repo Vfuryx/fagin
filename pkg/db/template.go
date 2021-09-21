@@ -1,8 +1,8 @@
 package db
 
 import (
-	"fagin/app/utils"
 	"fagin/config"
+	"fagin/utils"
 	"fmt"
 	"log"
 	"os"
@@ -65,31 +65,31 @@ func New() *%[2]s {
 	return &%[2]s{}
 }
 
-type dao struct {
+type Dao struct {
 	db.Dao
 }
 
-var _ db.IDao = &dao{}
+var _ db.IDao = &Dao{}
 
-func (m *%[2]s) Dao() *dao {
-	dao := &dao{}
-	dao.Dao.M = m
+func (m *%[2]s) Dao() *Dao {
+	dao := &Dao{}
+	dao.Dao.SetModel(m)
 	return dao
 }
 
-func Dao() *dao {
-	dao := &dao{}
-	dao.Dao.M = New()
+func NewDao() *Dao {
+	dao := &Dao{}
+	dao.Dao.SetModel(New())
 	return dao
 }
 
-func (dao) All(columns []string) (*[]%[2]s, error) {
+func (d *Dao) All(columns []string) (*[]%[2]s, error) {
 	var model []%[2]s
 	err := db.ORM().Select(columns).Find(&model).Error
 	return &model, err
 }
 
-func (d *dao) Query(params map[string]interface{}, columns []string, with map[string]interface{}) db.IDao {
+func (d *Dao) Query(params map[string]interface{}, columns []string, with map[string]interface{}) db.IDao {
 	model := db.ORM().Select(columns)
 
 	var (
@@ -108,8 +108,8 @@ func (d *dao) Query(params map[string]interface{}, columns []string, with map[st
 	return d
 }
 
-func (d *dao) Deletes(ids []uint) error {
-	return db.ORM().Where("id in (?)", ids).Delete(d.M).Error
+func (d *Dao) Deletes(ids []uint) error {
+	return db.ORM().Where("id in (?)", ids).Delete(d.GetModel()).Error
 }
 `
 	content := fmt.Sprintf(ModelTemp, packageName, utils.Camel(name))
@@ -123,4 +123,3 @@ func (d *dao) Deletes(ids []uint) error {
 
 	log.Printf("model create run successfully")
 }
-

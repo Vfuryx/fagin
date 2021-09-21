@@ -11,36 +11,36 @@ type categoryService struct{}
 
 var Category categoryService
 
-func (categoryService) Index(params gin.H, columns []string, with gin.H, p *db.Paginator) ([]category.Category, error) {
+func (*categoryService) Index(params gin.H, columns []string, with gin.H, p *db.Paginator) ([]category.Category, error) {
 	var ms []category.Category
-	err := article.Dao().Query(params, columns, with).Paginator(&ms, p)
+	err := article.NewDao().Query(params, columns, with).Paginate(&ms, p)
 	return ms, err
 }
 
-func (categoryService) Show(id uint, columns []string) (*category.Category, error) {
+func (*categoryService) Show(id uint, columns []string) (*category.Category, error) {
 	b := category.New()
 	err := b.Dao().FindById(id, columns)
 	return b, err
 }
 
-func (categoryService) Create(m *category.Category) error {
-	return category.Dao().Create(m)
+func (*categoryService) Create(m *category.Category) error {
+	return category.NewDao().Create(m)
 }
 
-func (categoryService) Update(id uint, data gin.H) error {
-	return category.Dao().Update(id, data)
+func (*categoryService) Update(id uint, data gin.H) error {
+	return category.NewDao().Update(id, data)
 }
 
-func (categoryService) Delete(id uint) error {
-	return category.Dao().Destroy(id)
+func (*categoryService) Delete(id uint) error {
+	return category.NewDao().Destroy(id)
 }
 
-func (categoryService) Deletes(ids []uint) error {
-	return category.Dao().Deletes(ids)
+func (*categoryService) Deletes(ids []uint) error {
+	return category.NewDao().Deletes(ids)
 }
 
-func (categoryService) All(params gin.H, columns []string, with gin.H) ([]category.Category, error) {
+func (*categoryService) All(params gin.H, columns []string, with gin.H) ([]category.Category, error) {
 	var ms []category.Category
-	err := category.Dao().Query(params, columns, with).Find(&ms)
+	err := category.NewDao().Query(params, columns, with).Find(&ms)
 	return ms, err
 }

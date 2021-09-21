@@ -19,16 +19,15 @@ type createAdminUser struct {
 
 func NewCreateAdminUser() *createAdminUser {
 	r := new(createAdminUser)
-	r.Request = r
+	r.SetRequest(r)
 	return r
 }
 
-func (createAdminUser) Message() map[string]string {
-	return map[string]string{
-	}
+func (*createAdminUser) Message() map[string]string {
+	return map[string]string{}
 }
 
-func (createAdminUser) Attributes() map[string]string {
+func (*createAdminUser) Attributes() map[string]string {
 	return map[string]string{
 		"NickName": "昵称",
 		"Phone":    "电话",

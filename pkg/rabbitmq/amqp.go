@@ -7,9 +7,9 @@ import (
 )
 
 type IAMQP interface {
-	Publish(msg amqp.Publishing) error  // 生产者
-	Consume() error						// 消费者
-	Destroy() error						// 需要关闭channel，才能在下次新建
+	Publish(msg amqp.Publishing) error // 生产者
+	Consume() error                    // 消费者
+	Destroy() error                    // 需要关闭channel，才能在下次新建
 }
 
 type RabbitMQ struct {
@@ -44,7 +44,7 @@ func NewRabbitMQSimple(queueName string) (*RabbitMQ, error) {
 	return NewRabbitMQ(queueName, "", "")
 }
 
-// 需要关闭channel，才能在下次新建
+// Destroy 需要关闭channel，才能在下次新建
 func (r *RabbitMQ) Destroy() error {
 	err := r.Channel.Close()
 	if err != nil {
@@ -56,8 +56,6 @@ func (r *RabbitMQ) Destroy() error {
 	}
 	return nil
 }
-
-
 
 //// 消费者
 //func (r *RabbitMQ) Consume() error {

@@ -14,17 +14,17 @@ type uploadCompanyImage struct {
 
 func NewUploadCompanyImage() *uploadCompanyImage {
 	r := new(uploadCompanyImage)
-	r.Request = r
+	r.SetRequest(r)
 	return r
 }
 
-func (uploadCompanyImage) Message() map[string]string {
+func (*uploadCompanyImage) Message() map[string]string {
 	return map[string]string{
 		"File.required": "文件不能为空",
 	}
 }
 
-func (uploadCompanyImage) Attributes() map[string]string {
+func (*uploadCompanyImage) Attributes() map[string]string {
 	return map[string]string{
 		"File": "文件",
 	}

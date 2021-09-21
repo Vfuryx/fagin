@@ -16,7 +16,7 @@ var _ response.IResponse = &adminUserList{}
 
 func AdminUserList(models ...admin_user.AdminUser) *adminUserList {
 	res := adminUserList{Ms: models}
-	res.Collect.IResponse = &res
+	res.SetCollect(&res)
 	return &res
 }
 
@@ -33,7 +33,7 @@ func (res *adminUserList) Serialize() []map[string]interface{} {
 			"nick_name": model.NickName,
 			"phone":     model.Phone,
 			"roles":     roles,
-			"create_at": model.CreatedAt.Format(app.TimeFormat),
+			"create_at": app.TimeToStr(model.CreatedAt),
 		}
 		sm = append(sm, m)
 	}

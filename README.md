@@ -1,22 +1,24 @@
 # fagin
 
-gin 构建的 api 项目
+Gin 构建的 web 项目
 
 ## 扩展包
 
  包 | 详情 
  ---|--- 
- gin | gin 
- gorm | orm 
+ gin | Gin 
+ gorm V2 | ORM 
  sql-migrate | 数据迁移 
  spf13/viper | 配置 
- spf13/cobra  | cli
- swaggo | swagger 
- casbinV2 | 权限配置 
+ spf13/cobra  | CLI
+ swaggo | Swagger 
+ casbin V2 | 权限配置 
  logrus  | 日志包 
  go-file-rotatelogs | 日志文件分割 
- gin-contrib/sessions | session包
- go-redis/redis/v8 | 缓存
+ gin-contrib/sessions | Session包
+ go-redis V8 | 缓存
+ BigCache | 缓存
+ tableflip | 进程重启
 
 # 热更新 air
 热更新需要安装 air
@@ -27,15 +29,14 @@ gin 构建的 api 项目
 <pre><code>
 ├── app                 项目核心逻辑代码
 │    ├── caches         缓存
-│    ├── constants      常量
-│    ├── errno          错误
+│    ├── enums          枚举
+│    ├── errno          错误码
 │    ├── controllers    控制器
 │    ├── models         模型
 │    ├── middleware     中间件
 │    ├── service        服务
 │    ├── requests       参数校验
 │    ├── responses      响应
-│    ├── utils          工具
 │    └── helper.go      工具方法
 │
 ├── console             控制台
@@ -70,6 +71,7 @@ gin 构建的 api 项目
 │    ├── api.go         api 路由
 │    └── web.go         web 路由
 │ 			
+├── utils               工具
 ├── test                测试文件夹
 ├── storage             存放日志等文件
 ├── .air.toml           热更新配置
@@ -92,6 +94,12 @@ gin 构建的 api 项目
 
 ```
  make install 
+```
+
+#### 生成表枚举模版 「 name 为文件路径加名称」
+
+```
+ make enum name=TestType // 或者 test_type
 ```
 
 #### 生成表单验证模版 「 name 为文件路径加名称」
@@ -157,8 +165,62 @@ gin 构建的 api 项目
 #### 打包程序
 
 ```
- make build
+ make build [name=xxx] 
 ```
+#### 运行程序
+
+```
+ make start name=xxx
+```
+#### 关闭程序
+
+```
+ make stop name=xxx
+```
+
+#### 流水线
+
+```
+ make pipeline name=xxx
+```
+
+#### 交叉编译
+<details>
+<summary>展开查看</summary>
+<pre><code>
+生成 win64位程序
+make build:winamd64 [name=xxx] 
+
+生成 win32位程序
+make build:win386 [name=xxx]
+
+生成 darwin386 程序
+make build:darwin386 [name=xxx]
+
+生成 darwinamd64 程序
+make build:darwinamd64 [name=xxx]
+
+生成 darwinarm程序
+make build:darwinarm [name=xxx]
+
+生成 darwinarm64程序
+make build:darwinarm64 [name=xxx]
+
+生成 linux386程序
+make build:linux386 [name=xxx]
+
+生成 linuxamd64程序
+make build:linuxamd64 [name=xxx]
+
+生成 linuxarm程序
+make build:linuxarm [name=xxx]
+
+生成 linuxarm64程序
+make build:linuxarm64 [name=xxx]
+
+
+</code></pre>
+</details>
 
 #### 生成 api 文档 查看文档 
 
@@ -262,10 +324,10 @@ npm run build:prod  (打包生产环境配置)
 
 ```
 # 新建 env
-cp .env.example .env
+cp .config.yml.example .config.yml
 
 # 配置 env
-vim .env
+vim .config.yml
 
 # 运行
 make 
@@ -273,8 +335,40 @@ or
 go run .
 
 # 打包项目
-make build
+make build name=main
 or
 go build .
 
+```
+
+
+## 进程守护 systemd （ 适配 tableflip ） 
+
+> tableflip 仅适用于 Linux 和 macOS。
+> 运行程序后，会在根目录下生成 pid 文件。
+
+配合 `make pipeline name={name}` 命令，实现 零停机 平滑重启 。
+
+```
+[Unit]
+Description=Service
+
+[Service]
+ExecStart=/path/to/binary -some-flag /path/to/pid-file
+ExecReload=/bin/kill -HUP $MAINPID
+PIDFile=/path/to/pid-file
+```
+
+示例
+
+```
+# /etc/systemd/system/app.service
+
+[Unit]
+Description=Service
+
+[Service]
+ExecStart=/work_path/main
+ExecReload=/bin/kill -HUP $MAINPID
+PIDFile=/work_path/app.pid
 ```

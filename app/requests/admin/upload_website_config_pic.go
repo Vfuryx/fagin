@@ -14,17 +14,17 @@ type uploadWebsiteConfigPic struct {
 
 func NewUploadWebsiteConfigPic() *uploadWebsiteConfigPic {
 	r := new(uploadWebsiteConfigPic)
-	r.Request = r
+	r.SetRequest(r)
 	return r
 }
 
-func (uploadWebsiteConfigPic) Message() map[string]string {
+func (*uploadWebsiteConfigPic) Message() map[string]string {
 	return map[string]string{
 		"File.required": "文件不能为空",
 	}
 }
 
-func (uploadWebsiteConfigPic) Attributes() map[string]string {
+func (*uploadWebsiteConfigPic) Attributes() map[string]string {
 	return map[string]string{
 		"File": "文件",
 	}

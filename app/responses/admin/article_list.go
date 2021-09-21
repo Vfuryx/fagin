@@ -15,7 +15,7 @@ var _ response.IResponse = &articleList{}
 
 func ArticleList(models ...article.Article) *articleList {
 	res := articleList{Ms: models}
-	res.Collect.IResponse = &res
+	res.SetCollect(&res)
 	return &res
 }
 
@@ -25,21 +25,21 @@ func (res *articleList) Serialize() []map[string]interface{} {
 		tags := make([]map[string]interface{}, 0, 20)
 		for _, t := range model.Tags {
 			m := map[string]interface{}{
-				"id": t.ID,
+				"id":   t.ID,
 				"name": t.Name,
 			}
 			tags = append(tags, m)
 		}
 		m := map[string]interface{}{
-			"id": model.ID,
-			"title": model.Title,
-			"author_id": model.AuthorID,
+			"id":          model.ID,
+			"title":       model.Title,
+			"author_id":   model.AuthorID,
 			"category_id": model.CategoryID,
-			"post_at": model.PostAt.Format(app.TimeFormat),
-			"status": model.Status,
-			"author": model.Author.Name,
-			"category": model.Category.Name,
-			"tags": tags,
+			"post_at":     app.TimeToStr(model.PostAt),
+			"status":      model.Status,
+			"author":      model.Author.Name,
+			"category":    model.Category.Name,
+			"tags":        tags,
 		}
 		sm = append(sm, m)
 	}

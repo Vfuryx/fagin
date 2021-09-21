@@ -8,31 +8,31 @@ func New() *AdminOperationLog {
 	return &AdminOperationLog{}
 }
 
-type dao struct {
+type Dao struct {
 	db.Dao
 }
 
-var _ db.IDao = &dao{}
+var _ db.IDao = &Dao{}
 
-func (m *AdminOperationLog) Dao() *dao {
-	dao := &dao{}
-	dao.Dao.M = m
+func (m *AdminOperationLog) Dao() *Dao {
+	dao := &Dao{}
+	dao.Dao.SetModel(m)
 	return dao
 }
 
-func Dao() *dao {
-	dao := &dao{}
-	dao.Dao.M = New()
+func NewDao() *Dao {
+	dao := &Dao{}
+	dao.Dao.SetModel(New())
 	return dao
 }
 
-func (dao) All(columns []string) (*[]AdminOperationLog, error) {
+func (d *Dao) All(columns []string) (*[]AdminOperationLog, error) {
 	var model []AdminOperationLog
 	err := db.ORM().Select(columns).Find(&model).Error
 	return &model, err
 }
 
-func (d *dao) Query(params map[string]interface{}, columns []string, with map[string]interface{}) db.IDao {
+func (d *Dao) Query(params map[string]interface{}, columns []string, with map[string]interface{}) db.IDao {
 	model := db.ORM().Select(columns)
 
 	var (

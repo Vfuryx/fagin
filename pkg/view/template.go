@@ -19,5 +19,5 @@ func DebugPrintLoadTemplate(temp *t.Template) {
 	if !strings.HasSuffix(format, "\n") {
 		format += "\n"
 	}
-	fmt.Fprintf(gin.DefaultWriter, "[GIN-debug] "+format, len(temp.Templates()), buf.String())
+	_, _ = fmt.Fprintf(gin.DefaultWriter, "[GIN-debug] "+format, len(temp.Templates()), buf.String())
 }

@@ -14,15 +14,14 @@ type loginRequest struct {
 
 func NewLoginRequest() *loginRequest {
 	r := new(loginRequest)
-	r.Request = r
+	r.SetRequest(r)
 	return r
 }
-func (loginRequest) Message() map[string]string {
-	return map[string]string{
-	}
+func (*loginRequest) Message() map[string]string {
+	return map[string]string{}
 }
 
-func (loginRequest) Attributes() map[string]string {
+func (*loginRequest) Attributes() map[string]string {
 	return map[string]string{
 		"Name":     "用户名",
 		"Password": "密码",

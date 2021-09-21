@@ -2,6 +2,7 @@ package app
 
 import (
 	"encoding/json"
+	"fagin/app/enums"
 	"fagin/config"
 	"fagin/pkg/logger"
 	"fagin/pkg/response"
@@ -12,9 +13,6 @@ import (
 	"net/http"
 	"time"
 )
-
-// TimeFormat 默认时间格式
-var TimeFormat = config.App.TimeFormat
 
 // IsProd 是否正式环境
 func IsProd() bool {
@@ -66,14 +64,6 @@ func Compare(hashedPassword, password string) error {
 	return bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(password))
 }
 
-// Btoi 布尔转数字
-func Btoi(b bool) int {
-	if b {
-		return 1
-	}
-	return 0
-}
-
 // GetLocation 根基IP获取地址信息
 func GetLocation(ip string) string {
 	if ip == "127.0.0.1" || ip == "localhost" {
@@ -103,4 +93,19 @@ func Log(opt ...string) *logrus.Logger {
 		return logger.Log
 	}
 	return logger.New(opt[0])
+}
+
+// Now 获取当前时间
+func Now() time.Time {
+	return time.Now().In(config.App.Timezone)
+}
+
+// TimeToStr 时间转字符串
+func TimeToStr(t time.Time) string {
+	return t.In(config.App.Timezone).Format(enums.TimeFormatDef.Get())
+}
+
+// StrToTime 时间转字符串
+func StrToTime(value string) (time.Time, error) {
+	return time.ParseInLocation(enums.TimeFormatDef.Get(), value, config.App.Timezone)
 }

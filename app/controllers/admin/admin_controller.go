@@ -6,16 +6,17 @@ import (
 	"fagin/app/errno"
 	"fagin/app/models/admin_role"
 	"fagin/app/models/admin_user"
-	"fagin/app/requests/admin"
+	admin_request "fagin/app/requests/admin"
 	adminResponse "fagin/app/responses/admin"
 	"fagin/app/service"
 	"fagin/app/service/admin_auth"
 	"fagin/pkg/cache"
 	"fagin/pkg/db"
 	"fagin/pkg/request"
+	"strconv"
+
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
-	"strconv"
 )
 
 type adminsController struct {
@@ -36,11 +37,11 @@ var AdminsController adminsController
 // @Success 200 {object} response.Response "正确 {"code":0,"message":"OK","data":{"token":"XXXXX"}} <br/> 错误 {"code": 20102,"message": "找不到用户"} <br/> "{code": 20105, "message": "密码不正确"}"
 // @Router /admin/api/v1/admins/ [post]
 func (ac *adminsController) Index(ctx *gin.Context) {
-	paginator := db.NewPaginator(ctx, 1, 15)
+	paginator := db.NewPaginatorWithCtx(ctx, 1, 15)
 
 	var r = admin_request.NewAdminUserList()
 	if data, ok := r.Validate(ctx); !ok {
-		ac.ResponseJsonErr(ctx, errno.Serve.BindErr, data)
+		ac.ResponseJsonErr(ctx, errno.ReqErr, data)
 		return
 	}
 
@@ -61,9 +62,9 @@ func (ac *adminsController) Index(ctx *gin.Context) {
 		},
 	}
 
-	users, err := service.AdminUserService.Index(params, columns, with, &paginator)
+	users, err := service.AdminUserService.Index(params, columns, with, paginator)
 	if err != nil {
-		ac.ResponseJsonErrLog(ctx, errno.Serve.ListErr, err, nil)
+		ac.ResponseJsonErrLog(ctx, errno.CtxListErr, err, nil)
 		return
 	}
 
@@ -79,7 +80,7 @@ func (ac *adminsController) Index(ctx *gin.Context) {
 func (ac *adminsController) Show(ctx *gin.Context) {
 	id, err := request.ShouldBindUriUintID(ctx)
 	if err != nil {
-		ac.ResponseJsonErr(ctx, errno.Serve.BindErr, err)
+		ac.ResponseJsonErr(ctx, errno.ReqErr, err)
 		return
 	}
 
@@ -89,7 +90,7 @@ func (ac *adminsController) Show(ctx *gin.Context) {
 	}}
 	user, err := service.AdminUserService.Show(id, columns, with)
 	if err != nil {
-		ac.ResponseJsonErrLog(ctx, errno.Serve.ShowErr, err, nil)
+		ac.ResponseJsonErrLog(ctx, errno.CtxShowErr, err, nil)
 		return
 	}
 
@@ -118,13 +119,13 @@ func (ac *adminsController) Show(ctx *gin.Context) {
 func (ac *adminsController) Delete(ctx *gin.Context) {
 	id, err := request.ShouldBindUriUintID(ctx)
 	if err != nil {
-		ac.ResponseJsonErr(ctx, errno.Serve.BindErr, err)
+		ac.ResponseJsonErr(ctx, errno.ReqErr, err)
 		return
 	}
 
 	err = service.AdminUserService.Delete(id)
 	if err != nil {
-		ac.ResponseJsonErrLog(ctx, errno.Serve.DeleteErr, err, nil)
+		ac.ResponseJsonErrLog(ctx, errno.CtxDeleteErr, err, nil)
 		return
 	}
 
@@ -136,28 +137,28 @@ func (ac *adminsController) Delete(ctx *gin.Context) {
 func (ac *adminsController) Store(ctx *gin.Context) {
 	var r = admin_request.NewCreateAdminUser()
 	if data, ok := r.Validate(ctx); !ok {
-		ac.ResponseJsonErr(ctx, errno.Serve.BindErr, data)
+		ac.ResponseJsonErr(ctx, errno.ReqErr, data)
 		return
 	}
 
 	ok := service.AdminUserService.UsernameExist(r.Username, 0)
 	if !ok {
-		ac.ResponseJsonErr(ctx, errno.Serve.AdminUsernameExistErr, nil)
+		ac.ResponseJsonErr(ctx, errno.CtxUserNotFoundErr, nil)
 		return
 	}
 
 	params := gin.H{"in_id": r.Roles, "type": 0}
 	// 获取权限组
 	var roles []admin_role.AdminRole
-	err := admin_role.Dao().Query(params, []string{"*"}, nil).Find(&roles)
+	err := admin_role.NewDao().Query(params, []string{"*"}, nil).Find(&roles)
 	if err != nil {
-		ac.ResponseJsonErrLog(ctx, errno.Serve.StoreErr, err, nil)
+		ac.ResponseJsonErrLog(ctx, errno.CtxStoreErr, err, nil)
 		return
 	}
 
 	pw, err := app.Encrypt(r.Password)
 	if err != nil {
-		ac.ResponseJsonErrLog(ctx, errno.Serve.StoreErr, err, nil)
+		ac.ResponseJsonErrLog(ctx, errno.CtxStoreErr, err, nil)
 		return
 	}
 
@@ -175,7 +176,7 @@ func (ac *adminsController) Store(ctx *gin.Context) {
 
 	err = service.AdminUserService.Create(&user, roles)
 	if err != nil {
-		ac.ResponseJsonErrLog(ctx, errno.Serve.StoreErr, err, nil)
+		ac.ResponseJsonErrLog(ctx, errno.CtxStoreErr, err, nil)
 		return
 	}
 
@@ -187,19 +188,19 @@ func (ac *adminsController) Store(ctx *gin.Context) {
 func (ac *adminsController) Update(ctx *gin.Context) {
 	id, err := request.ShouldBindUriUintID(ctx)
 	if err != nil {
-		ac.ResponseJsonErr(ctx, errno.Serve.BindErr, err)
+		ac.ResponseJsonErr(ctx, errno.ReqErr, err)
 		return
 	}
 
 	var r = admin_request.NewUpdateAdminUser()
 	if data, ok := r.Validate(ctx); !ok {
-		ac.ResponseJsonErr(ctx, errno.Serve.BindErr, data)
+		ac.ResponseJsonErr(ctx, errno.ReqErr, data)
 		return
 	}
 
 	ok := service.AdminUserService.UsernameExist(r.Username, id)
 	if !ok {
-		ac.ResponseJsonErr(ctx, errno.Serve.AdminUsernameExistErr, nil)
+		ac.ResponseJsonErr(ctx, errno.CtxUserNotFoundErr, nil)
 		return
 	}
 
@@ -215,14 +216,14 @@ func (ac *adminsController) Update(ctx *gin.Context) {
 	}
 	err = service.AdminUserService.Update(id, data)
 	if err != nil {
-		ac.ResponseJsonErrLog(ctx, errno.Serve.UpdateErr, err, nil)
+		ac.ResponseJsonErrLog(ctx, errno.CtxUpdateErr, err, nil)
 		return
 	}
 
 	ca := caches.NewAdminNavsCache(nil)
 	_, err = ca.Remove(strconv.FormatUint(uint64(id), 10))
-	if err != nil && err != cache.NotOpenErr {
-		ac.ResponseJsonErrLog(ctx, errno.Serve.UpdateErr, err, nil)
+	if err != nil && err != cache.ErrNotOpen {
+		ac.ResponseJsonErrLog(ctx, errno.CtxUpdateErr, err, nil)
 	}
 
 	ac.ResponseJsonOK(ctx, nil)
@@ -236,14 +237,14 @@ type updateAdminStatus struct {
 func (ac *adminsController) UpdateStatus(ctx *gin.Context) {
 	id, err := request.ShouldBindUriUintID(ctx)
 	if err != nil {
-		ac.ResponseJsonErr(ctx, errno.Serve.BindErr, err)
+		ac.ResponseJsonErr(ctx, errno.ReqErr, err)
 		return
 	}
 
 	var r updateAdminStatus
 	err = ctx.ShouldBind(&r)
 	if err != nil {
-		ac.ResponseJsonErr(ctx, errno.Serve.BindErr, err)
+		ac.ResponseJsonErr(ctx, errno.ReqErr, err)
 		return
 	}
 	s := 0
@@ -253,7 +254,7 @@ func (ac *adminsController) UpdateStatus(ctx *gin.Context) {
 
 	err = service.AdminUserService.UpdateStatus(id, s)
 	if err != nil {
-		ac.ResponseJsonErrLog(ctx, errno.Serve.UpdateErr, err, nil)
+		ac.ResponseJsonErrLog(ctx, errno.CtxUpdateErr, err, nil)
 		return
 	}
 
@@ -265,19 +266,19 @@ func (ac *adminsController) UpdateStatus(ctx *gin.Context) {
 func (ac *adminsController) ResetPassword(ctx *gin.Context) {
 	id, err := request.ShouldBindUriUintID(ctx)
 	if err != nil {
-		ac.ResponseJsonErr(ctx, errno.Serve.BindErr, err)
+		ac.ResponseJsonErr(ctx, errno.ReqErr, err)
 		return
 	}
 
 	var r = admin_request.NewResetAdminUser()
 	if data, ok := r.Validate(ctx); !ok {
-		ac.ResponseJsonErr(ctx, errno.Serve.BindErr, data)
+		ac.ResponseJsonErr(ctx, errno.ReqErr, data)
 		return
 	}
 
 	pw, err := app.Encrypt(r.Password)
 	if err != nil {
-		ac.ResponseJsonErrLog(ctx, errno.Serve.UpdateErr, err, nil)
+		ac.ResponseJsonErrLog(ctx, errno.CtxUpdateErr, err, nil)
 		return
 	}
 
@@ -286,7 +287,7 @@ func (ac *adminsController) ResetPassword(ctx *gin.Context) {
 	}
 	err = service.AdminUserService.Update(id, data)
 	if err != nil {
-		ac.ResponseJsonErrLog(ctx, errno.Serve.UpdateErr, err, nil)
+		ac.ResponseJsonErrLog(ctx, errno.CtxUpdateErr, err, nil)
 		return
 	}
 
@@ -298,7 +299,7 @@ func (ac *adminsController) ResetPassword(ctx *gin.Context) {
 func (ac *adminsController) Logout(ctx *gin.Context) {
 	uid, err := request.ShouldBindUriUintID(ctx)
 	if err != nil {
-		ac.ResponseJsonErr(ctx, errno.Serve.BindErr, err)
+		ac.ResponseJsonErr(ctx, errno.ReqErr, err)
 		return
 	}
 	_ = admin_auth.AdminAuth.Logout(uid)
@@ -309,13 +310,13 @@ func (ac *adminsController) Logout(ctx *gin.Context) {
 func (ac *adminsController) UsernameExist(ctx *gin.Context) {
 	var r = admin_request.NewAdminUsernameExistRequest()
 	if data, ok := r.Validate(ctx); !ok {
-		ac.ResponseJsonErr(ctx, errno.Serve.BindErr, data)
+		ac.ResponseJsonErr(ctx, errno.ReqErr, data)
 		return
 	}
 
 	ok := service.AdminUserService.UsernameExist(r.Username, r.ID)
 	if !ok {
-		ac.ResponseJsonErr(ctx, errno.Serve.AdminUsernameExistErr, nil)
+		ac.ResponseJsonErr(ctx, errno.CtxUserNotFoundErr, nil)
 		return
 	}
 

@@ -1,8 +1,8 @@
 package request
 
 import (
-	"fagin/app/utils"
 	"fagin/config"
+	"fagin/utils"
 	"fmt"
 	"log"
 	"os"
@@ -49,17 +49,17 @@ func New%[4]s() *%[2]s {
 	return r
 }
 
-func (%[2]s) Message() map[string]string {
+func (*%[2]s) Message() map[string]string {
 	return map[string]string{
 	}
 }
 
-func (%[2]s) Attributes() map[string]string {
+func (*%[2]s) Attributes() map[string]string {
 	return map[string]string{
 	}
 }
 
-//func (r %[2]s) Validate(ctx *gin.Context) (map[string]string, bool) {
+//func (r *%[2]s) Validate(ctx *gin.Context) (map[string]string, bool) {
 //	return request.Validated(r, ctx)
 //}
 `

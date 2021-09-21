@@ -10,7 +10,7 @@ import (
 var IsConsole bool
 
 func init() {
-	flag.BoolVar(&IsConsole, "c", false, "cmd 代表 true")
+	flag.BoolVar(&IsConsole, "c", false, "-c 代表命令模式 cmd 代表 true")
 }
 
 // @title server

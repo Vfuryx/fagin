@@ -8,31 +8,31 @@ func New() *AdminUserRole {
 	return &AdminUserRole{}
 }
 
-type dao struct {
+type Dao struct {
 	db.Dao
 }
 
-var _ db.IDao = &dao{}
+var _ db.IDao = &Dao{}
 
-func (m *AdminUserRole) Dao() *dao {
-	dao := &dao{}
-	dao.Dao.M = m
+func (m *AdminUserRole) Dao() *Dao {
+	dao := &Dao{}
+	dao.Dao.SetModel(m)
 	return dao
 }
 
-func Dao() *dao {
-	dao := &dao{}
-	dao.Dao.M = New()
+func NewDao() *Dao {
+	dao := &Dao{}
+	dao.Dao.SetModel(New())
 	return dao
 }
 
-func (dao) All(columns []string) (*[]AdminUserRole, error) {
+func (d *Dao) All(columns []string) (*[]AdminUserRole, error) {
 	var model []AdminUserRole
 	err := db.ORM().Select(columns).Find(&model).Error
 	return &model, err
 }
 
-func (d *dao) Query(params map[string]interface{}, columns []string, with map[string]interface{}) db.IDao {
+func (d *Dao) Query(params map[string]interface{}, columns []string, with map[string]interface{}) db.IDao {
 	model := db.ORM().Select(columns)
 
 	var (
@@ -61,14 +61,14 @@ func (d *dao) Query(params map[string]interface{}, columns []string, with map[st
 	return d
 }
 
-func (d *dao) Deletes(ids []uint) error {
-	return db.ORM().Where("id in (?)", ids).Delete(d.M).Error
+func (d *Dao) Deletes(ids []uint) error {
+	return db.ORM().Where("id in (?)", ids).Delete(d.GetModel()).Error
 }
 
 // RoleRelationExist 是否存在角色关联
-func (d *dao) RoleRelationExist(roleID uint) (bool, error) {
+func (d *Dao) RoleRelationExist(roleID uint) (bool, error) {
 	var count int64
-	err := db.ORM().Model(d.M).Where("role_id = ?", roleID).Count(&count).Error
+	err := db.ORM().Model(d.GetModel()).Where("role_id = ?", roleID).Count(&count).Error
 	if err != nil {
 		return false, err
 	}

@@ -12,16 +12,17 @@ import (
 	"fagin/app/service"
 	"fagin/pkg/db"
 	"fagin/pkg/request"
+	"strconv"
+
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
-	"strconv"
 )
 
 type indexController struct {
 	BaseController
 }
 
-var IndexController indexController
+var IndexController indexController // 外部无法修改成 nil
 
 // Home
 // @Summary 首页
@@ -30,27 +31,32 @@ var IndexController indexController
 // @Success 200
 // @Router / [get]
 func (ic *indexController) Home(ctx *gin.Context) {
+	var err error
 	str := ctx.GetString("web_cate")
 	var cs []category.Category
-	err := json.Unmarshal([]byte(str), &cs)
-	if err != nil {
-		ic.ResponseJsonErr(ctx, err, "")
-		return
+	if str != "" {
+		if err = json.Unmarshal([]byte(str), &cs); err != nil {
+			ic.ResponseJsonErr(ctx, err, "")
+			return
+		}
 	}
+
 	// 获取标签
 	str = ctx.GetString("web_tags")
 	var tags []tag.Tag
-	err = json.Unmarshal([]byte(str), &tags)
-	if err != nil {
-		ic.ResponseJsonErr(ctx, errno.Serve.ShowErr, err.Error())
-		return
+	if str != "" {
+		if err = json.Unmarshal([]byte(str), &tags); err != nil {
+			ic.ResponseJsonErr(ctx, errno.CtxShowErr, err.Error())
+			return
+		}
 	}
+
 	// 获取文章
-	paginator := db.NewPaginator(ctx, 1, 10)
-	homeArticle := caches.NewHomeArticles(func(key string) ([]byte, error) {
+	paginator := db.NewPaginatorWithCtx(ctx, 1, 10)
+	homeArticle := caches.NewHomeArticles(func() ([]byte, error) {
 		params := gin.H{
-			"status": 1,
-			"orderBy":   "post_at desc, id asc",
+			"status":  1,
+			"orderBy": "post_at desc, id asc",
 		}
 		columns := []string{"id", "title", "author_id", "category_id", "post_at", "status"}
 		with := gin.H{
@@ -60,21 +66,21 @@ func (ic *indexController) Home(ctx *gin.Context) {
 				return db.Where("status = ?", 1)
 			},
 		}
-		data, err := service.Article.Index(params, columns, with, &paginator)
+		data, err := service.Article.Index(params, columns, with, paginator)
 		if err != nil {
 			return nil, err
 		}
 		return json.Marshal(data)
 	})
-	str, err = homeArticle.Get(strconv.Itoa(paginator.CurrentPage))
+	bs, err := homeArticle.Get(strconv.Itoa(paginator.CurrentPage))
 	if err != nil {
-		ic.ResponseJsonErrLog(ctx, errno.Serve.ListErr, err.Error(), nil)
+		ic.ResponseJsonErrLog(ctx, errno.CtxListErr, err.Error(), nil)
 		return
 	}
 	var articles []article.Article
-	err = json.Unmarshal([]byte(str), &articles)
+	err = json.Unmarshal(bs, &articles)
 	if err != nil {
-		ic.ResponseJsonErrLog(ctx, errno.Serve.ListErr, err.Error(), nil)
+		ic.ResponseJsonErrLog(ctx, errno.CtxListErr, err.Error(), nil)
 		return
 	}
 
@@ -93,7 +99,7 @@ func (ic *indexController) Category(ctx *gin.Context) {
 	var cs []category.Category
 	err := json.Unmarshal([]byte(str), &cs)
 	if err != nil {
-		ic.ResponseJsonErr(ctx, errno.Serve.ListErr, err.Error())
+		ic.ResponseJsonErr(ctx, errno.CtxListErr, err.Error())
 		return
 	}
 
@@ -102,13 +108,13 @@ func (ic *indexController) Category(ctx *gin.Context) {
 	var tags []tag.Tag
 	err = json.Unmarshal([]byte(str), &tags)
 	if err != nil {
-		ic.ResponseJsonErr(ctx, errno.Serve.ListErr, err.Error())
+		ic.ResponseJsonErr(ctx, errno.CtxListErr, err.Error())
 		return
 	}
 
 	var r = webRequest.NewCategoryList()
 	if data, ok := r.Validate(ctx); !ok {
-		ic.ResponseJsonErr(ctx, errno.Serve.ListErr, data)
+		ic.ResponseJsonErr(ctx, errno.CtxListErr, data)
 		return
 	}
 
@@ -120,10 +126,10 @@ func (ic *indexController) Category(ctx *gin.Context) {
 			return db.Where("status = ?", 1)
 		},
 	}
-	paginator := db.NewPaginator(ctx, 1, 10)
-	articles, err := service.Article.ByCate(r.Cate, columns, with, &paginator)
+	paginator := db.NewPaginatorWithCtx(ctx, 1, 10)
+	articles, err := service.Article.ByCate(r.Cate, columns, with, paginator)
 	if err != nil {
-		ic.ResponseJsonErrLog(ctx, errno.Serve.ListErr, err, nil)
+		ic.ResponseJsonErrLog(ctx, errno.CtxListErr, err, nil)
 		return
 	}
 
@@ -141,7 +147,7 @@ func (ic *indexController) Tag(ctx *gin.Context) {
 	var cs []category.Category
 	err := json.Unmarshal([]byte(str), &cs)
 	if err != nil {
-		ic.ResponseJsonErr(ctx, errno.Serve.ShowErr, nil)
+		ic.ResponseJsonErr(ctx, errno.CtxShowErr, nil)
 		return
 	}
 
@@ -150,13 +156,13 @@ func (ic *indexController) Tag(ctx *gin.Context) {
 	var tags []tag.Tag
 	err = json.Unmarshal([]byte(str), &tags)
 	if err != nil {
-		ic.ResponseJsonErr(ctx, errno.Serve.ShowErr, nil)
+		ic.ResponseJsonErr(ctx, errno.CtxShowErr, nil)
 		return
 	}
 
 	var r = webRequest.NewTagList()
 	if data, ok := r.Validate(ctx); !ok {
-		ic.ResponseJsonErr(ctx, errno.Serve.ShowErr, data)
+		ic.ResponseJsonErr(ctx, errno.CtxShowErr, data)
 		return
 	}
 
@@ -168,10 +174,10 @@ func (ic *indexController) Tag(ctx *gin.Context) {
 			return db.Where("status = ?", 1)
 		},
 	}
-	paginator := db.NewPaginator(ctx, 1, 10)
-	articles, err := service.Article.ByTag(r.Tag, columns, with, &paginator)
+	paginator := db.NewPaginatorWithCtx(ctx, 1, 10)
+	articles, err := service.Article.ByTag(r.Tag, columns, with, paginator)
 	if err != nil {
-		ic.ResponseJsonErrLog(ctx, errno.Serve.ListErr, err, nil)
+		ic.ResponseJsonErrLog(ctx, errno.CtxListErr, err, nil)
 		return
 	}
 
@@ -189,17 +195,17 @@ func (ic *indexController) Article(ctx *gin.Context) {
 	var cs []category.Category
 	err := json.Unmarshal([]byte(str), &cs)
 	if err != nil {
-		ic.ResponseJsonErr(ctx, errno.Serve.ListErr, err)
+		ic.ResponseJsonErr(ctx, errno.CtxListErr, err)
 		return
 	}
 
 	id, err := request.ShouldBindUriUintID(ctx)
 	if err != nil {
-		ic.ResponseJsonErr(ctx, errno.Serve.BindErr, err)
+		ic.ResponseJsonErr(ctx, errno.ReqErr, err)
 		return
 	}
 
-	webArticle := caches.NewWebArticle(func(key string) ([]byte, error) {
+	webArticle := caches.NewWebArticle(func() ([]byte, error) {
 		params := gin.H{
 			"id":     id,
 			"status": 1,
@@ -219,15 +225,15 @@ func (ic *indexController) Article(ctx *gin.Context) {
 		}
 		return json.Marshal(art)
 	})
-	str, err = webArticle.Get(strconv.FormatUint(uint64(id), 10))
+	bs, err := webArticle.Get(strconv.FormatUint(uint64(id), 10))
 	if err != nil {
-		ic.ResponseJsonErrLog(ctx, errno.Serve.ListErr, err, nil)
+		ic.ResponseJsonErrLog(ctx, errno.CtxListErr, err, nil)
 		return
 	}
 	var art article.Article
-	err = json.Unmarshal([]byte(str), &art)
+	err = json.Unmarshal(bs, &art)
 	if err != nil {
-		ic.ResponseJsonErrLog(ctx, errno.Serve.ListErr, err, nil)
+		ic.ResponseJsonErrLog(ctx, errno.CtxListErr, err, nil)
 		return
 	}
 

@@ -13,16 +13,15 @@ type adminMenuList struct {
 
 func NewAdminMenuList() *adminMenuList {
 	r := new(adminMenuList)
-	r.Request = r
+	r.SetRequest(r)
 	return r
 }
 
-func (adminMenuList) Message() map[string]string {
-	return map[string]string{
-	}
+func (*adminMenuList) Message() map[string]string {
+	return map[string]string{}
 }
 
-func (adminMenuList) Attributes() map[string]string {
+func (*adminMenuList) Attributes() map[string]string {
 	return map[string]string{
 		"Title":  "菜单名称",
 		"IsShow": "展示",

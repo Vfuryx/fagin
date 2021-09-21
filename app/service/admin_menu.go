@@ -17,28 +17,28 @@ import (
 
 type adminMenuService struct{}
 
+// AdminMenuService 后台菜单服务
 var AdminMenuService adminMenuService
 
-func (adminMenuService) All(
-	params gin.H, columns []string, ) (*[]admin_menu.AdminMenu, error) {
-	menus, err := admin_menu.Dao().All(params, columns)
+func (*adminMenuService) All(
+	params gin.H, columns []string) (*[]admin_menu.AdminMenu, error) {
+	menus, err := admin_menu.NewDao().All(params, columns)
 	if err != nil {
 		return nil, err
 	}
-	// tree
+
 	data := getMenuTree(*menus, 0)
 	return &data, err
 }
 
-func (adminMenuService) Index(params gin.H, columns []string, with gin.H) ([]admin_menu.AdminMenu, error) {
+func (*adminMenuService) Index(params gin.H, columns []string, with gin.H) ([]admin_menu.AdminMenu, error) {
 	var menus []admin_menu.AdminMenu
 
-	err := admin_menu.Dao().Query(params, columns, with).Find(&menus)
+	err := admin_menu.NewDao().Query(params, columns, with).Find(&menus)
 	if err != nil {
 		return nil, err
 	}
 
-	// tree
 	menus = getMenuTree(menus, 0)
 	return menus, err
 }
@@ -46,7 +46,7 @@ func (adminMenuService) Index(params gin.H, columns []string, with gin.H) ([]adm
 func getMenuTree(data []admin_menu.AdminMenu, pID uint) []admin_menu.AdminMenu {
 	menus := make([]admin_menu.AdminMenu, 0, 20)
 	for _, m := range data {
-		if m.ParentId == pID {
+		if m.ParentID == pID {
 			mc := getMenuTree(data, m.ID)
 			m.Children = mc
 			menus = append(menus, m)
@@ -55,14 +55,14 @@ func getMenuTree(data []admin_menu.AdminMenu, pID uint) []admin_menu.AdminMenu {
 	return menus
 }
 
-func (adminMenuService) Show(id uint, columns []string) (*admin_menu.AdminMenu, error) {
+func (*adminMenuService) Show(id uint, columns []string) (*admin_menu.AdminMenu, error) {
 	m := admin_menu.New()
 	err := m.Dao().FindById(id, columns)
 	return m, err
 }
 
-func (adminMenuService) Create(m *admin_menu.AdminMenu) error {
-	err := admin_menu.Dao().Create(m)
+func (*adminMenuService) Create(m *admin_menu.AdminMenu) error {
+	err := admin_menu.NewDao().Create(m)
 	if err != nil {
 		return err
 	}
@@ -77,10 +77,10 @@ func setPaths(menus *admin_menu.AdminMenu) error {
 	paths := ""
 
 	// 判断父ID是否为0
-	if menus.ParentId == 0 {
+	if menus.ParentID == 0 {
 		paths = "0-" + strconv.FormatUint(uint64(menus.ID), 10)
 	} else {
-		err := adminMenu.Dao().FindById(menus.ParentId, []string{"id", "paths"})
+		err := adminMenu.Dao().FindById(menus.ParentID, []string{"id", "paths"})
 		if err != nil {
 			return err
 		}
@@ -90,8 +90,7 @@ func setPaths(menus *admin_menu.AdminMenu) error {
 	return menus.Dao().Update(menus.ID, gin.H{"paths": paths})
 }
 
-func (adminMenuService) Update(id uint, data gin.H) error {
-	//
+func (*adminMenuService) Update(id uint, data gin.H) error {
 	menu := admin_menu.New()
 	err := menu.Dao().FindById(id, []string{"*"})
 	if err != nil {
@@ -121,7 +120,7 @@ func (adminMenuService) Update(id uint, data gin.H) error {
 	if path != menu.Path || method != menu.Method {
 		// 获取关联角色
 		var rms []admin_role_menu.AdminRoleMenu
-		err = admin_role_menu.Dao().Query(gin.H{"menu_id": id}, []string{"*"}, nil).Find(&rms)
+		err = admin_role_menu.NewDao().Query(gin.H{"menu_id": id}, []string{"*"}, nil).Find(&rms)
 		if err != nil {
 			return err
 		}
@@ -132,7 +131,7 @@ func (adminMenuService) Update(id uint, data gin.H) error {
 			}
 			// 获取角色
 			var roles []admin_role.AdminRole
-			err = admin_role.Dao().Query(gin.H{"in_id": ids}, []string{"*"}, nil).Find(&roles)
+			err = admin_role.NewDao().Query(gin.H{"in_id": ids}, []string{"*"}, nil).Find(&roles)
 			if err != nil {
 				return err
 			}
@@ -154,10 +153,10 @@ func (adminMenuService) Update(id uint, data gin.H) error {
 		}
 	}
 
-	return admin_menu.Dao().Update(id, data)
+	return admin_menu.NewDao().Update(id, data)
 }
 
-func (adminMenuService) Delete(id uint) error {
+func (*adminMenuService) Delete(id uint) error {
 	adminMenu := admin_menu.New()
 	err := adminMenu.Dao().FindById(id, []string{"id", "paths"})
 	if err != nil {
@@ -173,23 +172,23 @@ func (adminMenuService) Delete(id uint) error {
 			return err
 		}
 	} else {
-		return errno.Serve.MenuSubExistErr
+		return errno.SerMenuSubExistErr
 	}
 
 	// 是否存在关联
-	ok, err := admin_role_menu.Dao().MenuRelationExist(id)
+	ok, err := admin_role_menu.NewDao().MenuRelationExist(id)
 	if err != nil {
 		return err
 	}
 	if ok {
-		return errno.Serve.MenuRelationExistErr
+		return errno.SerMenuRelationExistErr
 	}
 
-	return admin_menu.Dao().Delete(id)
+	return admin_menu.NewDao().Delete(id)
 }
 
 // RemoveUserMenusCache 清除用户关联菜单缓存
-func (adminMenuService) RemoveUserMenusCache(menuID uint) error {
+func (*adminMenuService) RemoveUserMenusCache(menuID uint) error {
 	var admins []admin_user_role.AdminUserRole
 	err := db.ORM().Table("admin_role_menus as arm").
 		Select([]string{"aur.admin_id", "aur.role_id"}).
@@ -207,7 +206,7 @@ func (adminMenuService) RemoveUserMenusCache(menuID uint) error {
 	// 清除用户关联菜单的缓存
 	for _, admin := range admins {
 		_, err = ca.Remove(strconv.FormatUint(uint64(admin.AdminID), 10))
-		if err != nil && err != cache.NotOpenErr {
+		if err != nil && err != cache.ErrNotOpen {
 			return err
 		}
 	}

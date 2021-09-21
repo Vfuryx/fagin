@@ -14,17 +14,17 @@ type uploadVideo struct {
 
 func NewUploadVideo() *uploadVideo {
 	r := new(uploadVideo)
-	r.Request = r
+	r.SetRequest(r)
 	return r
 }
 
-func (uploadVideo) Message() map[string]string {
+func (*uploadVideo) Message() map[string]string {
 	return map[string]string{
 		//"File.required": "文件不能为空",
 	}
 }
 
-func (uploadVideo) Attributes() map[string]string {
+func (*uploadVideo) Attributes() map[string]string {
 	return map[string]string{
 		"File": "文件",
 	}

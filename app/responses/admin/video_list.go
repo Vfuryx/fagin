@@ -15,7 +15,7 @@ var _ response.IResponse = &videoList{}
 
 func VideoList(models ...video_info.VideoInfo) *videoList {
 	res := videoList{Ms: models}
-	res.Collect.IResponse = &res
+	res.SetCollect(&res)
 	return &res
 }
 
@@ -29,7 +29,7 @@ func (res *videoList) Serialize() []map[string]interface{} {
 			"path":        model.Path,
 			"description": model.Description,
 			"duration":    model.Duration,
-			"created_at":  model.CreatedAt.Format(app.TimeFormat),
+			"created_at":  app.TimeToStr(model.CreatedAt),
 		}
 		sm = append(sm, m)
 	}

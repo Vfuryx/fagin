@@ -25,16 +25,15 @@ type updateAdminMenu struct {
 
 func NewUpdateAdminMenu() *updateAdminMenu {
 	r := new(updateAdminMenu)
-	r.Request = r
+	r.SetRequest(r)
 	return r
 }
 
-func (updateAdminMenu) Message() map[string]string {
-	return map[string]string{
-	}
+func (*updateAdminMenu) Message() map[string]string {
+	return map[string]string{}
 }
 
-func (updateAdminMenu) Attributes() map[string]string {
+func (*updateAdminMenu) Attributes() map[string]string {
 	return map[string]string{
 		"Type":        "类型",
 		"ParentId":    "父ID",

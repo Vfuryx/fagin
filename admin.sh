@@ -7,6 +7,11 @@ INTERVAL=2
 # 命令行参数，需要手动指定
 ARGS=""
 
+if [ "$SERVER" = "" ];then
+	echo `"文件不存在" $SERVER`
+  exit 1
+fi
+
 function start()
 {
 	if [ "`pgrep $SERVER -u $UID`" != "" ];then
@@ -51,20 +56,20 @@ function stop()
 function restart()
 {
 	if [ "`pgrep $SERVER -u $UID`" != "" ];then
-		kill -2 `pgrep $SERVER -u $UID`
+		kill -1 `pgrep $SERVER -u $UID`
+	else
+	  nohup $BASE_DIR/$SERVER $ARGS  server &>/dev/null &
 	fi
-
-	echo "sleeping..." &&  sleep $INTERVAL
-
-
-	nohup $BASE_DIR/$SERVER $ARGS  server &>/dev/null &
 
 	echo "sleeping..." &&  sleep $INTERVAL
 
 	# check status
 	if [ "`pgrep $SERVER -u $UID`" == "" ];then
-		echo "$SERVER start failed"
-		exit 1
+	  nohup $BASE_DIR/$SERVER $ARGS  server &>/dev/null &
+	  if [ "`pgrep $SERVER -u $UID`" == "" ];then
+	    echo "$SERVER start failed"
+	    exit 1
+    fi
 	fi
 }
 

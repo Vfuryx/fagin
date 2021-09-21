@@ -11,16 +11,15 @@ type categoryList struct {
 
 func NewCategoryList() *categoryList {
 	r := new(categoryList)
-	r.Request = r
+	r.SetRequest(r)
 	return r
 }
 
-func (categoryList) Message() map[string]string {
-	return map[string]string{
-	}
+func (*categoryList) Message() map[string]string {
+	return map[string]string{}
 }
 
-func (categoryList) Attributes() map[string]string {
+func (*categoryList) Attributes() map[string]string {
 	return map[string]string{
 		"Cate": "名称",
 	}

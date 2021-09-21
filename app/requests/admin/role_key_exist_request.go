@@ -11,15 +11,14 @@ type roleKeyExistRequest struct {
 
 func NewRoleKeyExistRequest() *roleKeyExistRequest {
 	r := new(roleKeyExistRequest)
-	r.Request = r
+	r.SetRequest(r)
 	return r
 }
-func (roleKeyExistRequest) Message() map[string]string {
-	return map[string]string{
-	}
+func (*roleKeyExistRequest) Message() map[string]string {
+	return map[string]string{}
 }
 
-func (roleKeyExistRequest) Attributes() map[string]string {
+func (*roleKeyExistRequest) Attributes() map[string]string {
 	return map[string]string{
 		"Key": "角色关键字",
 	}

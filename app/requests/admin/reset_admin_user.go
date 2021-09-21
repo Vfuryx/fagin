@@ -11,16 +11,15 @@ type resetAdminUser struct {
 
 func NewResetAdminUser() *resetAdminUser {
 	r := new(resetAdminUser)
-	r.Request = r
+	r.SetRequest(r)
 	return r
 }
 
-func (resetAdminUser) Message() map[string]string {
-	return map[string]string{
-	}
+func (*resetAdminUser) Message() map[string]string {
+	return map[string]string{}
 }
 
-func (resetAdminUser) Attributes() map[string]string {
+func (*resetAdminUser) Attributes() map[string]string {
 	return map[string]string{
 		"Password": "密码",
 	}

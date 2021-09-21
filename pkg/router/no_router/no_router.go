@@ -139,8 +139,7 @@ func NoRoute(basePath string, handle gin.HandlerFunc) {
 
 // NoRouteHandle 404处理
 func NoRouteHandle(ctx *gin.Context) {
-	f := rootNode.GetPathFunc(ctx.Request.RequestURI)
-	if f != nil {
-		f(ctx)
+	if fun := rootNode.GetPathFunc(ctx.Request.RequestURI); fun != nil {
+		fun(ctx)
 	}
 }

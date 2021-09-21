@@ -1,119 +1,163 @@
 package cache
 
 import (
-	"github.com/pkg/errors"
+	"errors"
+	"fagin/config"
+	"fmt"
+	"sync"
 	"time"
 )
 
-// 缓存接口
-type oCache interface {
-	Lift() time.Duration
-	Key(value string) string
-}
-
 type iCache interface {
-	isOpen() bool // 缓存是否开启
-	Get(key string) (string, error)
-	Exists(key string) (int64, error)
-	Set(key string, value interface{}, expiration time.Duration) (string, error)
+	Get(key string) ([]byte, error)
+	Exists(key string) (bool, error)
+	Set(key string, value []byte, expiration time.Duration) (string, error)
 	Remove(key string) (int64, error)
+	Close() error
 }
 
-var NotOpenErr = errors.New("缓存服务未开启")
+type GetterFunc func() ([]byte, error)
 
-type GetterFunc func(key string) ([]byte, error)
-
-func (f GetterFunc) Get(key string) ([]byte, error) {
-	return f(key)
+func (f GetterFunc) Get() ([]byte, error) {
+	return f()
 }
 
-func cache() (iCache, error) {
-	if Redis == nil {
-		return nil, NotOpenErr
+var ErrNotOpen = errors.New("缓存服务未开启")
+var ErrConfig = errors.New("缓存配置错误")
+var ErrCache = errors.New("缓存获取失败")
+
+var engineMap = map[string]func() (iCache, error){}
+
+var engine iCache
+
+// Init 初始化
+func Init() {
+	if _, err := cache(); err != nil {
+		panic(err)
 	}
-	return Redis, nil
+}
+
+// Close 关闭
+func Close() {
+	if engine != nil {
+		_ = engine.Close()
+	}
+}
+
+// 获取缓存
+func cache() (iCache, error) {
+	if !config.Cache.Open {
+		return nil, ErrNotOpen
+	}
+	if engine == nil {
+		fn, ok := engineMap[config.Cache.DefDriver]
+		if !ok {
+			return nil, errors.New("err")
+		}
+		var err error
+
+		engine, err = fn()
+		if err != nil {
+			engine = nil // 重置为 nil
+		}
+		return engine, err
+	}
+	return engine, nil
 }
 
 type SCache struct {
-	Prefix   string
-	LifeTime time.Duration
-	Content  GetterFunc // 获取回源数据方法
-	oCache
+	prefix   string
+	lifeTime time.Duration
+	content  GetterFunc // 获取回源数据方法
 }
 
-var _ iCache = &SCache{}
+func (sc *SCache) SetConfPrefix(prefix string) {
+	sc.prefix = config.Cache.Prefix + prefix
+}
+func (sc *SCache) SetConfLifeTime(t time.Duration) {
+	sc.lifeTime = t
+}
+func (sc *SCache) SetFunc(f GetterFunc) {
+	sc.content = f
+}
 
-// SetFunc 载入多态
-func (sc *SCache) SetFunc(o oCache) {
-	sc.oCache = o
+func (sc *SCache) Lift() time.Duration {
+	return sc.lifeTime
+}
+
+// Key 获取键名称
+func (sc *SCache) Key(value ...interface{}) string {
+	return fmt.Sprintf(sc.prefix, value...)
 }
 
 // Exists 是键是否存在
-func (sc *SCache) Exists(value string) (int64, error) {
+func (sc *SCache) Exists(value ...interface{}) (bool, error) {
+	c, err := cache()
+	if err != nil {
+		return false, err
+	}
+	return c.Exists(sc.Key(value...))
+}
+
+// Remove 删除
+func (sc *SCache) Remove(value ...interface{}) (int64, error) {
 	c, err := cache()
 	if err != nil {
 		return 0, err
 	}
-	key := sc.Key(value)
-	return c.Exists(key)
+	return c.Remove(sc.Key(value...))
 }
 
-func (sc *SCache) Set(value string, data interface{}, expiration time.Duration) (string, error) {
-	c, err := cache()
-	if err != nil {
-		return "", err
-	}
-	key := sc.Key(value)
-	return c.Set(key, data, expiration)
-}
-
-func (sc *SCache) Remove(key string) (int64, error) {
-	c, err := cache()
-	if err != nil {
-		return 0, err
-	}
-	key = sc.Key(key)
-	return c.Remove(key)
-}
+var lock sync.Mutex
+var num = 0
 
 // Get 根据键获取数据
-func (sc *SCache) Get(value string) (string, error) {
+func (sc *SCache) Get(value ...interface{}) (data []byte, err error) {
 	c, err := cache()
 	if err != nil {
 		// 缓存关闭直接获取数据
-		if err == NotOpenErr {
-			content, err := sc.Content.Get(value)
-			if err != nil {
-				return "", err
+		if err == ErrNotOpen {
+			if data, err = sc.content.Get(); err == nil {
+				return data, nil
 			}
-			return string(content), nil
 		}
-		return "", err
+		return nil, err
 	}
+
+	var ok bool
 	// 获取缓存key
-	key := sc.Key(value)
-	ok, err := c.Exists(key)
-	if err != nil {
-		return "", err
+	key := sc.Key(value...)
+
+	if ok, err = c.Exists(key); err != nil { // 先处理错误
+		return nil, err
+	} else if ok { // 存在
+		if data, err = c.Get(key); err == nil {
+			return data, err
+		}
 	}
-	// 存在
-	if ok > 0 {
-		return c.Get(key)
+
+	lock.Lock()
+	defer lock.Unlock()
+	if data, err = c.Get(key); err == nil {
+		return data, err
 	}
+	num++
+	fmt.Println(num)
 	// 不存在
-	content, err := sc.Content.Get(value)
-	if err != nil {
-		return "", err
+	if data, err = sc.content.Get(); err != nil {
+		return nil, err
 	}
 	// 载入缓存
-	_, err = c.Set(key, content, sc.Lift())
-	if err != nil {
-		return "", err
+	if _, err = c.Set(key, data, sc.Lift()); err != nil {
+		return nil, err
 	}
-	return string(content), nil
+	return data, nil
 }
 
-// 是否开启
-func (sc *SCache) isOpen() bool {
-	return false
+func (sc *SCache) Close() error {
+	c, err := cache()
+	if err != nil {
+		return err
+	}
+	return c.Close()
 }

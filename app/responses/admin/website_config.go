@@ -14,7 +14,7 @@ var _ response.IResponse = &websiteConfig{}
 
 func WebsiteConfig(models ...website_config.WebsiteConfig) *websiteConfig {
 	res := websiteConfig{Ms: models}
-	res.Collect.IResponse = &res
+	res.SetCollect(&res)
 	return &res
 }
 

@@ -1,8 +1,8 @@
 package cache
 
 import (
-	"fagin/app/utils"
 	"fagin/config"
+	"fagin/utils"
 	"fmt"
 	"log"
 	"os"
@@ -10,12 +10,12 @@ import (
 )
 
 func CreateCacheTemplate(path, name string) {
-	filePath := config.App.AppPath + "/cache/" + path + ".go"
+	filePath := config.App.AppPath + "/caches/" + path + ".go"
 	sl := strings.Split(filePath, "/")
 	dirPath := strings.Join(sl[:len(sl)-1], "/")
 	packageName := sl[len(sl)-2]
 	name = utils.Camel(name)
-	structName := strings.ToLower(string(name[0])) + name[1:]
+	//structName := strings.ToLower(string(name[0])) + name[1:]
 
 	//os.Stat获取文件信息
 	if _, err := os.Stat(filePath); err == nil {
@@ -40,32 +40,18 @@ import (
 	"time"
 )
 
-// 网站配置缓存管理
-type %[2]s struct {
-	cache.SCache
-}
+// 缓存
+func New%[2]s(f cache.GetterFunc) *cache.SCache {
+	var c = new(cache.SCache)
+	c.SetConfPrefix("prefix") 
+	c.SetConfLifeTime(60 * time.Second)
+	c.SetFunc(f)
 
-func New%[3]s(f cache.GetterFunc) *%[2]s {
-	var c = new(%[2]s)
-	c.Prefix = "prefix"
-	c.LifeTime = 60 * time.Second
-	c.Content = f
-	c.SetFunc(c)
 	return c
-}
-
-// Key 获取键名称
-func (c *%[2]s) Key(value string) string {
-	return c.Prefix + value
-}
-
-// Lift 默认存在时间
-func (c *%[2]s) Lift() time.Duration {
-	return c.LifeTime
 }
 `
 
-	content := fmt.Sprintf(Temp, packageName, structName, name)
+	content := fmt.Sprintf(Temp, packageName, name)
 	if _, err = file.WriteString(content); err != nil {
 		panic(err)
 	}

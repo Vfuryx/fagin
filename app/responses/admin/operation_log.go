@@ -1,7 +1,7 @@
 package admin_responses
 
 import (
-	"fagin/app/constants/time_format"
+	"fagin/app"
 	aol "fagin/app/models/admin_operation_log"
 	"fagin/pkg/response"
 )
@@ -15,7 +15,7 @@ var _ response.IResponse = &operationLog{}
 
 func OperationLog(models ...aol.AdminOperationLog) *operationLog {
 	res := operationLog{Ms: models}
-	res.Collect.IResponse = &res
+	res.SetCollect(&res)
 	return &res
 }
 
@@ -30,7 +30,7 @@ func (res *operationLog) Serialize() []map[string]interface{} {
 			"ip":         model.IP,
 			"operation":  model.Operation,
 			"module":     model.Module,
-			"created_at": model.CreatedAt.Format(time_format.Def),
+			"created_at": app.TimeToStr(model.CreatedAt),
 		}
 		sm = append(sm, m)
 	}

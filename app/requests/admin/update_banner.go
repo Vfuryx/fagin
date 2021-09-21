@@ -15,11 +15,11 @@ type updateBanner struct {
 
 func NewUpdateBanner() *updateBanner {
 	r := new(updateBanner)
-	r.Request = r
+	r.SetRequest(r)
 	return r
 }
 
-func (updateBanner) Message() map[string]string {
+func (*updateBanner) Message() map[string]string {
 	return map[string]string{
 		//"Title.required":  "标题不能为空",
 		//"Title.max":       "标题不能大于32位",
@@ -33,7 +33,7 @@ func (updateBanner) Message() map[string]string {
 	}
 }
 
-func (updateBanner) Attributes() map[string]string {
+func (*updateBanner) Attributes() map[string]string {
 	return map[string]string{
 		"Title":  "标题",
 		"Banner": "轮播图",

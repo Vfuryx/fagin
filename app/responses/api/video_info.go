@@ -14,7 +14,7 @@ var _ response.IResponse = &videoInfoList{}
 
 func VideoInfoList(models ...video_info.VideoInfo) *videoInfoList {
 	res := videoInfoList{Ms: models}
-	res.Collect.IResponse = &res
+	res.SetCollect(&res)
 	return &res
 }
 
@@ -39,7 +39,7 @@ var _ response.IResponse = &videoInfoShow{}
 
 func VideoInfoShow(models ...video_info.VideoInfo) *videoInfoShow {
 	res := videoInfoShow{Ms: models}
-	res.Collect.IResponse = &res
+	res.SetCollect(&res)
 	return &res
 }
 

@@ -9,7 +9,7 @@ import (
 
 var ModelCmd = &cobra.Command{
 	Use:   "model",
-	Short: "A brief description of your command",
+	Short: "模型",
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("model called")

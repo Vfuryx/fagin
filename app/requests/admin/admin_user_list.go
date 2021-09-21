@@ -13,16 +13,15 @@ type adminUserList struct {
 
 func NewAdminUserList() *adminUserList {
 	r := new(adminUserList)
-	r.Request = r
+	r.SetRequest(r)
 	return r
 }
 
-func (adminUserList) Message() map[string]string {
-	return map[string]string{
-	}
+func (*adminUserList) Message() map[string]string {
+	return map[string]string{}
 }
 
-func (adminUserList) Attributes() map[string]string {
+func (*adminUserList) Attributes() map[string]string {
 	return map[string]string{
 		"Username": "用户名称",
 		"Phone":    "手机号码",

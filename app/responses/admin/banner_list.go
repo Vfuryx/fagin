@@ -14,7 +14,7 @@ var _ response.IResponse = &bannerList{}
 
 func BannerList(models ...banner.Banner) *bannerList {
 	res := bannerList{Ms: models}
-	res.Collect.IResponse = &res
+	res.SetCollect(&res)
 	return &res
 }
 

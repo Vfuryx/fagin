@@ -15,12 +15,12 @@ type webTags struct{}
 
 var WebTags webTags
 
-func (webTags) WebTags() gin.HandlerFunc {
+func (*webTags) WebTags() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		homeTags := caches.NewHomeTags(func(key string) ([]byte, error) {
+		homeTags := caches.NewHomeTags(func() ([]byte, error) {
 			params := gin.H{
-				"status": 1,
-				"orderBy":   "id asc",
+				"status":  1,
+				"orderBy": "id asc",
 			}
 			columns := []string{"id", "name", "status"}
 			with := gin.H{}
@@ -30,10 +30,10 @@ func (webTags) WebTags() gin.HandlerFunc {
 			}
 			return json.Marshal(data)
 		})
-		str, err := homeTags.Get("")
+		str, err := homeTags.Get()
 		if err != nil {
 			go app.Log().Println(err, string(debug.Stack()))
-			response.JsonErr(ctx, errno.Serve.ShowErr, nil)
+			response.JsonErr(ctx, errno.CtxShowErr, nil)
 			return
 		}
 		ctx.Set("web_tags", str)

@@ -1,7 +1,7 @@
 package api
 
 import (
-	"fagin/app/constants/status"
+	"fagin/app/enums"
 	"fagin/app/errno"
 	"fagin/app/models/video_info"
 	"fagin/app/service"
@@ -13,7 +13,7 @@ import (
 	"time"
 )
 
-type videoController struct{
+type videoController struct {
 	BaseController
 }
 
@@ -31,26 +31,26 @@ var VideoController videoController
 func (vc *videoController) PlayVideo(ctx *gin.Context) {
 	id, err := request.ShouldBindUriUintID(ctx)
 	if err != nil {
-		vc.ResponseJsonErr(ctx, errno.Serve.BindErr, nil)
+		vc.ResponseJsonErr(ctx, errno.ReqErr, nil)
 		return
 	}
 
 	params := map[string]interface{}{
 		"id":     id,
-		"status": status.Active,
+		"status": enums.StatusActive,
 	}
 	columns := []string{"id", "path"}
 	var v video_info.VideoInfo
 	err = service.VideoInfo.Query(params, columns, nil).Find(&v)
 	if err != nil {
-		vc.ResponseJsonErrLog(ctx, errno.Serve.OpenFileErr, err, nil)
+		vc.ResponseJsonErrLog(ctx, errno.CtxOpenFileErr, err, nil)
 		return
 	}
 
 	path := config.App.StoragePath + v.Path
 	file, err := os.Open(path)
 	if err != nil {
-		vc.ResponseJsonErrLog(ctx, errno.Serve.OpenFileErr, err, nil)
+		vc.ResponseJsonErrLog(ctx, errno.CtxOpenFileErr, err, nil)
 		return
 	}
 	http.ServeContent(ctx.Writer, ctx.Request, "", time.Now(), file)

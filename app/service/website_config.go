@@ -8,8 +8,8 @@ type websiteConfigService struct{}
 
 var WebsiteConfigService websiteConfigService
 
-// 获取网站信息
-func (websiteConfigService) ShowInfo(id uint, columns []string) (*website_config.WebsiteConfig, error) {
+// ShowInfo 获取网站信息
+func (*websiteConfigService) ShowInfo(id uint, columns []string) (*website_config.WebsiteConfig, error) {
 	wc := website_config.New()
 	err := wc.Dao().FindById(id, columns)
 	if err != nil {
@@ -18,8 +18,8 @@ func (websiteConfigService) ShowInfo(id uint, columns []string) (*website_config
 	return wc, err
 }
 
-func (websiteConfigService) UpdateInfo(id uint, data map[string]interface{}) error {
-	err := website_config.Dao().Update(id, data)
+func (*websiteConfigService) UpdateInfo(id uint, data map[string]interface{}) error {
+	err := website_config.NewDao().Update(id, data)
 	if err != nil {
 		return err
 	}

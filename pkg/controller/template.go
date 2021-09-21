@@ -1,8 +1,8 @@
 package controller
 
 import (
-	"fagin/app/utils"
 	"fagin/config"
+	"fagin/utils"
 	"fmt"
 	"log"
 	"os"
@@ -51,16 +51,16 @@ var %[3]s %[2]s
 
 // Index 列表
 func (c *%[2]s) Index(ctx *gin.Context) {
-	paginator := db.NewPaginator(ctx, 1, 15)
+	paginator := db.NewPaginatorWithCtx(ctx, 1, 15)
 
 	params := gin.H{
 		"orderBy": "id asc",
 	}
 	columns := []string{"id"}
 	with := gin.H{"Model": nil}
-	result, err := service.S.Index(params, columns, with, &paginator)
+	result, err := service.S.Index(params, columns, with, paginator)
 	if err != nil {
-		c.ResponseJsonErr(ctx, errno.Serve.ListErr, nil)
+		c.ResponseJsonErr(ctx, errno.CtxListErr, nil)
 		return
 	}
 
@@ -77,14 +77,14 @@ func (c *%[2]s) Index(ctx *gin.Context) {
 func (c *%[2]s) Show(ctx *gin.Context) {
 	id, err := request.ShouldBindUriUintID(ctx)
 	if err != nil {
-		c.ResponseJsonErr(ctx, errno.Serve.BindErr, nil)
+		c.ResponseJsonErr(ctx, errno.ReqErr, nil)
 		return
 	}
 
 	columns := []string{"id"}
 	data, err := service.S.Show(id, columns)
 	if err != nil {
-		c.ResponseJsonErrLog(ctx, errno.Serve.ShowErr, err, nil)
+		c.ResponseJsonErrLog(ctx, errno.CtxShowErr, err, nil)
 		return
 	}
 
@@ -98,7 +98,7 @@ func (c *%[2]s) Show(ctx *gin.Context) {
 func (c *%[2]s) Store(ctx *gin.Context) {
 	var r r.R
 	if data, ok := r.Validate(ctx); !ok {
-		c.ResponseJsonErr(ctx, errno.Serve.BindErr, data)
+		c.ResponseJsonErr(ctx, errno.ReqErr, data)
 		return
 	}
 
@@ -106,7 +106,7 @@ func (c *%[2]s) Store(ctx *gin.Context) {
 
 	err := service.S.Create(&m)
 	if err != nil {
-		c.ResponseJsonErrLog(ctx, errno.Serve.StoreErr, err, nil)
+		c.ResponseJsonErrLog(ctx, errno.CtxStoreErr, err, nil)
 		return
 	}
 
@@ -118,19 +118,19 @@ func (c *%[2]s) Store(ctx *gin.Context) {
 func (c *%[2]s) Update(ctx *gin.Context) {
 	id, err := request.ShouldBindUriUintID(ctx)
 	if err != nil {
-		c.ResponseJsonErr(ctx, errno.Serve.BindErr, nil)
+		c.ResponseJsonErr(ctx, errno.ReqErr, nil)
 		return
 	}
 
 	var r r.Create
 	if data, ok := r.Validate(ctx); !ok {
-		c.ResponseJsonErr(ctx, errno.Serve.BindErr, data)
+		c.ResponseJsonErr(ctx, errno.ReqErr, data)
 		return
 	}
 	data := map[string]interface{}{}
 	err = service.S.Update(id, data)
 	if err != nil {
-		c.ResponseJsonErrLog(ctx, errno.Serve.UpdateErr, err, nil)
+		c.ResponseJsonErrLog(ctx, errno.CtxUpdateErr, err, nil)
 		return
 	}
 
@@ -142,13 +142,13 @@ func (c *%[2]s) Update(ctx *gin.Context) {
 func (c *%[2]s) Del(ctx *gin.Context) {
 	id, err := request.ShouldBindUriUintID(ctx)
 	if err != nil {
-		c.ResponseJsonErr(ctx, errno.Serve.BindErr, nil)
+		c.ResponseJsonErr(ctx, errno.ReqErr, nil)
 		return
 	}
 
 	err = service.S.Delete(id)
 	if err != nil {
-		c.ResponseJsonErrLog(ctx, errno.Serve.DeleteErr, err, nil)
+		c.ResponseJsonErrLog(ctx, errno.CtxDeleteErr, err, nil)
 		return
 	}
 
@@ -159,18 +159,18 @@ func (c *%[2]s) Del(ctx *gin.Context) {
 // Deletes 批量删除
 func (c *%[2]s) Deletes(ctx *gin.Context) {
 	type R struct {
-		IDs []uint `+"`form:\"ids\" json:\"ids\" binding:\"required\"`"+`
+		IDs []uint ` + "`form:\"ids\" json:\"ids\" binding:\"required\"`" + `
 	}
 	var ids R
 	err := ctx.ShouldBind(&ids)
 	if err != nil {
-		c.ResponseJsonErr(ctx, errno.Serve.BindErr, nil)
+		c.ResponseJsonErr(ctx, errno.ReqErr, nil)
 		return
 	}
 
 	err = service.S.Deletes(ids.IDs)
 	if err != nil {
-		c.ResponseJsonErrLog(ctx, errno.Serve.DeleteErr, err, nil)
+		c.ResponseJsonErrLog(ctx, errno.CtxDeleteErr, err, nil)
 		return
 	}
 
