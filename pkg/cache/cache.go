@@ -32,7 +32,7 @@ var engine iCache
 
 // Init 初始化
 func Init() {
-	if _, err := cache(); err != nil {
+	if _, err := cache(); err != nil && err != ErrNotOpen {
 		panic(err)
 	}
 }
@@ -46,11 +46,11 @@ func Close() {
 
 // 获取缓存
 func cache() (iCache, error) {
-	if !config.Cache.Open {
+	if !config.Cache().Open {
 		return nil, ErrNotOpen
 	}
 	if engine == nil {
-		fn, ok := engineMap[config.Cache.DefDriver]
+		fn, ok := engineMap[config.Cache().DefDriver]
 		if !ok {
 			return nil, errors.New("err")
 		}
@@ -72,7 +72,7 @@ type SCache struct {
 }
 
 func (sc *SCache) SetConfPrefix(prefix string) {
-	sc.prefix = config.Cache.Prefix + prefix
+	sc.prefix = config.Cache().Prefix + prefix
 }
 func (sc *SCache) SetConfLifeTime(t time.Duration) {
 	sc.lifeTime = t

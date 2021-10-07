@@ -53,7 +53,7 @@ var KeyCmd = &cobra.Command{
 	Short: "生成 key",
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
-		createAppKey(config.App.RootPath + `/.env`)
+		createAppKey(config.App().RootPath + `/.env`)
 		log.Printf("key generate run successfully")
 	},
 }

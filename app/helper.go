@@ -1,7 +1,6 @@
 package app
 
 import (
-	"encoding/json"
 	"fagin/app/enums"
 	"fagin/config"
 	"fagin/pkg/logger"
@@ -9,14 +8,13 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/crypto/bcrypt"
-	"io"
 	"net/http"
 	"time"
 )
 
 // IsProd 是否正式环境
 func IsProd() bool {
-	return config.App.Env == "prod"
+	return config.App().Env == "prod"
 }
 
 func ResponseJsonOK(ctx *gin.Context, data interface{}) {
@@ -40,7 +38,7 @@ func WebAsset(path string) string {
 	if ok := IsProd(); !ok {
 		return path
 	}
-	return config.CDN.URL + path + "?t=" + time.Now().Format("200612154")
+	return config.CDN().URL + path + "?t=" + time.Now().Format("200612154")
 }
 
 func View(ctx *gin.Context, path string, obj interface{}) {
@@ -64,48 +62,25 @@ func Compare(hashedPassword, password string) error {
 	return bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(password))
 }
 
-// GetLocation 根基IP获取地址信息
-func GetLocation(ip string) string {
-	if ip == "127.0.0.1" || ip == "localhost" {
-		return "内部IP"
-	}
-	resp, err := http.Get("https://restapi.amap.com/v3/ip?ip=" + ip + "&key=3fabc36c20379fbb9300c79b19d5d05e")
-	if err != nil {
-		panic(err)
-	}
-	defer resp.Body.Close()
-
-	s, err := io.ReadAll(resp.Body)
-	m := make(map[string]string)
-	err = json.Unmarshal(s, &m)
-	if err != nil {
-		return "未知位置"
-	}
-	if m["province"] == "" {
-		return "未知位置"
-	}
-	return m["province"] + "-" + m["city"]
-}
-
 // Log 日志模块
 func Log(opt ...string) *logrus.Logger {
 	if len(opt) <= 0 {
-		return logger.Log
+		return logger.DefaultLog
 	}
 	return logger.New(opt[0])
 }
 
 // Now 获取当前时间
 func Now() time.Time {
-	return time.Now().In(config.App.Timezone)
+	return time.Now().In(config.App().Timezone)
 }
 
 // TimeToStr 时间转字符串
 func TimeToStr(t time.Time) string {
-	return t.In(config.App.Timezone).Format(enums.TimeFormatDef.Get())
+	return t.In(config.App().Timezone).Format(enums.TimeFormatDef.Get())
 }
 
 // StrToTime 时间转字符串
 func StrToTime(value string) (time.Time, error) {
-	return time.ParseInLocation(enums.TimeFormatDef.Get(), value, config.App.Timezone)
+	return time.ParseInLocation(enums.TimeFormatDef.Get(), value, config.App().Timezone)
 }

@@ -21,15 +21,16 @@ CREATE TABLE `admin_users`
     `check_in_at`   bigint(19) unsigned NOT NULL DEFAULT '0' COMMENT '总后台签发时间',
     PRIMARY KEY (`id`),
     KEY `idx_admin_users_deleted_at` (`deleted_at`),
-    INDEX `idx_username`(`username`) USING BTREE
+    INDEX `idx_username` (`username`) USING BTREE
 ) ENGINE = InnoDB
   DEFAULT CHARSET = utf8mb4
   COLLATE = utf8mb4_unicode_ci COMMENT ='后台用户表';
 
-INSERT INTO `admin_users` (`id`, `created_at`, `updated_at`, `deleted_at`, `status`, `username`, `nick_name`, `phone`,
-                           `email`, `password`, `avatar`, `remark`, `sex`)
-VALUES (1, '2021-05-30 16:03:29', '2021-05-30 16:03:29', NULL, 1, 'admin', 'admin', '', '',
-        '$2a$10$v1Ji2oMpTD1sserUCuEfmeEUKQi4FKMonWah1fa4.xJhkxvPRvuN2', 'http://qiniu.furyx.cn/photo.jpg', '', 0);
-
+INSERT INTO `admin_users` (`id`, `created_at`, `updated_at`, `deleted_at`, `status`, `username`, `nick_name`,
+                                   `phone`, `email`, `password`, `avatar`, `remark`, `sex`, `login_at`, `last_login_at`,
+                                   `check_in_at`)
+VALUES (1, '2021-10-01 01:01:01', '2021-10-01 01:01:01', NULL, 1, 'admin', 'admin', '1380013800', 'admin@admin.com',
+        '$2a$10$v1Ji2oMpTD1sserUCuEfmeEUKQi4FKMonWah1fa4.xJhkxvPRvuN2', 'http://qiniu.furyx.cn/photo.jpg', '', 0,
+        1633228500, 0, 1633228500);
 -- +migrate Down
 DROP TABLE `admin_users`;

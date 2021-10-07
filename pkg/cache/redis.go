@@ -48,7 +48,7 @@ func newRedis() (iCache, error) {
 	var address, password string
 	var c map[string]string
 
-	if c, ok = config.Cache.Stores[DriverRedis]; !ok {
+	if c, ok = config.Cache().Stores[DriverRedis]; !ok {
 		return nil, ErrConfig
 	}
 	if address, ok = c["address"]; !ok {

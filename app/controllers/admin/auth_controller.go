@@ -19,6 +19,7 @@ type authController struct {
 	BaseController
 }
 
+// AuthController 授权控制器
 var AuthController authController
 
 // Login 后台登录
@@ -47,6 +48,11 @@ func (ac *authController) Login(ctx *gin.Context) {
 		return
 	}
 
+	go func() {
+		// 记录登录日志
+		_ = service.AdminLoginLog.LogStore(r.Name, ctx.ClientIP(), ctx.Request.UserAgent())
+	}()
+
 	ac.ResponseJsonOK(ctx, gin.H{
 		"token": token,
 	})
@@ -69,10 +75,12 @@ func (ac *authController) Info(ctx *gin.Context) {
 		return
 	}
 	ac.ResponseJsonOK(ctx, gin.H{
-		"name":   adminUser.Username,
-		"email":  adminUser.Email,
-		"avatar": adminUser.Avatar,
-		"roles":  []string{"admin"},
+		"userId":   adminUser.ID,
+		"username": adminUser.Username,
+		"realName": adminUser.Username,
+		"email":    adminUser.Email,
+		"avatar":   adminUser.Avatar,
+		"roles":    []string{"admin"},
 	})
 }
 
@@ -134,13 +142,13 @@ func (ac *authController) GetCaptcha(ctx *gin.Context) {
 	})
 }
 
-// Navs 动态获取路由
-func (ac *authController) Navs(ctx *gin.Context) {
+// Routes 动态获取路由
+func (ac *authController) Routes(ctx *gin.Context) {
 	// 获取userID
 	userID := auths.GetAdminID(ctx)
 
-	ca := caches.NewAdminNavsCache(func() ([]byte, error) {
-		navs, err := service.AdminUserService.GetNavs(uint(userID))
+	ca := caches.NewAdminRoutesCache(func() ([]byte, error) {
+		navs, err := service.AdminUserService.GetRoutes(uint(userID))
 		if err != nil {
 			return nil, err
 		}
@@ -154,10 +162,24 @@ func (ac *authController) Navs(ctx *gin.Context) {
 		return
 	}
 	var res []map[string]interface{}
-	err = json.Unmarshal([]byte(data), &res)
+	err = json.Unmarshal(data, &res)
 	if err != nil {
 		ac.ResponseJsonErrLog(ctx, errno.ReqErr, err, nil)
 		return
 	}
 	ac.ResponseJsonOK(ctx, res)
+}
+
+// PermissionCode 获取用户权限
+func (ac *authController) PermissionCode(ctx *gin.Context) {
+	// 获取userID
+	userID := auths.GetAdminID(ctx)
+
+	navs, err := service.AdminUserService.GetPermissionCode(uint(userID))
+	if err != nil && err != cache.ErrNotOpen {
+		ac.ResponseJsonErrLog(ctx, errno.ReqErr, err, nil)
+		return
+	}
+
+	ac.ResponseJsonOK(ctx, navs)
 }

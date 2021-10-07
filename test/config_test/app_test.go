@@ -13,7 +13,7 @@ import (
 func getAppName() string {
 	var err error
 
-	file, err := os.Open(config.App.RootPath + "/go.mod")
+	file, err := os.Open(config.App().RootPath + "/go.mod")
 	if err != nil {
 		panic(err)
 	}
@@ -34,8 +34,8 @@ func getAppName() string {
 }
 
 func TestName(t *testing.T) {
-	if config.App.GetName() != getAppName() {
+	if config.App().GetName() != getAppName() {
 		t.Fatal("获取项目名出错")
 	}
-	t.Log("项目名称：", config.App.GetName())
+	t.Log("项目名称：", config.App().GetName())
 }

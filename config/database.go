@@ -5,7 +5,7 @@ import (
 	"fmt"
 )
 
-type database struct {
+type DatabaseConfig struct {
 	Host            string
 	Port            string
 	Name            string
@@ -17,22 +17,26 @@ type database struct {
 	ConnMaxLifetime int // 设置每个链接的过期时间
 }
 
-var DB database
+var databaseConfig = new(DatabaseConfig)
 
-func init() {
-	DB.Debug = conf.GetBool("db.debug")
-	DB.Host = conf.GetString("db.host", "")
-	DB.Port = conf.GetString("db.port", "")
-	DB.Name = conf.GetString("db.name", "")
-	DB.User = conf.GetString("db.user", "")
-	DB.Password = conf.GetString("db.password", "")
-	DB.MaxIdleConns = conf.GetInt("db.max_idle_conns", 25)
-	DB.MaxOpenConns = conf.GetInt("db.max_open_conns", 100)
-	DB.ConnMaxLifetime = conf.GetInt("db.conn_max_life_time", 5)
+func Database() DatabaseConfig {
+	return *databaseConfig
+}
+
+func (db *DatabaseConfig) init() {
+	db.Debug = conf.GetBool("db.debug")
+	db.Host = conf.GetString("db.host", "")
+	db.Port = conf.GetString("db.port", "")
+	db.Name = conf.GetString("db.name", "")
+	db.User = conf.GetString("db.user", "")
+	db.Password = conf.GetString("db.password", "")
+	db.MaxIdleConns = conf.GetInt("db.max_idle_conns", 25)
+	db.MaxOpenConns = conf.GetInt("db.max_open_conns", 100)
+	db.ConnMaxLifetime = conf.GetInt("db.conn_max_life_time", 5)
 }
 
 // GetConnectLink 获取 conn 链接
-func (db *database) GetConnectLink() string {
+func (db DatabaseConfig) GetConnectLink() string {
 	const link = "%s:%s@(%s:%s)/%s?charset=utf8mb4&parseTime=True&loc=Local&collation=utf8mb4_unicode_ci"
 	return fmt.Sprintf(link, db.User, db.Password, db.Host, db.Port, db.Name)
 }

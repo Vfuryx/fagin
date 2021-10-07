@@ -145,7 +145,7 @@ func (vc *videoController) UploadVideo(ctx *gin.Context) {
 		return
 	}
 
-	upload := service.NewUploadService(config.App.PublicPath)
+	upload := service.NewUploadService(config.App().PublicPath)
 	path, err := upload.UploadFile("/upload/video/", r.File)
 	if err != nil {
 		vc.ResponseJsonErrLog(ctx, errno.ReqUploadFileErr, err, nil)
@@ -172,7 +172,7 @@ func (vc *videoController) PlayVideo(ctx *gin.Context) {
 		return
 	}
 
-	path := config.App.StoragePath + v.Path
+	path := config.App().StoragePath + v.Path
 	file, err := os.Open(path)
 	if err != nil {
 		vc.ResponseJsonErrLog(ctx, errno.CtxOpenFileErr, err, nil)

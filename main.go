@@ -2,16 +2,8 @@ package main
 
 import (
 	"fagin/pkg/consoles"
-	"fagin/pkg/server"
 	"flag"
 )
-
-// IsConsole 是否命令模式
-var IsConsole bool
-
-func init() {
-	flag.BoolVar(&IsConsole, "c", false, "-c 代表命令模式 cmd 代表 true")
-}
 
 // @title server
 // @version 2.0
@@ -19,9 +11,5 @@ func init() {
 // @termsOfService https://github.com/Vfuryx/fagin
 func main() {
 	flag.Parse()
-	if IsConsole { // 命令模式
-		consoles.Execute()
-	} else {
-		server.Run()
-	}
+	consoles.Execute()
 }

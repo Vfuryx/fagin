@@ -6,6 +6,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
+// MigrateCreateCmd 创建一个新的数据迁移
 var MigrateCreateCmd = &cobra.Command{
 	Use:   "create",
 	Short: "创建一个新的数据迁移",

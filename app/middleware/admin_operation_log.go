@@ -12,6 +12,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/streadway/amqp"
 	"io"
+	"net/http"
 	"runtime/debug"
 	"strings"
 	"time"
@@ -24,18 +25,22 @@ var excludeMethods = map[string]struct{}{
 
 // AdminOperationLogToDB 日志记录到文件
 func AdminOperationLogToDB() func(*gin.Context) {
-
 	return func(ctx *gin.Context) {
 		// 请求方式
 		reqMethod := ctx.Request.Method
 
-		if _, ok := excludeMethods[reqMethod]; ok {
+		// GET 方法
+		if _, ok := excludeMethods[reqMethod]; ok || ctx.FullPath() == "/admin/api/common/auth/logout" {
 			ctx.Next()
 		} else if strings.HasPrefix(ctx.GetHeader("Content-Type"), "application/json") { // 只记录 json 参数
-			// 获取body
-			data, _ := ctx.GetRawData()
-			//恢复body
-			ctx.Request.Body = io.NopCloser(bytes.NewBuffer(data)) // 关键点
+			var data []byte
+			// 排除修改密码
+			if !(reqMethod == http.MethodPut && ctx.FullPath() == "/admin/api/accounts/:id/pwd") {
+				// 获取body
+				data, _ = ctx.GetRawData()
+				//恢复body
+				ctx.Request.Body = io.NopCloser(bytes.NewBuffer(data)) // 关键点
+			}
 			// 开始时间
 			startTime := time.Now()
 			// 处理请求
@@ -57,12 +62,8 @@ func adminOperationLogToDB(ctx *gin.Context, reqMethod string, startTime time.Ti
 	clientIP := ctx.ClientIP()
 	// 获取用户ID
 	uid := auths.GetAdminID(ctx)
-	//// 获取类型
-	//logType := ctx.GetInt(admin_operation_log.TypeKey)
-	//// 获取内容
-	//content := ctx.GetString(admin_operation_log.ContentKey)
 
-	if config.AMQP.Open {
+	if config.AMQP().Open {
 		adminLog := mq.AdminLog{
 			LatencyTime: latencyTime,
 			Body:        body,
@@ -73,8 +74,6 @@ func adminOperationLogToDB(ctx *gin.Context, reqMethod string, startTime time.Ti
 			URI:         ctx.Request.RequestURI,
 			Path:        ctx.FullPath(),
 			AdminID:     uint(uid),
-			//Content:     content,
-			//LogType:     uint8(logType),
 		}
 		go func(adminLog mq.AdminLog) {
 			b, err := json.Marshal(adminLog)

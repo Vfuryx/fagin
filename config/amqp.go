@@ -4,7 +4,7 @@ import (
 	"fmt"
 )
 
-type amqp struct {
+type AMQPConfig struct {
 	Open     bool   // 是否开启
 	User     string // 用户名
 	Password string // 密码
@@ -13,19 +13,23 @@ type amqp struct {
 	Host     string // 虚拟 host
 }
 
-var AMQP amqp
+var amqpConfig = new(AMQPConfig)
 
-func init() {
-	AMQP.Open = false
-	AMQP.User = "admin"
-	AMQP.Password = "admin"
-	AMQP.Addr = "127.0.0.1"
-	AMQP.Port = "5672"
-	AMQP.Host = "log"
+func AMQP() AMQPConfig {
+	return *amqpConfig
+}
+
+func (amqp *AMQPConfig) init() {
+	amqp.Open = false
+	amqp.User = "admin"
+	amqp.Password = "admin"
+	amqp.Addr = "127.0.0.1"
+	amqp.Port = "5672"
+	amqp.Host = "log"
 }
 
 // GetConnectLink 获取 conn 链接
-func (amqp *amqp) GetConnectLink() string {
+func (amqp AMQPConfig) GetConnectLink() string {
 	const link = "amqp://%s:%s@%s:%s/%s"
 	return fmt.Sprintf(link, amqp.User, amqp.Password, amqp.Addr, amqp.Port, amqp.Host)
 }

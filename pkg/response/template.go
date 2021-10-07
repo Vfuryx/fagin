@@ -10,7 +10,7 @@ import (
 )
 
 func CreateResponseTemplate(path, name string) {
-	filePath := config.App.AppPath + "/responses/" + path + ".go"
+	filePath := config.App().AppPath + "/responses/" + path + ".go"
 	sl := strings.Split(filePath, "/")
 	dirPath := strings.Join(sl[:len(sl)-1], "/")
 	packageName := sl[len(sl)-2]
@@ -63,7 +63,7 @@ func (res *%[2]s) Serialize() []map[string]interface{} {
 	return sm
 }
 `
-	content := fmt.Sprintf(temp, packageName, structName, name, config.App.Name)
+	content := fmt.Sprintf(temp, packageName, structName, name, config.App().Name)
 
 	if _, err = file.WriteString(content); err != nil {
 		panic(err)

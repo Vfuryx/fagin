@@ -27,6 +27,6 @@ func (code TimeFormat) Get() string {
 
 func TimeFormatAll() map[string]string {
 	return map[string]string{
-		TimeFormatDef.String(): TimeFormatDef.Get(),
+		TimeFormatDef.Get(): TimeFormatDef.String(),
 	}
 }

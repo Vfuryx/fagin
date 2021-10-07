@@ -5,13 +5,12 @@ import (
 	"github.com/spf13/cobra"
 )
 
+// MigrateResetCmd 重置数据迁移
 var MigrateResetCmd = &cobra.Command{
 	Use:   "reset",
 	Short: "重置数据迁移",
-	Long: ``,
+	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
 		migrate.Reset()
 	},
 }
-
-

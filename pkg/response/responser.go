@@ -37,28 +37,28 @@ func (c Collect) Collection() []map[string]interface{} {
 type Response struct {
 	Code    int         `json:"code"`
 	Message string      `json:"message"`
-	Data    interface{} `json:"data,omitempty"`
+	Result  interface{} `json:"result,omitempty"`
 	Errors  interface{} `json:"errors,omitempty"`
 }
 
-func JsonOK(ctx *gin.Context, data interface{}) {
-	Json(ctx, errNo.OK, data, nil, http.StatusOK)
+func JsonOK(ctx *gin.Context, result interface{}) {
+	Json(ctx, errNo.OK, result, nil, http.StatusOK)
 }
 
 func JsonErr(ctx *gin.Context, err error, errors interface{}) {
 	Json(ctx, err, nil, errors, http.StatusOK)
 }
 
-func JsonWithStatus(ctx *gin.Context, statusCode int, err error, data interface{}, errors interface{}) {
-	Json(ctx, err, data, errors, statusCode)
+func JsonWithStatus(ctx *gin.Context, statusCode int, err error, result interface{}, errors interface{}) {
+	Json(ctx, err, result, errors, statusCode)
 }
 
-func Json(ctx *gin.Context, err error, data interface{}, errors interface{}, statusCode int) {
+func Json(ctx *gin.Context, err error, result interface{}, errors interface{}, statusCode int) {
 	code, msg := errno.Decode(err)
 	ctx.JSON(statusCode, Response{
 		Code:    code,
 		Message: msg,
-		Data:    data,
+		Result:  result,
 		Errors:  errors,
 	})
 }

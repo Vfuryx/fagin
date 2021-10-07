@@ -12,7 +12,11 @@ import (
 
 const AdminModel = "admin"
 
-var Log *logrus.Logger = New("")
+var DefaultLog *logrus.Logger
+
+func Init() {
+	DefaultLog = New("")
+}
 
 func New(name string) *logrus.Logger {
 	log := logrus.New()
@@ -25,10 +29,11 @@ func New(name string) *logrus.Logger {
 
 	// 设置LfHook
 	var lfHook *lfshook.LfsHook
-	var path = config.App.StoragePath + `/logs/server` // 默认路径
-	if name != "" {                                    // 重置路径
-		path = config.App.StoragePath + "/logs/" + name
+	var path = config.App().StoragePath + `/logs/server` // 默认路径
+	if name != "" {                                      // 重置路径
+		path = config.App().StoragePath + "/logs/" + name
 	}
+
 	// 创建文件夹 可以多层
 	err = os.MkdirAll(path, os.ModePerm)
 	if err != nil {

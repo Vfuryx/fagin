@@ -19,8 +19,8 @@ type Paginator struct {
 // 获取请求的 page, limit 参数
 // 返回分页管理器
 func NewPaginatorWithCtx(ctx *gin.Context, defaultPage, defaultLimit int) *Paginator {
-	page := ctx.DefaultQuery("current_page", strconv.Itoa(defaultPage))
-	limit := ctx.DefaultQuery("page_size", strconv.Itoa(defaultLimit))
+	page := ctx.DefaultQuery("page", strconv.Itoa(defaultPage))
+	limit := ctx.DefaultQuery("pageSize", strconv.Itoa(defaultLimit))
 	currentPage, err := strconv.Atoi(page)
 	if err != nil {
 		currentPage = defaultPage
@@ -44,6 +44,7 @@ func NewPaginator(currentPage, pageSize int) *Paginator {
 	}
 }
 
+// Paginate 分页
 func (p *Paginator) Paginate(query *gorm.DB, model interface{}) (err error) {
 	var count int64
 	if query == nil {

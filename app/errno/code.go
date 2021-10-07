@@ -23,6 +23,8 @@ const (
 	ReqUploadFileErr         ErrNO = 100001
 	ReqUploadSizeExceededErr ErrNO = 100002
 	ReqRequestTimeoutErr     ErrNO = 100003
+	ReqMenuNotFoundErr       ErrNO = 101015
+	ReqStructureNotFoundErr  ErrNO = 101016
 
 	// MidErr  中间件错误  100000 ～ 199999
 	MidErr                 ErrNO = 200000
@@ -41,6 +43,7 @@ const (
 	CtxVerifyCaptchaErr ErrNO = 301003
 	CtxTokenInvalidErr  ErrNO = 301004
 	CtxRoleKeyExistErr  ErrNO = 301005
+	CtxUserExistErr     ErrNO = 301006
 	CtxOpenFileErr      ErrNO = 309001
 
 	// SerErr 服务错误 400000 ～ 499999
@@ -55,9 +58,11 @@ const (
 	SerMenuRelationExistErr       ErrNO = 401008
 	SerRoleRelationExistErr       ErrNO = 401009
 	SerPermissionRelationExistErr ErrNO = 401010
+	SerMenuPathsUnsafeErr         ErrNO = 401011
 
 	// DaoErr 500000 ～ 599999
-	DaoErr ErrNO = 500000
+	DaoErr                ErrNO = 500000
+	DaoMenuPathsUnsafeErr ErrNO = 501001
 
 	// ModErr 600000 ～ 699999
 	ModErr ErrNO = 600000
@@ -88,6 +93,10 @@ func (e ErrNO) Error() string {
 		return "超出上传文件预定最大值"
 	case ReqRequestTimeoutErr:
 		return "请求超时"
+	case ReqMenuNotFoundErr:
+		return "菜单不存在"
+	case ReqStructureNotFoundErr:
+		return "构造不存在"
 
 	case MidErr:
 		return "中间件错误"
@@ -110,6 +119,8 @@ func (e ErrNO) Error() string {
 		return "删除数据失败"
 	case CtxUserNotFoundErr:
 		return "找不到用户"
+	case CtxUserExistErr:
+		return "用户已存在"
 	case CtxGetCaptchaErr:
 		return "获取验证码失败"
 	case CtxVerifyCaptchaErr:
@@ -143,9 +154,13 @@ func (e ErrNO) Error() string {
 		return "角色存在关联"
 	case SerPermissionRelationExistErr:
 		return "权限存在关联"
+	case SerMenuPathsUnsafeErr:
+		return "菜单层级路径非法定义"
 
 	case DaoErr:
 		return "DAO错误"
+	case DaoMenuPathsUnsafeErr:
+		return "菜单层级路径非法定义"
 
 	case ModErr:
 		return "模型错误"

@@ -23,6 +23,7 @@ type adminsController struct {
 	BaseController
 }
 
+// AdminsController 管理员控制器
 var AdminsController adminsController
 
 // Index
@@ -71,8 +72,8 @@ func (ac *adminsController) Index(ctx *gin.Context) {
 	data := adminResponse.AdminUserList(users...).Collection()
 
 	ac.ResponseJsonOK(ctx, gin.H{
-		"users":     data,
-		"paginator": paginator,
+		"items": data,
+		"total": paginator.TotalCount,
 	})
 	return
 }
@@ -85,9 +86,7 @@ func (ac *adminsController) Show(ctx *gin.Context) {
 	}
 
 	columns := []string{"*"}
-	with := gin.H{"Roles": func(db *gorm.DB) *gorm.DB {
-		return db.Where("type = ?", 0)
-	}}
+	with := gin.H{"Roles": nil}
 	user, err := service.AdminUserService.Show(id, columns, with)
 	if err != nil {
 		ac.ResponseJsonErrLog(ctx, errno.CtxShowErr, err, nil)
@@ -95,7 +94,7 @@ func (ac *adminsController) Show(ctx *gin.Context) {
 	}
 
 	// 转换为角色ID组
-	var roles []uint
+	var roles = make([]uint, 0, 5)
 	for _, role := range user.Roles {
 		roles = append(roles, role.ID)
 	}
@@ -116,23 +115,6 @@ func (ac *adminsController) Show(ctx *gin.Context) {
 	return
 }
 
-func (ac *adminsController) Delete(ctx *gin.Context) {
-	id, err := request.ShouldBindUriUintID(ctx)
-	if err != nil {
-		ac.ResponseJsonErr(ctx, errno.ReqErr, err)
-		return
-	}
-
-	err = service.AdminUserService.Delete(id)
-	if err != nil {
-		ac.ResponseJsonErrLog(ctx, errno.CtxDeleteErr, err, nil)
-		return
-	}
-
-	ac.ResponseJsonOK(ctx, nil)
-	return
-}
-
 // Store 创建管理员
 func (ac *adminsController) Store(ctx *gin.Context) {
 	var r = admin_request.NewCreateAdminUser()
@@ -141,9 +123,9 @@ func (ac *adminsController) Store(ctx *gin.Context) {
 		return
 	}
 
-	ok := service.AdminUserService.UsernameExist(r.Username, 0)
-	if !ok {
-		ac.ResponseJsonErr(ctx, errno.CtxUserNotFoundErr, nil)
+	ok := service.AdminUserService.UsernameExists(r.Username, 0)
+	if ok {
+		ac.ResponseJsonErr(ctx, errno.CtxUserExistErr, nil)
 		return
 	}
 
@@ -198,9 +180,9 @@ func (ac *adminsController) Update(ctx *gin.Context) {
 		return
 	}
 
-	ok := service.AdminUserService.UsernameExist(r.Username, id)
-	if !ok {
-		ac.ResponseJsonErr(ctx, errno.CtxUserNotFoundErr, nil)
+	ok := service.AdminUserService.UsernameExists(r.Username, id)
+	if ok {
+		ac.ResponseJsonErr(ctx, errno.CtxUserExistErr, nil)
 		return
 	}
 
@@ -220,10 +202,29 @@ func (ac *adminsController) Update(ctx *gin.Context) {
 		return
 	}
 
-	ca := caches.NewAdminNavsCache(nil)
+	ca := caches.NewAdminRoutesCache(nil)
 	_, err = ca.Remove(strconv.FormatUint(uint64(id), 10))
 	if err != nil && err != cache.ErrNotOpen {
 		ac.ResponseJsonErrLog(ctx, errno.CtxUpdateErr, err, nil)
+		return
+	}
+
+	ac.ResponseJsonOK(ctx, nil)
+	return
+}
+
+// Delete 删除
+func (ac *adminsController) Delete(ctx *gin.Context) {
+	id, err := request.ShouldBindUriUintID(ctx)
+	if err != nil {
+		ac.ResponseJsonErr(ctx, errno.ReqErr, err)
+		return
+	}
+
+	err = service.AdminUserService.Delete(id)
+	if err != nil {
+		ac.ResponseJsonErrLog(ctx, errno.CtxDeleteErr, err, nil)
+		return
 	}
 
 	ac.ResponseJsonOK(ctx, nil)
@@ -306,17 +307,17 @@ func (ac *adminsController) Logout(ctx *gin.Context) {
 	ac.ResponseJsonOK(ctx, nil)
 }
 
-// UsernameExist 用户名是否已存在
-func (ac *adminsController) UsernameExist(ctx *gin.Context) {
+// UsernameExists 用户名是否已存在
+func (ac *adminsController) UsernameExists(ctx *gin.Context) {
 	var r = admin_request.NewAdminUsernameExistRequest()
 	if data, ok := r.Validate(ctx); !ok {
 		ac.ResponseJsonErr(ctx, errno.ReqErr, data)
 		return
 	}
 
-	ok := service.AdminUserService.UsernameExist(r.Username, r.ID)
-	if !ok {
-		ac.ResponseJsonErr(ctx, errno.CtxUserNotFoundErr, nil)
+	ok := service.AdminUserService.UsernameExists(r.Username, r.ID)
+	if ok {
+		ac.ResponseJsonErr(ctx, errno.CtxUserExistErr, nil)
 		return
 	}
 

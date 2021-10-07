@@ -15,7 +15,7 @@ var (
 
 // Init 初始化
 func Init() {
-	link := config.DB.GetConnectLink()
+	link := config.Database().GetConnectLink()
 
 	//newLogger := logger.New(
 	//	log.New(Log.New("sql").Writer(), "\r\n", log.LstdFlags), // io writer
@@ -30,7 +30,7 @@ func Init() {
 		//Logger: newLogger,
 	})
 
-	if config.DB.Debug {
+	if config.Database().Debug {
 		orm = orm.Debug()
 	}
 
@@ -47,11 +47,11 @@ func Init() {
 		panic(fmt.Errorf("database exception %v \n", Err))
 	}
 	// SetMaxIdleConns 用于设置连接池中空闲连接的最大数量。
-	sqlDB.SetMaxIdleConns(config.DB.MaxIdleConns)
+	sqlDB.SetMaxIdleConns(config.Database().MaxIdleConns)
 	// SetMaxOpenConns 设置打开数据库连接的最大数量。
-	sqlDB.SetMaxOpenConns(config.DB.MaxOpenConns)
+	sqlDB.SetMaxOpenConns(config.Database().MaxOpenConns)
 	// SetConnMaxLifetime 设置了连接可复用的最大时间。
-	sqlDB.SetConnMaxLifetime(time.Duration(config.DB.ConnMaxLifetime) * time.Minute)
+	sqlDB.SetConnMaxLifetime(time.Duration(config.Database().ConnMaxLifetime) * time.Minute)
 }
 
 func ORM() *gorm.DB {

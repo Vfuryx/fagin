@@ -14,6 +14,7 @@ type IDao interface {
 	Find(model interface{}) error
 	First(model interface{}) error
 	Count() (int64, error)
+	Exists() bool
 	Paginate(model interface{}, p *Paginator) error
 }
 
@@ -85,6 +86,23 @@ func (d *Dao) With(db *gorm.DB, with map[string]interface{}) *gorm.DB {
 func (d *Dao) Count() (count int64, err error) {
 	err = d.DB.Model(d.GetModel()).Select([]string{}).Count(&count).Error
 	return count, err
+}
+
+func (d *Dao) Exists() bool {
+	err := d.DB.Model(d.GetModel()).
+		Select([]string{"1"}).
+		First(&struct {
+			A bool `gorm:"column:1;"`
+		}{}).
+		Error
+
+	if err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return false
+		}
+		return true
+	}
+	return true
 }
 
 // Paginate 分页处理

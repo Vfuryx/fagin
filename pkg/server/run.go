@@ -22,7 +22,7 @@ import (
 
 func listenAndServe() {
 	upg, err := tableflip.New(tableflip.Options{
-		PIDFile: config.App.RootPath + "/app.pid",
+		PIDFile: config.App().RootPath + "/app.pid",
 	})
 	if err != nil {
 		panic(err)
@@ -41,14 +41,14 @@ func listenAndServe() {
 	}()
 
 	// Listen must be called before Ready
-	ln, err := upg.Listen("tcp", ":"+config.App.Port)
+	ln, err := upg.Listen("tcp", ":"+config.App().Port)
 	if err != nil {
 		log.Fatalln("Can't listen:", err)
 	}
 
 	// 设置服务
 	server := &http.Server{
-		Addr:    ":" + config.App.Port,
+		Addr:    ":" + config.App().Port,
 		Handler: router.New(),
 		//ReadTimeout:    setting.ReadTimeout,
 		//WriteTimeout:   setting.WriteTimeout,
@@ -61,14 +61,14 @@ func listenAndServe() {
 		}
 	}()
 
-	err = ioutil.WriteFile(config.App.RootPath+"/app.pid", []byte(strconv.Itoa(os.Getpid())), 0755)
+	err = ioutil.WriteFile(config.App().RootPath+"/app.pid", []byte(strconv.Itoa(os.Getpid())), 0755)
 	if err != nil {
 		panic(err)
 	}
 
 	// 不是正式环境打印监听端口
 	if ok := app.IsProd(); !ok {
-		fmt.Printf("[GIN-debug] Listening and serving HTTP on %s \n", config.App.Port)
+		fmt.Printf("[GIN-debug] Listening and serving HTTP on %s \n", config.App().Port)
 	}
 	log.Printf("Actual pid is %d", syscall.Getpid())
 	log.Printf("ready")

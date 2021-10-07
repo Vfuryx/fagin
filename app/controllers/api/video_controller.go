@@ -37,7 +37,7 @@ func (vc *videoController) PlayVideo(ctx *gin.Context) {
 
 	params := map[string]interface{}{
 		"id":     id,
-		"status": enums.StatusActive,
+		"status": enums.StatusActive.Get(),
 	}
 	columns := []string{"id", "path"}
 	var v video_info.VideoInfo
@@ -47,7 +47,7 @@ func (vc *videoController) PlayVideo(ctx *gin.Context) {
 		return
 	}
 
-	path := config.App.StoragePath + v.Path
+	path := config.App().StoragePath + v.Path
 	file, err := os.Open(path)
 	if err != nil {
 		vc.ResponseJsonErrLog(ctx, errno.CtxOpenFileErr, err, nil)

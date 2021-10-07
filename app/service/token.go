@@ -23,7 +23,7 @@ var Login = &context{}
 func (ts *tokenService) ParseRequest(ctx *gin.Context) (*context, error) {
 	head := ctx.Request.Header.Get("Authorization")
 
-	secret := config.Jwt.Secret
+	secret := config.JWT().Secret
 
 	if len(head) == 0 {
 		return Login, errno.SerTokenNotFoundErr
@@ -64,7 +64,7 @@ func (ts *tokenService) secretFunc(secret string) jwt.Keyfunc {
 func (ts *tokenService) Sign(user user.User, secret string) (tokenString string, err error) {
 	// Load the jwt secret from the Gin config if the secret isn't specified.
 	if secret == "" {
-		secret = config.Jwt.Secret
+		secret = config.JWT().Secret
 	}
 	// The token content.
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{

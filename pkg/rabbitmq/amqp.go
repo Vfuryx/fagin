@@ -26,7 +26,7 @@ func NewRabbitMQ(queueName, exchange, key string) (*RabbitMQ, error) {
 		Exchange:  exchange,
 		Key:       key,
 	}
-	link := config.AMQP.GetConnectLink()
+	link := config.AMQP().GetConnectLink()
 	fmt.Println(link)
 	var err error
 	rabbitMQ.conn, err = amqp.Dial(link)

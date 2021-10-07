@@ -14,16 +14,19 @@ import (
 	"net/http"
 )
 
+// New 实例化
 func New() *gin.Engine {
 	e := gin.New()
 
 	// 加载模版
 	temp := loadHTMLGlobFS(e)
 
-	// 是否正式环境
+	// 不是是正式环境
 	if ok := app.IsProd(); !ok {
 		view.DebugPrintLoadTemplate(temp)
 		e.Use(gin.Logger(), gin.Recovery())
+	} else {
+		gin.SetMode(gin.ReleaseMode)
 	}
 
 	// 收集日志
@@ -33,20 +36,20 @@ func New() *gin.Engine {
 	routes.Handle(e)
 
 	// 设置公开静态资源 （上传公开文件）
-	e.Static(config.Template.PublicRouter, config.Template.Public)
+	e.Static(config.Template().PublicRouter, config.Template().Public)
 
 	// 设置固定静态资源文件
-	e.StaticFS(config.Template.StaticRouter, http.FS(config.Template.StaticEmbed))
+	e.StaticFS(config.Template().StaticRouter, http.FS(config.Template().StaticEmbed))
 
 	// 全局实例Session
 	//e.Use(session.Sessions())
 
 	// 支持跨域
-	if config.DefaultRouter.IsCors {
+	if config.DefaultRouter().IsCors {
 		conf := cors.DefaultConfig()
-		conf.AllowOrigins = config.DefaultRouter.CorsConf.AllowOrigins
-		conf.AllowHeaders = config.DefaultRouter.CorsConf.AllowHeaders
-		conf.AllowMethods = config.DefaultRouter.CorsConf.AllowMethods
+		conf.AllowOrigins = config.DefaultRouter().CorsConf.AllowOrigins
+		conf.AllowHeaders = config.DefaultRouter().CorsConf.AllowHeaders
+		conf.AllowMethods = config.DefaultRouter().CorsConf.AllowMethods
 		e.Use(cors.New(conf))
 	}
 
@@ -79,9 +82,9 @@ func setPprof(e *gin.Engine) {
 // 加载模版
 func loadHTMLGlobFS(e *gin.Engine) *template.Template {
 	temp := template.Must(template.New("").
-		Delims(config.Template.DelimitersL, config.Template.DelimitersR).         // 1 设置定界符
-		Funcs(config.Template.FuncMap).                                           // 2 注册模版函数
-		ParseFS(config.Template.TemplatesEmbed, config.Template.TemplatePattern)) // 3 导入模版
+		Delims(config.Template().DelimitersL, config.Template().DelimitersR).         // 1 设置定界符
+		Funcs(config.Template().FuncMap).                                             // 2 注册模版函数
+		ParseFS(config.Template().TemplatesEmbed, config.Template().TemplatePattern)) // 3 导入模版
 
 	e.SetHTMLTemplate(temp)
 	return temp

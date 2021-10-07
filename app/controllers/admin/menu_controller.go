@@ -1,6 +1,7 @@
 package admin
 
 import (
+	"fagin/app"
 	"fagin/app/errno"
 	"fagin/app/models/admin_menu"
 	"fagin/app/requests/admin"
@@ -8,13 +9,13 @@ import (
 	"fagin/app/service"
 	"fagin/pkg/request"
 	"github.com/gin-gonic/gin"
-	"time"
 )
 
 type menuController struct {
 	BaseController
 }
 
+// MenuController 菜单控制器
 var MenuController menuController
 
 func (mc *menuController) Index(ctx *gin.Context) {
@@ -31,14 +32,13 @@ func (mc *menuController) Index(ctx *gin.Context) {
 	if r.Title != "" {
 		params["like_title"] = "%" + r.Title + "%"
 	}
-	if r.IsShow != nil {
-		params["is_show"] = *r.IsShow
+	if r.Status != nil {
+		params["status"] = *r.Status
 	}
 
 	columns := []string{
-		"id", "title", "icon", "type", "path", "sort", "is_show",
-		"created_at", "component", "redirect", "target", "status",
-		"is_hide_child", "parent_id",
+		"id", "parent_id", "icon", "title", "permission", "path",
+		"component", "sort", "status", "created_at",
 	}
 
 	menus, err := service.AdminMenuService.Index(params, columns, nil)
@@ -63,29 +63,30 @@ func (mc *menuController) Show(ctx *gin.Context) {
 	columns := []string{"*"}
 	m, err := service.AdminMenuService.Show(id, columns)
 	if err != nil {
-		mc.ResponseJsonErrLog(ctx, errno.CtxStoreErr, err, nil)
+		mc.ResponseJsonErrLog(ctx, errno.CtxShowErr, err, nil)
 		return
 	}
 
 	mc.ResponseJsonOK(ctx, gin.H{
-		"id":            m.ID,
-		"parent_id":     m.ParentID,
-		"paths":         m.Paths,
-		"name":          m.Name,
-		"title":         m.Title,
-		"icon":          m.Icon,
-		"type":          m.Type,
-		"path":          m.Path,
-		"method":        m.Method,
-		"component":     m.Component,
-		"permission":    m.Permission,
-		"sort":          m.Sort,
-		"is_show":       m.IsShow,
-		"redirect":      m.Redirect,
-		"target":        m.Target,
-		"status":        m.Status,
-		"is_hide_child": m.IsHideChild,
-		"created_at":    m.CreatedAt.Format(time.RFC3339),
+		"id":             m.ID,
+		"parent_id":      m.ParentID,
+		"paths":          m.Paths,
+		"type":           m.Type,
+		"name":           m.Name,
+		"title":          m.Title,
+		"icon":           m.Icon,
+		"path":           m.Path,
+		"method":         m.Method,
+		"component":      m.Component,
+		"permission":     m.Permission,
+		"is_show":        m.IsShow,
+		"redirect":       m.Redirect,
+		"frame_src":      m.FrameSrc,
+		"current_active": m.CurrentActive,
+		"is_hide_child":  m.IsHideChild,
+		"sort":           m.Sort,
+		"status":         m.Status,
+		"created_at":     app.TimeToStr(m.CreatedAt),
 	})
 	return
 }
@@ -98,21 +99,23 @@ func (mc *menuController) Store(ctx *gin.Context) {
 	}
 
 	b := admin_menu.AdminMenu{
-		ParentID:    r.ParentId,
-		Component:   r.Component,
-		Name:        r.Name,
-		Title:       r.Title,
-		Icon:        r.Icon,
-		Type:        r.Type,
-		Path:        r.Path,
-		Method:      r.Method,
-		Permission:  r.Permission,
-		Sort:        r.Sort,
-		IsShow:      *r.IsShow,
-		Redirect:    r.Redirect,
-		Target:      r.Target,
-		Status:      *r.Status,
-		IsHideChild: *r.IsHideChild,
+		ParentID:      r.ParentId,
+		Type:          r.Type,
+		Component:     r.Component,
+		Name:          r.Name,
+		Title:         r.Title,
+		Icon:          r.Icon,
+		Path:          r.Path,
+		Method:        r.Method,
+		Permission:    r.Permission,
+		Sort:          r.Sort,
+		IsShow:        *r.IsShow,
+		Redirect:      r.Redirect,
+		FrameSrc:      r.FrameSrc,
+		CurrentActive: r.CurrentActive,
+		Status:        *r.Status,
+		IsHideChild:   *r.IsHideChild,
+		IsNoCache:     *r.IsNoCache,
 	}
 
 	err := service.AdminMenuService.Create(&b)
@@ -144,21 +147,22 @@ func (mc *menuController) Update(ctx *gin.Context) {
 	}
 
 	data := map[string]interface{}{
-		"parent_id":     r.ParentId,
-		"name":          r.Name,
-		"component":     r.Component,
-		"title":         r.Title,
-		"icon":          r.Icon,
-		"type":          *r.Type,
-		"path":          r.Path,
-		"method":        r.Method,
-		"permission":    r.Permission,
-		"sort":          r.Sort,
-		"is_show":       *r.IsShow,
-		"status":        *r.Status,
-		"target":        r.Target,
-		"redirect":      r.Redirect,
-		"is_hide_child": r.IsHideChild,
+		"parent_id":      r.ParentId,
+		"name":           r.Name,
+		"component":      r.Component,
+		"title":          r.Title,
+		"icon":           r.Icon,
+		"type":           r.Type,
+		"path":           r.Path,
+		"method":         r.Method,
+		"permission":     r.Permission,
+		"sort":           r.Sort,
+		"is_show":        *r.IsShow,
+		"status":         *r.Status,
+		"frame_src":      r.FrameSrc,
+		"current_active": r.CurrentActive,
+		"redirect":       r.Redirect,
+		"is_hide_child":  r.IsHideChild,
 	}
 	err = service.AdminMenuService.Update(id, data)
 	if err != nil {
@@ -208,17 +212,18 @@ func (mc *menuController) All(ctx *gin.Context) {
 	}
 	params := gin.H{
 		"orderBy": "sort desc, id asc",
-		"type":    r.Type,
 	}
 
-	columns := []string{"*"}
+	columns := []string{
+		"id", "parent_id", "icon", "title",
+	}
 	groups, err := service.AdminMenuService.All(params, columns)
 	if err != nil {
 		mc.ResponseJsonErrLog(ctx, errno.CtxListErr, err, nil)
 		return
 	}
 
-	data := response.AdminMenusList(*groups...).Collection()
+	data := response.AdminMenusAll(*groups...).Collection()
 
 	mc.ResponseJsonOK(ctx, data)
 	return

@@ -31,8 +31,11 @@ func (res *adminUserList) Serialize() []map[string]interface{} {
 			"id":        model.ID,
 			"username":  model.Username,
 			"nick_name": model.NickName,
+			"email":     model.Email,
+			"remark":    model.Remark,
 			"phone":     model.Phone,
 			"roles":     roles,
+			"status":    model.Status,
 			"create_at": app.TimeToStr(model.CreatedAt),
 		}
 		sm = append(sm, m)

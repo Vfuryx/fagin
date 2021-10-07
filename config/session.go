@@ -2,14 +2,18 @@ package config
 
 import "fagin/pkg/conf"
 
-type session struct {
+type SessionConfig struct {
 	Secret string // 盐
 	Key    string // cookie 的 session 键
 }
 
-var Session session
+var sessionConfig = new(SessionConfig)
 
-func init() {
-	Session.Secret = conf.GetString("session.secret", "secret")
-	Session.Key = conf.GetString("session.key", "SESSION_ID")
+func Session() SessionConfig {
+	return *sessionConfig
+}
+
+func (session *SessionConfig) init() {
+	session.Secret = conf.GetString("session.secret", "secret")
+	session.Key = conf.GetString("session.key", "SESSION_ID")
 }

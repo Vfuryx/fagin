@@ -11,7 +11,7 @@ CREATE TABLE `admin_operation_logs`
     `user`         varchar(32)         NOT NULL DEFAULT '' COMMENT '用户',
     `method`       varchar(8)          NOT NULL DEFAULT '' COMMENT '方法',
     `path`         varchar(255)        NOT NULL DEFAULT '' COMMENT '路径',
-    `ip`           varchar(16)         NOT NULL DEFAULT '' COMMENT 'IP',
+    `ip`           varchar(46)         NOT NULL DEFAULT '' COMMENT 'IP',
     `location`     varchar(128)        NOT NULL DEFAULT '' COMMENT '访问位置',
     `module`       varchar(32)         NOT NULL DEFAULT '' COMMENT '操作模块',
     `operation`    varchar(32)         NOT NULL DEFAULT '' COMMENT '操作类型',

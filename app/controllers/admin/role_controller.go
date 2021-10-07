@@ -1,17 +1,15 @@
 package admin
 
 import (
+	"fagin/app"
 	"fagin/app/errno"
 	"fagin/app/models/admin_menu"
-	"fagin/app/models/admin_permission"
 	"fagin/app/models/admin_role"
 	adminRequest "fagin/app/requests/admin"
 	response "fagin/app/responses/admin"
 	"fagin/app/service"
 	"fagin/pkg/db"
 	"fagin/pkg/request"
-	"time"
-
 	"github.com/gin-gonic/gin"
 )
 
@@ -19,6 +17,7 @@ type roleController struct {
 	BaseController
 }
 
+// RoleController 角色控制器
 var RoleController roleController
 
 func (rc *roleController) Index(ctx *gin.Context) {
@@ -42,7 +41,7 @@ func (rc *roleController) Index(ctx *gin.Context) {
 	if r.Status != nil {
 		params["status"] = *r.Status
 	}
-	var columns []string
+	var columns = []string{"*"}
 	with := gin.H{"Menus": nil}
 
 	roles, err := service.AdminRoleService.Index(params, columns, with, paginator)
@@ -54,8 +53,8 @@ func (rc *roleController) Index(ctx *gin.Context) {
 	data := response.AdminRoleList(roles...).Collection()
 
 	rc.ResponseJsonOK(ctx, gin.H{
-		"roles":     data,
-		"paginator": paginator,
+		"items": data,
+		"total": paginator.TotalCount,
 	})
 	return
 }
@@ -74,58 +73,37 @@ func (rc *roleController) Show(ctx *gin.Context) {
 		return
 	}
 
-	menuIDs := make([]uint, 0, 20)
-	for _, menu := range r.Menus {
-		menuIDs = append(menuIDs, menu.ID)
-	}
+	var menuIDs = new([]uint)
+	getMenuTree(r.Menus, 0, menuIDs)
 
 	rc.ResponseJsonOK(ctx, gin.H{
-		"id":          r.ID,
-		"type":        r.Type,
-		"name":        r.Name,
-		"key":         r.Key,
-		"sort":        r.Sort,
-		"status":      r.Status,
-		"created_at":  r.CreatedAt.Format(time.RFC3339),
-		"remark":      r.Remark,
-		"menu_ids":    menuIDs,
-		"permissions": getPermissions(r.Permissions),
+		"id":         r.ID,
+		"type":       r.Type,
+		"name":       r.Name,
+		"key":        r.Key,
+		"sort":       r.Sort,
+		"status":     r.Status,
+		"created_at": app.TimeToStr(r.CreatedAt),
+		"remark":     r.Remark,
+		"menu_ids":   menuIDs,
 	})
 	return
 }
 
-func getPermissions(p []admin_permission.AdminPermission) []gin.H {
-	ps := make([]gin.H, 0, 20)
-	item := gin.H{}
-	for _, permission := range p {
-		item = gin.H{
-			"id":   permission.ID,
-			"name": permission.Name,
+func getMenuTree(data []admin_menu.AdminMenu, pid uint, menuIDs *[]uint) []map[string]interface{} {
+	result := make([]map[string]interface{}, 0, 10)
+	for index := range data {
+		if data[index].ParentID == pid {
+			m := map[string]interface{}{
+				"id": data[index].ID,
+			}
+			if children := getMenuTree(data, data[index].ID, menuIDs); len(children) == 0 {
+				*menuIDs = append(*menuIDs, data[index].ID)
+			}
+			result = append(result, m)
 		}
-		ps = append(ps, item)
 	}
-	return ps
-}
-
-func (rc *roleController) Delete(ctx *gin.Context) {
-	id, err := request.ShouldBindUriUintID(ctx)
-	if err != nil || id == 1 {
-		rc.ResponseJsonErr(ctx, errno.ReqErr, nil)
-		return
-	}
-
-	err = service.AdminRoleService.Delete(id)
-	if err != nil {
-		if err == errno.SerRoleRelationExistErr {
-			rc.ResponseJsonErr(ctx, errno.SerRoleRelationExistErr, nil)
-			return
-		}
-		rc.ResponseJsonErrLog(ctx, errno.CtxDeleteErr, err, nil)
-		return
-	}
-
-	rc.ResponseJsonOK(ctx, nil)
-	return
+	return result
 }
 
 func (rc *roleController) Store(ctx *gin.Context) {
@@ -136,7 +114,7 @@ func (rc *roleController) Store(ctx *gin.Context) {
 	}
 
 	ok := service.AdminRoleService.KeyExist(0, r.Key)
-	if !ok {
+	if ok {
 		rc.ResponseJsonErr(ctx, errno.CtxRoleKeyExistErr, nil)
 		return
 	}
@@ -150,25 +128,15 @@ func (rc *roleController) Store(ctx *gin.Context) {
 		rc.ResponseJsonErrLog(ctx, errno.CtxStoreErr, err, nil)
 		return
 	}
-	// 获取权限组
-	var permissions []admin_permission.AdminPermission
-	err = admin_permission.NewDao().
-		Query(gin.H{"in_id": r.PermissionIDs}, []string{"*"}, nil).
-		Find(&permissions)
-	if err != nil {
-		rc.ResponseJsonErrLog(ctx, errno.CtxStoreErr, err, nil)
-		return
-	}
 
 	role := admin_role.AdminRole{
-		Name:        r.Name,
-		Type:        r.Type,
-		Key:         r.Key,
-		Remark:      r.Remark,
-		Sort:        r.Sort,
-		Status:      *r.Status,
-		Menus:       menus,
-		Permissions: permissions,
+		Name: r.Name,
+		//Type:   r.Type,
+		Key:    r.Key,
+		Remark: r.Remark,
+		Sort:   r.Sort,
+		Status: *r.Status,
+		Menus:  menus,
 	}
 
 	err = service.AdminRoleService.Create(&role)
@@ -195,13 +163,12 @@ func (rc *roleController) Update(ctx *gin.Context) {
 	}
 
 	data := map[string]interface{}{
-		"name":           r.Name,
-		"type":           r.Type,
-		"sort":           r.Sort,
-		"status":         *r.Status,
-		"remark":         r.Remark,
-		"menuIDs":        r.MenuIDs,
-		"permissionsIDs": r.PermissionIDs,
+		"name":    r.Name,
+		"type":    r.Type,
+		"sort":    r.Sort,
+		"status":  *r.Status,
+		"remark":  r.Remark,
+		"menuIDs": r.MenuIDs,
 	}
 
 	err = service.AdminRoleService.Update(id, data)
@@ -214,6 +181,27 @@ func (rc *roleController) Update(ctx *gin.Context) {
 	err = service.AdminRoleService.RemoveRoleMenusCache(id)
 	if err != nil {
 		rc.ResponseJsonErrLog(ctx, errno.CtxUpdateErr, err, nil)
+		return
+	}
+
+	rc.ResponseJsonOK(ctx, nil)
+	return
+}
+
+func (rc *roleController) Delete(ctx *gin.Context) {
+	id, err := request.ShouldBindUriUintID(ctx)
+	if err != nil || id == 1 {
+		rc.ResponseJsonErr(ctx, errno.ReqErr, nil)
+		return
+	}
+
+	err = service.AdminRoleService.Delete(id)
+	if err != nil {
+		if err == errno.SerRoleRelationExistErr {
+			rc.ResponseJsonErr(ctx, errno.SerRoleRelationExistErr, nil)
+			return
+		}
+		rc.ResponseJsonErrLog(ctx, errno.CtxDeleteErr, err, nil)
 		return
 	}
 
@@ -267,9 +255,7 @@ func (rc *roleController) Roles(ctx *gin.Context) {
 
 	data := response.AdminSelectRoleList(roles...).Collection()
 
-	rc.ResponseJsonOK(ctx, gin.H{
-		"roles": data,
-	})
+	rc.ResponseJsonOK(ctx, data)
 	return
 }
 

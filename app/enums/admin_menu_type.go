@@ -8,16 +8,19 @@ type AdminMenuType int
 var _ enum.Enum = new(AdminMenuType)
 
 const (
-	AdminMenuTypeAdmin  AdminMenuType = 0 // 总后台
-	AdminMenuTypeSeller AdminMenuType = 1 // 商家后台
+	AdminMenuTypeDir        AdminMenuType = 0
+	AdminMenuTypeMenu       AdminMenuType = 1
+	AdminMenuTypePermission AdminMenuType = 2
 )
 
 func (code AdminMenuType) String() string {
 	switch code {
-	case AdminMenuTypeAdmin:
-		return "总后台"
-	case AdminMenuTypeSeller:
-		return "商家后台"
+	case AdminMenuTypeDir:
+		return "目录"
+	case AdminMenuTypeMenu:
+		return "菜单"
+	case AdminMenuTypePermission:
+		return "权限"
 	}
 	return ""
 }
@@ -27,9 +30,10 @@ func (code AdminMenuType) Get() int {
 }
 
 // AllAdminMenuType 所有
-func AllAdminMenuType() map[string]int {
-	return map[string]int{
-		AdminMenuTypeAdmin.String():  AdminMenuTypeAdmin.Get(),
-		AdminMenuTypeSeller.String(): AdminMenuTypeSeller.Get(),
+func AllAdminMenuType() map[int]string {
+	return map[int]string{
+		AdminMenuTypeDir.Get():        AdminMenuTypeDir.String(),
+		AdminMenuTypeMenu.Get():       AdminMenuTypeMenu.String(),
+		AdminMenuTypePermission.Get(): AdminMenuTypePermission.String(),
 	}
 }

@@ -20,12 +20,11 @@ var AdminAuth adminAuthService
 func (*adminAuthService) Login(name string, password string) (uint64, error) {
 	params := map[string]interface{}{
 		"username": name,
-		"status":   enums.StatusActive,
+		"status":   enums.StatusActive.Get(),
 	}
 	columns := []string{"id", "username", "password", "status"}
 	adminUser := admin_user.New()
-	if err := adminUser.Dao().Query(params, columns, nil).
-		First(&adminUser); err != nil {
+	if err := adminUser.Dao().Query(params, columns, nil).First(&adminUser); err != nil {
 		return 0, errno.CtxUserNotFoundErr
 	}
 
@@ -79,7 +78,7 @@ func (cc CustomClaims) Valid() error {
 func (*adminAuthService) Sign(UserID uint64, AdminUser, secret string) (tokenString string, err error) {
 	// Load the jwt secret from the Gin config if the secret isn't specified.
 	if secret == "" {
-		secret = config.App.Key
+		secret = config.App().Key
 	}
 	now := time.Now()
 	// 期限
@@ -124,7 +123,7 @@ func (auth *adminAuthService) ParseRequest(ctx *gin.Context) (*context, error) {
 	// 截取token
 	token := head[strings.Index(head, prefix)+len(prefix):]
 
-	return auth.Parse(token, config.App.Key)
+	return auth.Parse(token, config.App().Key)
 }
 
 func (auth *adminAuthService) Parse(token string, secret string) (ctx *context, err error) {

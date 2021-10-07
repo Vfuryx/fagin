@@ -3,7 +3,6 @@ package conf
 import (
 	"fagin/pkg/paths"
 	"fmt"
-	"github.com/fsnotify/fsnotify"
 	"github.com/spf13/viper"
 	"os"
 	"path/filepath"
@@ -13,7 +12,6 @@ var RootPath string
 
 func init() {
 	configLoad()
-	watchConfig()
 }
 
 // 读取 config
@@ -53,14 +51,6 @@ func configLoad() {
 	if err != nil {
 		panic(err)
 	}
-}
-
-// 监控 config
-func watchConfig() {
-	viper.WatchConfig()
-	viper.OnConfigChange(func(e fsnotify.Event) {
-		fmt.Println("Config file changed:", e.Name)
-	})
 }
 
 // GetString 获取 string 类型并返回

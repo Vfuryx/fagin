@@ -5,18 +5,20 @@ import (
 )
 
 type createAdminUser struct {
-	NickName           string `form:"nick_name" json:"nick_name" binding:"required,max=64"`
-	Phone              string `form:"phone" json:"phone" binding:"required,max=64"`
-	Email              string `form:"email" json:"email" binding:"required,max=64"`
-	Username           string `form:"username" json:"username" binding:"required,max=64"`
-	Sex                *uint8 `form:"sex" json:"sex" binding:"required,oneof=0 1 2"`
-	Roles              []uint `form:"roles" json:"roles" binding:"required,dive,required"`
-	Status             *uint8 `form:"status" json:"status" binding:"required,oneof=0 1"`
-	Password           string `form:"password" json:"password" binding:"required,min=8"`
-	Remark             string `form:"remark" json:"remark" binding:"max=255"`
+	Email    string `form:"email" json:"email" binding:"required,max=64"`
+	Username string `form:"username" json:"username" binding:"required,max=64"`
+	Password string `form:"password" json:"password" binding:"required,min=6"`
+	NickName string `form:"nick_name" json:"nick_name" binding:"required,max=64"`
+	Phone    string `form:"phone" json:"phone" binding:"required,max=64"`
+	Sex      *uint8 `form:"sex" json:"sex" binding:"required,oneof=0 1 2"`
+	Roles    []uint `form:"roles" json:"roles" binding:"required,dive,required"`
+	Remark   string `form:"remark" json:"remark" binding:"max=255"`
+	Status   *uint8 `form:"status" json:"status" binding:"required,oneof=0 1"`
+
 	request.Validation `binding:"-"`
 }
 
+// NewCreateAdminUser 实例化
 func NewCreateAdminUser() *createAdminUser {
 	r := new(createAdminUser)
 	r.SetRequest(r)

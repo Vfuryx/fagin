@@ -66,7 +66,7 @@ func (cc *companyIntroductionController) Upload(ctx *gin.Context) {
 		return
 	}
 
-	upload := service.NewUploadService(config.App.PublicPath)
+	upload := service.NewUploadService(config.App().PublicPath)
 	path, err := upload.UploadFile("/web/company/", r.File)
 	if err != nil {
 		cc.ResponseJsonErrLog(ctx, errno.ReqUploadFileErr, err, nil)

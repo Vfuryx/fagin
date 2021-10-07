@@ -1,6 +1,7 @@
 package admin_responses
 
 import (
+	"fagin/app"
 	"fagin/app/models/admin_menu"
 	"fagin/app/models/admin_role"
 	"fagin/pkg/response"
@@ -19,18 +20,19 @@ func AdminRoleList(models ...admin_role.AdminRole) *adminRoleList {
 	return &res
 }
 
-func (res *adminRoleList) Serialize() []map[string]interface{} {
+func (r *adminRoleList) Serialize() []map[string]interface{} {
 	sm := make([]map[string]interface{}, 0, 20)
-	for _, model := range res.Ms {
-		ids := getMenuIDs(model.Menus)
+	for _, model := range r.Ms {
+		ids := r.getMenuIDs(model.Menus)
 		m := map[string]interface{}{
 			"id":         model.ID,
 			"type":       model.Type,
 			"name":       model.Name,
 			"key":        model.Key,
+			"remark":     model.Remark,
 			"sort":       model.Sort,
 			"status":     model.Status,
-			"created_at": model.CreatedAt,
+			"created_at": app.TimeToStr(model.CreatedAt),
 			"menu_ids":   ids,
 		}
 		sm = append(sm, m)
@@ -38,7 +40,7 @@ func (res *adminRoleList) Serialize() []map[string]interface{} {
 	return sm
 }
 
-func getMenuIDs(menus []admin_menu.AdminMenu) []uint {
+func (r adminRoleList) getMenuIDs(menus []admin_menu.AdminMenu) []uint {
 	ids := make([]uint, 0, 20)
 	for _, menu := range menus {
 		ids = append(ids, menu.ID)

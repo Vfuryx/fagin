@@ -11,19 +11,17 @@ import (
 )
 
 var adminRoute = func(Admin *gin.RouterGroup) {
-	// 记录操作日志中间件
-	Admin.Use(middleware.AdminOperationLogToDB())
-
+	// 404
 	no_router.NoRoute(Admin.BasePath(), func(ctx *gin.Context) {
 		ctx.JSON(http.StatusNotFound, gin.H{"m": "admin 404"})
 	})
 
 	// 配置跨域
-	if config.AdminRouter.IsCors {
+	if config.AdminRouter().IsCors {
 		conf := cors.DefaultConfig()
-		conf.AllowOrigins = config.AdminRouter.CorsConf.AllowOrigins
-		conf.AllowHeaders = config.AdminRouter.CorsConf.AllowHeaders
-		conf.AllowMethods = config.AdminRouter.CorsConf.AllowMethods
+		conf.AllowOrigins = config.AdminRouter().CorsConf.AllowOrigins
+		conf.AllowHeaders = config.AdminRouter().CorsConf.AllowHeaders
+		conf.AllowMethods = config.AdminRouter().CorsConf.AllowMethods
 		Admin.Use(cors.New(conf))
 	}
 
@@ -32,140 +30,119 @@ var adminRoute = func(Admin *gin.RouterGroup) {
 	// 后台api
 	api := Admin.Group("/api")
 	{
-		// 登录
-		api.POST("/login", admin.AuthController.Login)
-		// 获取验证码
-		api.POST("/captcha", admin.AuthController.GetCaptcha)
+		api.POST("/login", admin.AuthController.Login)          // 登录
+		api.POST("/captcha", admin.AuthController.GetCaptcha)   // 获取验证码
+		api.GET("/play/av:id", admin.VideoController.PlayVideo) // 播放视频
 
-		// 播放视频
-		api.GET("/play/av:id", admin.VideoController.PlayVideo)
-
-		// v1 													// 权限验证
-		apiV1 := api.Group(
-			"/v1",
+		// v1
+		apiAuth := api.Group("",
 			middleware.AdminAuth.IsLogin(),
-			middleware.AdminAuth.AuthCheckRoleCache(),
+			middleware.AdminAuth.CheckRoleCache(), // 权限验证
+			middleware.AdminOperationLogToDB(),    // 记录操作日志中间件
 		)
 		{
-			// 获取用户信息
-			apiV1.GET("/us/info", admin.AuthController.Info)
-			//// 获取角色菜单
-			//apiV1.GET("/us/routes", admin.AuthController.Routes)
-			// 获取菜单（新）
-			apiV1.GET("/us/navs", admin.AuthController.Navs)
-			// 修改用户信息
-			//apiV1.PUT("/user/:id", admin.AuthController.UpdateAdminUser)
-			// 登出
-			apiV1.POST("/user/logout", admin.AuthController.Logout)
-
-			// 用户管理
-			user := apiV1.Group("/user")
+			// 公共模块
+			common := apiAuth.Group("common")
 			{
-				// 用户列表
-				user.GET("/", admin.UserController.Index)
-				// 展示用户
-				user.GET("/:id", admin.UserController.Show)
-				// 新增用户
-				user.POST("/", admin.UserController.Store)
-				// 更新用户
-				user.PUT("/:id", admin.UserController.Update)
-				// 用户更新状态
-				user.PUT("/:id/status/", admin.UserController.UpdateStatus)
-				// 用户更新密码
-				user.PUT("/:id/reset/", admin.UserController.Reset)
-				// 删除用户
-				user.DELETE("/:id", admin.UserController.Del)
-				// 批量删除用户
-				user.DELETE("/", admin.UserController.Dels)
+				common.GET("/auth/info", admin.AuthController.Info)               // 获取用户信息
+				common.GET("/auth/permcode", admin.AuthController.PermissionCode) // 获取用户权限
+				common.GET("/auth/routes", admin.AuthController.Routes)           // 获取菜单（新）
+				common.POST("/auth/logout", admin.AuthController.Logout)          // 登出
+				//apiAuth.PUT("/user/:id", admin.AuthController.UpdateAdminUser) 			// 修改用户信息
 			}
 
-			// 管理员管理
-			admins := apiV1.Group("/admins")
+			// 用户管理
+			user := apiAuth.Group("/users")
 			{
-				admins.GET("/", admin.AdminsController.Index)                   // 用户列表
-				admins.GET("/:id", admin.AdminsController.Show)                 // 用户详情
-				admins.POST("/", admin.AdminsController.Store)                  // 新增用户
-				admins.PUT("/:id", admin.AdminsController.Update)               // 更新用户
-				admins.PUT("/:id/status/", admin.AdminsController.UpdateStatus) // 更新状态
-				admins.PUT("/:id/reset/", admin.AdminsController.ResetPassword) // 重置密码
-				admins.DELETE("/:id", admin.AdminsController.Delete)            // 删除用户
-				admins.POST("/logout/:id", admin.AdminsController.Logout)       // 强制下线
-				admins.GET("/username/", admin.AdminsController.UsernameExist)  // 用户名是否已存在
+				user.GET("", admin.UserController.Index)                   // 用户查询
+				user.GET("/:id", admin.UserController.Show)                // 用户详情
+				user.POST("", admin.UserController.Store)                  // 新增用户
+				user.PUT("/:id", admin.UserController.Update)              // 更新用户
+				user.PUT("/:id/status", admin.UserController.UpdateStatus) // 用户更新状态
+				user.PUT("/:id/pwd", admin.UserController.Reset)           // 用户更新密码
+				user.DELETE("/:id", admin.UserController.Del)              // 删除用户
+				user.DELETE("", admin.UserController.Dels)                 // 批量删除用户
+			}
+
+			// 部门管理
+			departments := apiAuth.Group("/departments")
+			{
+				departments.GET("", admin.DepartmentController.Index)      // 部门列表
+				departments.GET("/:id", admin.DepartmentController.Show)   // 部门详情
+				departments.POST("", admin.DepartmentController.Store)     // 新增部门
+				departments.PUT("/:id", admin.DepartmentController.Update) // 更新部门
+				departments.DELETE("/:id", admin.DepartmentController.Del) // 删除部门
+			}
+
+			// 账号管理
+			admins := apiAuth.Group("/accounts")
+			{
+				admins.GET("", admin.AdminsController.Index)                   // 账号查询
+				admins.GET("/:id", admin.AdminsController.Show)                // 账号详情
+				admins.POST("", admin.AdminsController.Store)                  // 新增账号
+				admins.PUT("/:id", admin.AdminsController.Update)              // 更新账号
+				admins.DELETE("/:id", admin.AdminsController.Delete)           // 删除账号
+				admins.PUT("/:id/status", admin.AdminsController.UpdateStatus) // 更新状态
+				admins.PUT("/:id/pwd", admin.AdminsController.ResetPassword)   // 重置密码
+				admins.POST("/:id/logout", admin.AdminsController.Logout)      // 强制下线
+				admins.GET("/exists", admin.AdminsController.UsernameExists)   // 账号名是否已存在
+				admins.GET("/roles", admin.RoleController.Roles)               // 角色列表
+				admins.GET("/departments", admin.DepartmentController.Index)   // 部门列表
 			}
 
 			// 菜单管理
-			menu := apiV1.Group("/menu")
+			menu := apiAuth.Group("/menus")
 			{
+				menu.GET("", admin.MenuController.Index)         // 菜单查询
+				menu.GET("/:id", admin.MenuController.Show)      // 菜单详情
+				menu.POST("", admin.MenuController.Store)        // 新增菜单
+				menu.PUT("/:id", admin.MenuController.Update)    // 更新菜单
+				menu.DELETE("/:id", admin.MenuController.Delete) // 删除菜单
 				menu.GET("/all", admin.MenuController.All)       // 所有菜单
-				menu.GET("/", admin.MenuController.Index)        // 菜单列表
-				menu.GET("/:id", admin.MenuController.Show)      // 菜单展示
-				menu.POST("/", admin.MenuController.Store)       // 菜单新增
-				menu.PUT("/:id", admin.MenuController.Update)    // 菜单更新
-				menu.DELETE("/:id", admin.MenuController.Delete) // 菜单删除
-			}
-
-			apiV1.GET("/group_permissions", admin.PermissionController.GroupPermissions)
-
-			// 权限组列表
-			groups := apiV1.Group("/permission/groups")
-			{
-				groups.GET("/all", admin.PermissionController.GAll)
-				groups.GET("/", admin.PermissionController.GIndex)
-				groups.GET("/:id", admin.PermissionController.GShow)
-				groups.POST("/", admin.PermissionController.GStore)
-				groups.PUT("/:id", admin.PermissionController.GUpdate)
-			}
-			// 权限管理
-			permissions := apiV1.Group("/permissions")
-			{
-				permissions.GET("/", admin.PermissionController.Index)        // 列表
-				permissions.GET("/:id", admin.PermissionController.Show)      // 展示
-				permissions.POST("/", admin.PermissionController.Store)       // 新增
-				permissions.PUT("/:id", admin.PermissionController.Update)    // 更新
-				permissions.DELETE("/:id", admin.PermissionController.Delete) // 删除
 			}
 
 			// 角色管理
-			role := apiV1.Group("/role")
+			role := apiAuth.Group("/roles")
 			{
-				role.GET("/key", admin.RoleController.KeyExist)             // 角色 key 是否存在
-				role.GET("/all", admin.RoleController.Roles)                // 角色列表
-				role.GET("/", admin.RoleController.Index)                   // 角色列表
-				role.GET("/:id", admin.RoleController.Show)                 // 角色展示
-				role.POST("/", admin.RoleController.Store)                  // 角色新增
-				role.PUT("/:id", admin.RoleController.Update)               // 角色更新
-				role.PUT("/:id/status/", admin.RoleController.UpdateStatus) // 角色更新状态
-				role.DELETE("/:id", admin.RoleController.Delete)            // 角色删除
+				role.GET("", admin.RoleController.Index)                   // 角色查询
+				role.GET("/:id", admin.RoleController.Show)                // 角色详情
+				role.POST("", admin.RoleController.Store)                  // 角色新增
+				role.PUT("/:id", admin.RoleController.Update)              // 角色更新
+				role.DELETE("/:id", admin.RoleController.Delete)           // 角色删除
+				role.GET("/key", admin.RoleController.KeyExist)            // 角色 key 是否存在
+				role.PUT("/:id/status", admin.RoleController.UpdateStatus) // 角色更新状态
+				role.GET("/menus", admin.MenuController.All)               // 所有菜单
+				//role.GET("/all", admin.RoleController.Roles)               		  // 所有角色
 			}
 
 			// 操作日志管理
-			logs := apiV1.Group("/operation/logs")
+			logs := apiAuth.Group("/operation/logs")
 			{
-				logs.GET("/", admin.OperationLogController.Index)   // 操作日志列表
+				logs.GET("", admin.OperationLogController.Index)    // 操作日志查询
 				logs.GET("/:id", admin.OperationLogController.Show) // 操作日志详情
 			}
 
-			// 轮播图管理
-			banner := apiV1.Group("/banner")
+			// 登录日志管理
+			loginLog := apiAuth.Group("/login-logs")
 			{
-				// 轮播图列表
-				banner.GET("/", admin.BannerController.Index)
-				// 创建轮播图
-				banner.POST("/", admin.BannerController.Store)
-				// 轮播图详情
-				banner.GET("/:id", admin.BannerController.Show)
-				// 更新轮播图
-				banner.PUT("/:id", admin.BannerController.Update)
-				// 上传轮播图
-				banner.POST("/upload", admin.BannerController.Upload)
-				// 轮播图删除
-				banner.DELETE("/:id", admin.BannerController.Del)
-				// 批量删除轮播图
-				banner.DELETE("/", admin.BannerController.DeleteBanners)
+				loginLog.GET("", admin.LoginLogController.Index)    // 登录日志查询
+				loginLog.GET("/:id", admin.LoginLogController.Show) // 登录日志详情
+			}
+
+			// 轮播图管理
+			banner := apiAuth.Group("/banner")
+			{
+				banner.GET("/", admin.BannerController.Index)            // 轮播图列表
+				banner.POST("/", admin.BannerController.Store)           // 创建轮播图
+				banner.GET("/:id", admin.BannerController.Show)          // 轮播图详情
+				banner.PUT("/:id", admin.BannerController.Update)        // 更新轮播图
+				banner.POST("/upload", admin.BannerController.Upload)    // 上传轮播图
+				banner.DELETE("/:id", admin.BannerController.Del)        // 轮播图删除
+				banner.DELETE("/", admin.BannerController.DeleteBanners) // 批量删除轮播图
 			}
 
 			// 视频管理
-			video := apiV1.Group("/videos")
+			video := apiAuth.Group("/videos")
 			{
 				video.GET("/", admin.VideoController.VideoList)          // 视频列表
 				video.POST("/", admin.VideoController.CreateVideo)       // 创建视频
@@ -176,29 +153,23 @@ var adminRoute = func(Admin *gin.RouterGroup) {
 			}
 
 			// 网站管理
-			website := apiV1.Group("/website")
+			website := apiAuth.Group("/website")
 			{
-				// 查看网站设置
-				website.GET("/info", admin.WebsiteConfigController.Info)
-				// 更新网站设置
-				website.PUT("/info", admin.WebsiteConfigController.UpdateInfo)
-				// 上传图片
-				website.POST("/upload", admin.WebsiteConfigController.Upload)
+				website.GET("/info", admin.WebsiteConfigController.Info)       // 查看网站设置
+				website.PUT("/info", admin.WebsiteConfigController.UpdateInfo) // 更新网站设置
+				website.POST("/upload", admin.WebsiteConfigController.Upload)  // 上传图片
 			}
 
 			// 关于我们
-			company := apiV1.Group("/company")
+			company := apiAuth.Group("/company")
 			{
-				// 查看公司介绍
-				company.GET("/introduction", admin.CompanyIntroductionController.ShowCompanyIntroduction)
-				// 更新公司介绍
-				company.PUT("/introduction", admin.CompanyIntroductionController.UpdateCompanyIntroduction)
-				// 上传图片
-				company.POST("/upload", admin.CompanyIntroductionController.Upload)
+				company.GET("/introduction", admin.CompanyIntroductionController.ShowCompanyIntroduction)   // 查看公司介绍
+				company.PUT("/introduction", admin.CompanyIntroductionController.UpdateCompanyIntroduction) // 更新公司介绍
+				company.POST("/upload", admin.CompanyIntroductionController.Upload)                         // 上传图片
 			}
 
 			// 文章管理
-			articles := apiV1.Group("/articles")
+			articles := apiAuth.Group("/articles")
 			{
 				articles.GET("/", admin.ArticleController.Index)      // 列表
 				articles.GET("/:id", admin.ArticleController.Show)    // 查看
@@ -209,7 +180,7 @@ var adminRoute = func(Admin *gin.RouterGroup) {
 			}
 
 			// 分类管理
-			categories := apiV1.Group("/categories")
+			categories := apiAuth.Group("/categories")
 			{
 				categories.GET("/", admin.CategoryController.Index)      // 列表
 				categories.GET("/:id", admin.CategoryController.Show)    // 查看
@@ -221,7 +192,7 @@ var adminRoute = func(Admin *gin.RouterGroup) {
 			}
 
 			// 作者管理
-			authors := apiV1.Group("/authors")
+			authors := apiAuth.Group("/authors")
 			{
 				authors.GET("/", admin.AuthorController.Index)      // 列表
 				authors.GET("/:id", admin.AuthorController.Show)    // 查看
@@ -233,7 +204,7 @@ var adminRoute = func(Admin *gin.RouterGroup) {
 			}
 
 			// 标签管理
-			tags := apiV1.Group("/tags")
+			tags := apiAuth.Group("/tags")
 			{
 				tags.GET("/", admin.TagController.Index)      // 列表
 				tags.GET("/:id", admin.TagController.Show)    // 查看

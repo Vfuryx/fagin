@@ -10,7 +10,7 @@ import (
 )
 
 func CreateControllerTemplate(path, name string) {
-	filePath := config.App.AppPath + "/controllers/" + path + ".go"
+	filePath := config.App().AppPath + "/controllers/" + path + ".go"
 	sl := strings.Split(filePath, "/")
 	dirPath := strings.Join(sl[:len(sl)-1], "/")
 	packageName := sl[len(sl)-2]
@@ -50,23 +50,23 @@ type %[2]s struct{
 var %[3]s %[2]s
 
 // Index 列表
-func (c *%[2]s) Index(ctx *gin.Context) {
+func (ctr *%[2]s) Index(ctx *gin.Context) {
 	paginator := db.NewPaginatorWithCtx(ctx, 1, 15)
 
 	params := gin.H{
 		"orderBy": "id asc",
 	}
 	columns := []string{"id"}
-	with := gin.H{"Model": nil}
+	with := gin.H{}
 	result, err := service.S.Index(params, columns, with, paginator)
 	if err != nil {
-		c.ResponseJsonErr(ctx, errno.CtxListErr, nil)
+		ctr.ResponseJsonErr(ctx, errno.CtxListErr, nil)
 		return
 	}
 
 	data := response.R(result...).Collection()
 
-	c.ResponseJsonOK(ctx, gin.H{
+	ctr.ResponseJsonOK(ctx, gin.H{
 		"data": data,
 		"paginator":  paginator,
 	})
@@ -74,31 +74,31 @@ func (c *%[2]s) Index(ctx *gin.Context) {
 }
 
 // Show 展示
-func (c *%[2]s) Show(ctx *gin.Context) {
+func (ctr *%[2]s) Show(ctx *gin.Context) {
 	id, err := request.ShouldBindUriUintID(ctx)
 	if err != nil {
-		c.ResponseJsonErr(ctx, errno.ReqErr, nil)
+		ctr.ResponseJsonErr(ctx, errno.ReqErr, nil)
 		return
 	}
 
 	columns := []string{"id"}
 	data, err := service.S.Show(id, columns)
 	if err != nil {
-		c.ResponseJsonErrLog(ctx, errno.CtxShowErr, err, nil)
+		ctr.ResponseJsonErrLog(ctx, errno.CtxShowErr, err, nil)
 		return
 	}
 
-	c.ResponseJsonOK(ctx, gin.H{
+	ctr.ResponseJsonOK(ctx, gin.H{
 		"id": data.ID,
 	})
 	return
 }
 
 // Store 创建
-func (c *%[2]s) Store(ctx *gin.Context) {
+func (ctr *%[2]s) Store(ctx *gin.Context) {
 	var r r.R
 	if data, ok := r.Validate(ctx); !ok {
-		c.ResponseJsonErr(ctx, errno.ReqErr, data)
+		ctr.ResponseJsonErr(ctx, errno.ReqErr, data)
 		return
 	}
 
@@ -106,71 +106,71 @@ func (c *%[2]s) Store(ctx *gin.Context) {
 
 	err := service.S.Create(&m)
 	if err != nil {
-		c.ResponseJsonErrLog(ctx, errno.CtxStoreErr, err, nil)
+		ctr.ResponseJsonErrLog(ctx, errno.CtxStoreErr, err, nil)
 		return
 	}
 
-	c.ResponseJsonOK(ctx, nil)
+	ctr.ResponseJsonOK(ctx, nil)
 	return
 }
 
 // Update 更新
-func (c *%[2]s) Update(ctx *gin.Context) {
+func (ctr *%[2]s) Update(ctx *gin.Context) {
 	id, err := request.ShouldBindUriUintID(ctx)
 	if err != nil {
-		c.ResponseJsonErr(ctx, errno.ReqErr, nil)
+		ctr.ResponseJsonErr(ctx, errno.ReqErr, nil)
 		return
 	}
 
 	var r r.Create
 	if data, ok := r.Validate(ctx); !ok {
-		c.ResponseJsonErr(ctx, errno.ReqErr, data)
+		ctr.ResponseJsonErr(ctx, errno.ReqErr, data)
 		return
 	}
 	data := map[string]interface{}{}
 	err = service.S.Update(id, data)
 	if err != nil {
-		c.ResponseJsonErrLog(ctx, errno.CtxUpdateErr, err, nil)
+		ctr.ResponseJsonErrLog(ctx, errno.CtxUpdateErr, err, nil)
 		return
 	}
 
-	c.ResponseJsonOK(ctx, nil)
+	ctr.ResponseJsonOK(ctx, nil)
 	return
 }
 
 // Del 删除
-func (c *%[2]s) Del(ctx *gin.Context) {
+func (ctr *%[2]s) Del(ctx *gin.Context) {
 	id, err := request.ShouldBindUriUintID(ctx)
 	if err != nil {
-		c.ResponseJsonErr(ctx, errno.ReqErr, nil)
+		ctr.ResponseJsonErr(ctx, errno.ReqErr, nil)
 		return
 	}
 
 	err = service.S.Delete(id)
 	if err != nil {
-		c.ResponseJsonErrLog(ctx, errno.CtxDeleteErr, err, nil)
+		ctr.ResponseJsonErrLog(ctx, errno.CtxDeleteErr, err, nil)
 		return
 	}
 
-	c.ResponseJsonOK(ctx, nil)
+	ctr.ResponseJsonOK(ctx, nil)
 	return
 }
 
 // Deletes 批量删除
-func (c *%[2]s) Deletes(ctx *gin.Context) {
+func (ctr *%[2]s) Deletes(ctx *gin.Context) {
 	type R struct {
 		IDs []uint ` + "`form:\"ids\" json:\"ids\" binding:\"required\"`" + `
 	}
 	var ids R
 	err := ctx.ShouldBind(&ids)
 	if err != nil {
-		c.ResponseJsonErr(ctx, errno.ReqErr, nil)
+		ctr.ResponseJsonErr(ctx, errno.ReqErr, nil)
 		return
 	}
 
 	err = service.S.Deletes(ids.IDs)
 	if err != nil {
-		c.ResponseJsonErrLog(ctx, errno.CtxDeleteErr, err, nil)
+		ctr.ResponseJsonErrLog(ctx, errno.CtxDeleteErr, err, nil)
 		return
 	}
 
@@ -178,7 +178,7 @@ func (c *%[2]s) Deletes(ctx *gin.Context) {
 	return
 }
 `
-	content := fmt.Sprintf(temp, packageName, structName, name, config.App.Name)
+	content := fmt.Sprintf(temp, packageName, structName, name, config.App().Name)
 
 	if _, err = file.WriteString(content); err != nil {
 		panic(err)

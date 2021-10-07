@@ -50,7 +50,7 @@ func newRistrettoCache() (iCache, error) {
 	var numCounters, maxCost, bufferItems string
 	var n, m, b int64
 
-	if c, ok = config.Cache.Stores[DriverRistrettoCache]; !ok {
+	if c, ok = config.Cache().Stores[DriverRistrettoCache]; !ok {
 		return nil, ErrConfig
 	}
 	if numCounters, ok = c["num_counters"]; !ok {

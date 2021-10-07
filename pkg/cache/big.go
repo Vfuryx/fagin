@@ -44,7 +44,7 @@ func newBigCache() (iCache, error) {
 	var e time.Duration
 	var err error
 
-	if c, ok = config.Cache.Stores[DriverBigCache]; !ok {
+	if c, ok = config.Cache().Stores[DriverBigCache]; !ok {
 		return nil, ErrConfig
 	}
 	if eviction, ok = c["eviction"]; !ok {
@@ -112,7 +112,11 @@ func (b *bigCache) Set(key string, value []byte, expiration time.Duration) (stri
 }
 
 func (b *bigCache) Remove(key string) (int64, error) {
-	return 1, b.Cache.Delete(key)
+	err := b.Cache.Delete(key)
+	if err != nil && err != bigcache.ErrEntryNotFound {
+		return 0, err
+	}
+	return 1, nil
 }
 
 func (b *bigCache) Close() error {

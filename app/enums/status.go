@@ -29,9 +29,9 @@ func (code Status) Get() int {
 	return int(code)
 }
 
-func AllStatus() map[string]int {
-	return map[string]int{
-		StatusActive.String():  StatusActive.Get(),
-		StatusDisable.String(): StatusDisable.Get(),
+func AllStatus() map[int]string {
+	return map[int]string{
+		StatusActive.Get():  StatusActive.String(),
+		StatusDisable.Get(): StatusDisable.String(),
 	}
 }

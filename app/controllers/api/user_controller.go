@@ -54,7 +54,7 @@ func (uc *userController) UserList(ctx *gin.Context) {
 
 	// 查询条件
 	params := map[string]interface{}{
-		"status": enums.StatusActive,
+		"status": enums.StatusActive.Get(),
 	}
 	// 查询字段
 	columns := []string{"id", "username", "status"}

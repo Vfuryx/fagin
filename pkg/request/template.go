@@ -10,7 +10,7 @@ import (
 )
 
 func CreateRequestTemplate(path, name string) {
-	filePath := config.App.AppPath + "/requests/" + path + ".go"
+	filePath := config.App().AppPath + "/requests/" + path + ".go"
 	sl := strings.Split(filePath, "/")
 	packageName := sl[len(sl)-2]
 	name = utils.Camel(name)
@@ -45,7 +45,7 @@ type %[2]s struct {
 
 func New%[4]s() *%[2]s {
 	r := new(%[2]s)
-	r.Request = r
+	r.SetRequest(r)
 	return r
 }
 
@@ -63,7 +63,7 @@ func (*%[2]s) Attributes() map[string]string {
 //	return request.Validated(r, ctx)
 //}
 `
-	content := fmt.Sprintf(temp, packageName, structName, config.App.Name, name)
+	content := fmt.Sprintf(temp, packageName, structName, config.App().Name, name)
 
 	if _, err = file.WriteString(content); err != nil {
 		panic(err)

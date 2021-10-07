@@ -35,7 +35,7 @@ func writeLog(httpRequest []byte, r interface{}, s []byte) {
 		}
 	}
 
-	logger.Log.Errorf(
+	logger.DefaultLog.Errorf(
 		"[Recovery] %s panic recovered:\n%s\n%s\n%s\n",
 		time.Now(),
 		strings.Join(headers, "\r\n"),

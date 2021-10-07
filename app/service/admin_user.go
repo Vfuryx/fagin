@@ -9,9 +9,10 @@ import (
 	"fagin/app/models/admin_user"
 	"fagin/pkg/casbins"
 	"fagin/pkg/db"
+	"strconv"
+
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
-	"strconv"
 )
 
 type adminUserService struct{}
@@ -123,7 +124,7 @@ func (*adminUserService) UpdateStatus(id uint, status int) error {
 func (*adminUserService) UserInfoById(id uint, columns []string) (*admin_user.AdminUser, error) {
 	params := map[string]interface{}{
 		"id":     id,
-		"status": enums.StatusActive,
+		"status": enums.StatusActive.Get(),
 	}
 	au := admin_user.New()
 	err := au.Dao().Query(params, columns, nil).First(au)
@@ -146,11 +147,12 @@ func (*adminUserService) CheckPassword(id uint, old string) error {
 	return nil
 }
 
-func (*adminUserService) GetNavs(userID uint) ([]admin_menu.AdminMenu, error) {
+func (*adminUserService) GetRoutes(userID uint) ([]admin_menu.AdminMenu, error) {
 	var err error
 	params := gin.H{"id": userID}
 	with := gin.H{"Roles": func(db *gorm.DB) *gorm.DB {
-		return db.Where("status = ?", 1).Where("type = ?", 0)
+		return db.Where("status = ?", enums.StatusActive.Get()).
+			Where("type = ?", 0)
 	}}
 	// 获取用户角色id
 	user := admin_user.New()
@@ -168,7 +170,7 @@ func (*adminUserService) GetNavs(userID uint) ([]admin_menu.AdminMenu, error) {
 	with = gin.H{
 		"Menus": func(db *gorm.DB) *gorm.DB {
 			return db.
-				Where("type = ?", enums.AdminMenuTypeAdmin).
+				Where("type in (?)", []int{enums.AdminMenuTypeDir.Get(), enums.AdminMenuTypeMenu.Get()}).
 				Where("status = ?", enums.StatusActive).
 				Order("sort desc, id asc")
 		},
@@ -179,6 +181,7 @@ func (*adminUserService) GetNavs(userID uint) ([]admin_menu.AdminMenu, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	// 遍历出菜单
 	var ids = make(map[uint]uint, 20)
 	var menus []admin_menu.AdminMenu
@@ -193,20 +196,63 @@ func (*adminUserService) GetNavs(userID uint) ([]admin_menu.AdminMenu, error) {
 	return menus, nil
 }
 
-// UsernameExist 用户名是否已存在
-func (*adminUserService) UsernameExist(username string, uid uint) bool {
+func (*adminUserService) GetPermissionCode(userID uint) ([]string, error) {
+	var err error
+	params := gin.H{"id": userID}
+	with := gin.H{"Roles": func(db *gorm.DB) *gorm.DB {
+		return db.Where("status = ?", enums.StatusActive.Get()).
+			Where("type = ?", 0)
+	}}
+	// 获取用户角色id
+	user := admin_user.New()
+	err = user.Dao().Query(params, []string{"id"}, with).Find(&user)
+	if err != nil {
+		return nil, err
+	}
+	var roleIds []uint
+	for _, r := range user.Roles {
+		roleIds = append(roleIds, r.ID)
+	}
+
+	// 根据角色id获取菜单
+	params = gin.H{"in_id": roleIds}
+	with = gin.H{
+		"Menus": func(db *gorm.DB) *gorm.DB {
+			return db.
+				Select([]string{"id", "permission"}).
+				Where("type = ?", enums.AdminMenuTypePermission.Get()).
+				Where("status = ?", enums.StatusActive).
+				Order("sort desc, id asc")
+		},
+	}
+	columns := []string{"*"}
+	var roles []admin_role.AdminRole
+	err = admin_role.NewDao().Query(params, columns, with).Find(&roles)
+	if err != nil {
+		return nil, err
+	}
+
+	// 遍历出菜单
+	var ids = make(map[uint]uint, 20)
+	var menus = make([]string, 0, 10)
+	for _, adminRole := range roles {
+		for index := range adminRole.Menus {
+			if _, ok := ids[adminRole.Menus[index].ID]; !ok {
+				ids[adminRole.Menus[index].ID] = adminRole.Menus[index].ID
+				menus = append(menus, adminRole.Menus[index].Permission)
+			}
+		}
+	}
+	return menus, nil
+}
+
+// UsernameExists 用户名是否已存在
+func (*adminUserService) UsernameExists(username string, uid uint) bool {
 	params := gin.H{
 		"username": username,
 	}
 	if uid > 0 {
 		params["ne_id"] = uid
 	}
-	err := admin_user.NewDao().Query(params, []string{"1"}, nil).First(&admin_user.AdminUser{})
-	if err != nil {
-		if err == gorm.ErrRecordNotFound {
-			return true
-		}
-		return false
-	}
-	return false
+	return admin_user.NewDao().Query(params, nil, nil).Exists()
 }

@@ -10,7 +10,7 @@ import (
 )
 
 func CreateCacheTemplate(path, name string) {
-	filePath := config.App.AppPath + "/caches/" + path + ".go"
+	filePath := config.App().AppPath + "/caches/" + path + ".go"
 	sl := strings.Split(filePath, "/")
 	dirPath := strings.Join(sl[:len(sl)-1], "/")
 	packageName := sl[len(sl)-2]

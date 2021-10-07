@@ -10,7 +10,9 @@ import (
 	"fagin/pkg/casbins"
 	"fagin/pkg/response"
 	"github.com/gin-gonic/gin"
+	"net/http"
 	"strconv"
+	"strings"
 )
 
 type adminAuth struct{}
@@ -22,7 +24,7 @@ func (*adminAuth) IsLogin() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		c, err := admin_auth.AdminAuth.ParseRequest(ctx)
 		if err != nil {
-			response.JsonErr(ctx, err, nil)
+			response.JsonWithStatus(ctx, http.StatusUnauthorized, err, nil, nil)
 			ctx.Abort()
 			return
 		}
@@ -69,11 +71,17 @@ func (*adminAuth) AuthCheckRole() gin.HandlerFunc {
 	}
 }
 
-// AuthCheckRoleCache 权限检查中间件 有缓存
-func (*adminAuth) AuthCheckRoleCache() gin.HandlerFunc {
+// CheckRoleCache 权限检查中间件 有缓存
+func (*adminAuth) CheckRoleCache() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		uid := auths.GetAdminID(c)
-		strUID := strconv.FormatUint(uid, 10)
+		fullPath := c.FullPath()
+		// 判断是否公共接口 公共接口不用鉴权
+		if strings.HasPrefix(fullPath, "/admin/api/common") {
+			c.Next()
+			return
+		}
+
+		strUID := strconv.FormatUint(auths.GetAdminID(c), 10)
 
 		roleCache := caches.NewAdminCasbin(func() ([]byte, error) {
 			// 缓存用户的角色
@@ -109,7 +117,6 @@ func (*adminAuth) AuthCheckRoleCache() gin.HandlerFunc {
 		if isAdmin {
 			c.Next()
 		} else {
-			fullPath := c.FullPath()
 			method := c.Request.Method
 			rbacCache := caches.NewAdminRBAC(func() ([]byte, error) {
 				ok, err := casbins.Casbin.CheckRoles(roles, fullPath, method)

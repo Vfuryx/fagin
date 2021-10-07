@@ -36,11 +36,9 @@ func (oc *operationLogController) Index(ctx *gin.Context) {
 	if r.Method != "" && r.Method != "ALL" {
 		params["method"] = r.Method
 	}
-	if r.StartTime != nil {
-		params["start_time"] = *r.StartTime
-	}
-	if r.EndTime != nil {
-		params["end_time"] = *r.EndTime
+	if len(r.Time) >= 2 {
+		params["start_time"] = r.Time[0]
+		params["end_time"] = r.Time[1]
 	}
 
 	columns := []string{"id", "user", "method", "path", "ip", "operation", "created_at", "module"}
@@ -53,8 +51,8 @@ func (oc *operationLogController) Index(ctx *gin.Context) {
 
 	data := response.OperationLog(logs...).Collection()
 	oc.ResponseJsonOK(ctx, gin.H{
-		"logs":      data,
-		"paginator": paginator,
+		"items": data,
+		"total": paginator.TotalCount,
 	})
 }
 

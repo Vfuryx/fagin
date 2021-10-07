@@ -17,7 +17,7 @@ db:
   password: "secret"
   max_idle_conns:
   max_open_conns:
-  conn_max_life_time:
+  conn_max_life_time: # 连接不活动时的最大生存时间(秒)
 
 # session 配置
 session:
@@ -36,7 +36,11 @@ cdn:
 cache:
   open: true
   prefix: "app:"
-  driver: "big"
+  driver: "ristretto"
+  ristretto:
+    num_counters: "100000"
+    max_cost: "10000"
+    buffer_items: "64"
   big:
     eviction: "3600"
   redis:

@@ -20,7 +20,7 @@ import (
 func listenAndServe() {
 	// 设置服务
 	srv := &http.Server{
-		Addr:    "127.0.0.1:" + config.App.Port,
+		Addr:    "127.0.0.1:" + config.App().Port,
 		Handler: router.New(),
 		//ReadTimeout:    setting.ReadTimeout,
 		//WriteTimeout:   setting.WriteTimeout,
@@ -29,7 +29,7 @@ func listenAndServe() {
 
 	// 不是正式环境打印监听端口
 	if ok := app.IsProd(); !ok {
-		fmt.Printf("[GIN-debug] Listening and serving HTTP on %s \n", config.App.Port)
+		fmt.Printf("[GIN-debug] Listening and serving HTTP on %s \n", config.App().Port)
 	}
 
 	// 优雅重启
