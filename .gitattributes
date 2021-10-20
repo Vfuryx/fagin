@@ -3,3 +3,4 @@
 *.scss linguist-vendored
 *.js linguist-vendored
 *.vue linguist-vendored
+*.ts linguist-vendored
