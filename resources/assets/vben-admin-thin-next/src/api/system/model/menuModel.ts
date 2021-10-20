@@ -1,4 +1,3 @@
-import {BasicFetchResult} from '/@/api/model/baseModel';
 
 export type MenuParams = {
   menuName?: string;
@@ -56,4 +55,3 @@ export interface MenuListItem {
   permission: string;
 }
 
-export type MenuListGetResultModel = BasicFetchResult<MenuListItem>;

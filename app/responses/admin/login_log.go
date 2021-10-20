@@ -11,7 +11,7 @@ type loginLog struct {
 	response.Collect
 }
 
-var _ response.IResponse = &loginLog{}
+var _ response.Response = &loginLog{}
 
 func LoginLog(models ...all.AdminLoginLog) *loginLog {
 	res := loginLog{Ms: models}

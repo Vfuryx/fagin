@@ -11,7 +11,7 @@ type adminMenusList struct {
 	response.Collect
 }
 
-var _ response.IResponse = &adminMenusList{}
+var _ response.Response = &adminMenusList{}
 
 func AdminMenusList(models ...admin_menu.AdminMenu) *adminMenusList {
 	res := adminMenusList{ms: models}

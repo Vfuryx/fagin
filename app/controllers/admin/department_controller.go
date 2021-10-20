@@ -58,7 +58,7 @@ func (ctr *departmentController) Show(ctx *gin.Context) {
 	columns := []string{"id"}
 	data, err := service.AdminDepartment.Show(id, columns)
 	if err != nil {
-		ctr.ResponseJsonErrLog(ctx, errno.CtxShowErr, err, nil)
+		ctr.ResponseJsonErrLog(ctx, errno.CtxShowErr, err)
 		return
 	}
 
@@ -91,7 +91,7 @@ func (ctr *departmentController) Store(ctx *gin.Context) {
 
 	err := service.AdminDepartment.Create(&m)
 	if err != nil {
-		ctr.ResponseJsonErrLog(ctx, errno.CtxStoreErr, err, nil)
+		ctr.ResponseJsonErrLog(ctx, errno.CtxStoreErr, err)
 		return
 	}
 
@@ -121,7 +121,7 @@ func (ctr *departmentController) Update(ctx *gin.Context) {
 	}
 	err = service.AdminDepartment.Update(id, data)
 	if err != nil {
-		ctr.ResponseJsonErrLog(ctx, errno.CtxUpdateErr, err, nil)
+		ctr.ResponseJsonErrLog(ctx, errno.CtxUpdateErr, err)
 		return
 	}
 
@@ -139,7 +139,7 @@ func (ctr *departmentController) Del(ctx *gin.Context) {
 
 	err = service.AdminDepartment.Delete(id)
 	if err != nil {
-		ctr.ResponseJsonErrLog(ctx, errno.CtxDeleteErr, err, nil)
+		ctr.ResponseJsonErrLog(ctx, errno.CtxDeleteErr, err)
 		return
 	}
 
@@ -161,7 +161,7 @@ func (ctr *departmentController) Deletes(ctx *gin.Context) {
 
 	err = service.AdminDepartment.Deletes(ids.IDs)
 	if err != nil {
-		ctr.ResponseJsonErrLog(ctx, errno.CtxDeleteErr, err, nil)
+		ctr.ResponseJsonErrLog(ctx, errno.CtxDeleteErr, err)
 		return
 	}
 

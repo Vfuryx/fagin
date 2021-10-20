@@ -6,7 +6,6 @@ import (
 	"fagin/pkg/logger"
 	"fagin/pkg/response"
 	"github.com/gin-gonic/gin"
-	"github.com/sirupsen/logrus"
 	"golang.org/x/crypto/bcrypt"
 	"net/http"
 	"time"
@@ -63,11 +62,11 @@ func Compare(hashedPassword, password string) error {
 }
 
 // Log 日志模块
-func Log(opt ...string) *logrus.Logger {
+func Log(opt ...string) logger.Logger {
 	if len(opt) <= 0 {
-		return logger.DefaultLog
+		return logger.Log()
 	}
-	return logger.New(opt[0])
+	return logger.Channel(opt[0])
 }
 
 // Now 获取当前时间

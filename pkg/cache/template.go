@@ -41,10 +41,10 @@ import (
 )
 
 // 缓存
-func New%[2]s(f cache.GetterFunc) *cache.SCache {
-	var c = new(cache.SCache)
-	c.SetConfPrefix("prefix") 
-	c.SetConfLifeTime(60 * time.Second)
+func New%[2]s(f cache.GetterFunc) *cache.Cache {
+	var c = new(cache.Cache)
+	c.SetKeyFormat("prefix") 
+	c.SetLifeTime(60 * time.Second)
 	c.SetFunc(f)
 
 	return c

@@ -28,10 +28,10 @@ var VideoController videoController
 // @Param id path integer true "ID"
 // @Success 200 {object} response.Response "成功返回视频溜 <br/> 失败返回 {"code": 10005,"message": "打开文件失败"}"
 // @Router /api/video/play/{id} [get]
-func (vc *videoController) PlayVideo(ctx *gin.Context) {
+func (ctr *videoController) PlayVideo(ctx *gin.Context) {
 	id, err := request.ShouldBindUriUintID(ctx)
 	if err != nil {
-		vc.ResponseJsonErr(ctx, errno.ReqErr, nil)
+		ctr.ResponseJsonErr(ctx, errno.ReqErr, nil)
 		return
 	}
 
@@ -43,14 +43,14 @@ func (vc *videoController) PlayVideo(ctx *gin.Context) {
 	var v video_info.VideoInfo
 	err = service.VideoInfo.Query(params, columns, nil).Find(&v)
 	if err != nil {
-		vc.ResponseJsonErrLog(ctx, errno.CtxOpenFileErr, err, nil)
+		ctr.ResponseJsonErrLog(ctx, errno.CtxOpenFileErr, err)
 		return
 	}
 
 	path := config.App().StoragePath + v.Path
 	file, err := os.Open(path)
 	if err != nil {
-		vc.ResponseJsonErrLog(ctx, errno.CtxOpenFileErr, err, nil)
+		ctr.ResponseJsonErrLog(ctx, errno.CtxOpenFileErr, err)
 		return
 	}
 	http.ServeContent(ctx.Writer, ctx.Request, "", time.Now(), file)

@@ -5,11 +5,11 @@ import (
 	"time"
 )
 
-func NewAdminRBAC(f cache.GetterFunc) *cache.SCache {
-	var c = new(cache.SCache)
+func NewAdminRBAC(f cache.GetterFunc) *cache.Cache {
+	var c = new(cache.Cache)
 	// rbac::UID::uid::method::fullPath
-	c.SetConfPrefix("admin:rbac:UID:%s:%s:%s")
-	c.SetConfLifeTime(60 * time.Second)
+	c.SetKeyFormat("admin:rbac:UID:%s:%s:%s")
+	c.SetLifeTime(60 * time.Second)
 	c.SetFunc(f)
 
 	return c

@@ -41,7 +41,7 @@ type AdminLog struct {
 // AdminLogMQ 消息队列日志
 var AdminLogMQ *adminLogMQ
 
-var _ rabbitmq.IAMQP = &adminLogMQ{}
+var _ rabbitmq.AMQP = &adminLogMQ{}
 
 func init() {
 	var err error
@@ -118,7 +118,7 @@ func (a *adminLogMQ) Consume() error {
 			var l AdminLog
 			err := json.Unmarshal(d.Body, &l)
 			if err != nil {
-				go app.Log(logger.AdminModel).Println(err, string(debug.Stack()))
+				go app.Log(logger.AdminMode).Error(err, string(debug.Stack()))
 			} else {
 				LogStore(
 					l.Body, l.LatencyTime, l.AdminID, l.Method, l.ClientIP,
@@ -126,7 +126,7 @@ func (a *adminLogMQ) Consume() error {
 				)
 				err = d.Ack(false)
 				if err != nil {
-					go app.Log(logger.AdminModel).Println(err, string(debug.Stack()))
+					go app.Log(logger.AdminMode).Error(err, string(debug.Stack()))
 				}
 			}
 			time.Sleep(1 * time.Second)
@@ -175,6 +175,6 @@ func LogStore(
 	log.Input = string(body)
 
 	if err = log.Dao().Create(log); err != nil {
-		go app.Log(logger.AdminModel).Errorln(err, string(debug.Stack()))
+		go app.Log(logger.AdminMode).Error(err, string(debug.Stack()))
 	}
 }

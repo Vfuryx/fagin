@@ -24,11 +24,11 @@ type Login struct {
 	Password string `form:"password" json:"password" binding:"required"`
 }
 
-func (uc *userController) Register(ctx *gin.Context) {
+func (ctr *userController) Register(ctx *gin.Context) {
 	var v = api_request.NewAddUserRequest()
 
 	if msg, ok := v.Validate(ctx); !ok {
-		uc.ResponseJsonErr(ctx, errno.ReqErr, msg)
+		ctr.ResponseJsonErr(ctx, errno.ReqErr, msg)
 		return
 	}
 
@@ -39,16 +39,16 @@ func (uc *userController) Register(ctx *gin.Context) {
 	}
 	err := service.User.AddUser(&u).Error
 	if err != nil {
-		uc.ResponseJsonErrLog(ctx, errno.CtxStoreErr, err, nil)
+		ctr.ResponseJsonErrLog(ctx, errno.CtxStoreErr, err)
 		return
 	}
 
-	uc.ResponseJsonOK(ctx, gin.H{
+	ctr.ResponseJsonOK(ctx, gin.H{
 		"user": u,
 	})
 }
 
-func (uc *userController) UserList(ctx *gin.Context) {
+func (ctr *userController) UserList(ctx *gin.Context) {
 	// 分页管理器
 	p := db.NewPaginatorWithCtx(ctx, 1, 15)
 
@@ -60,46 +60,46 @@ func (uc *userController) UserList(ctx *gin.Context) {
 	columns := []string{"id", "username", "status"}
 	users, err := service.User.UserList(params, columns, nil, p)
 	if err != nil {
-		uc.ResponseJsonErrLog(ctx, errno.CtxListErr, err, nil)
+		ctr.ResponseJsonErrLog(ctx, errno.CtxListErr, err)
 		return
 	}
 	urs := apiResponses.UserResponse(users...).Collection()
-	uc.ResponseJsonOK(ctx, gin.H{
+	ctr.ResponseJsonOK(ctx, gin.H{
 		"users":     urs,
 		"paginator": p,
 	})
 }
 
-func (uc *userController) ShowUser(ctx *gin.Context) {
+func (ctr *userController) ShowUser(ctx *gin.Context) {
 	i := ctx.Param("id")
 
 	id, err := strconv.ParseUint(i, 10, 64)
 	if err != nil || id <= 0 {
-		uc.ResponseJsonErr(ctx, errno.ReqErr, nil)
+		ctr.ResponseJsonErr(ctx, errno.ReqErr, nil)
 		return
 	}
 
 	columns := []string{"id", "username", "status"}
 	u, err := service.User.ShowUser(uint(id), columns)
 	if err != nil || u.Status == enums.StatusDisable.Get() {
-		uc.ResponseJsonErrLog(ctx, errno.CtxShowErr, err, nil)
+		ctr.ResponseJsonErrLog(ctx, errno.CtxShowErr, err)
 		return
 	}
 	ru := apiResponses.UserResponse(*u).Item()
-	uc.ResponseJsonOK(ctx, ru)
+	ctr.ResponseJsonOK(ctx, ru)
 }
 
-func (uc *userController) UpdateUser(ctx *gin.Context) {
+func (ctr *userController) UpdateUser(ctx *gin.Context) {
 	id, err := request.ShouldBindUriUintID(ctx)
 	if err != nil {
-		uc.ResponseJsonErr(ctx, errno.ReqErr, nil)
+		ctr.ResponseJsonErr(ctx, errno.ReqErr, nil)
 		return
 	}
 
 	var r = api_request.NewUpdateUserRequest()
 
 	if msg, ok := r.Validate(ctx); !ok {
-		uc.ResponseJsonErr(ctx, errno.ReqErr, msg)
+		ctr.ResponseJsonErr(ctx, errno.ReqErr, msg)
 		return
 	}
 
@@ -113,25 +113,25 @@ func (uc *userController) UpdateUser(ctx *gin.Context) {
 
 	err = service.User.UpdateUser(id, data)
 	if err != nil {
-		uc.ResponseJsonErrLog(ctx, errno.CtxUpdateErr, err, nil)
+		ctr.ResponseJsonErrLog(ctx, errno.CtxUpdateErr, err)
 		return
 	}
 
-	uc.ResponseJsonOK(ctx, nil)
+	ctr.ResponseJsonOK(ctx, nil)
 }
 
-func (uc *userController) DestroyUser(ctx *gin.Context) {
+func (ctr *userController) DestroyUser(ctx *gin.Context) {
 	id, err := request.ShouldBindUriUintID(ctx)
 	if err != nil {
-		uc.ResponseJsonErr(ctx, errno.ReqErr, nil)
+		ctr.ResponseJsonErr(ctx, errno.ReqErr, nil)
 		return
 	}
 
 	err = service.User.DestroyUser(id)
 	if err != nil {
-		uc.ResponseJsonErrLog(ctx, errno.CtxDeleteErr, err, nil)
+		ctr.ResponseJsonErrLog(ctx, errno.CtxDeleteErr, err)
 		return
 	}
 
-	uc.ResponseJsonOK(ctx, nil)
+	ctr.ResponseJsonOK(ctx, nil)
 }

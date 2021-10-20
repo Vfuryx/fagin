@@ -11,7 +11,7 @@ type articleList struct {
 	response.Collect
 }
 
-var _ response.IResponse = &articleList{}
+var _ response.Response = &articleList{}
 
 func ArticleList(models ...article.Article) *articleList {
 	res := articleList{Ms: models}

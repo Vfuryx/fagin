@@ -11,6 +11,7 @@ import (
 	webRequest "fagin/app/requests/web"
 	"fagin/app/service"
 	"fagin/pkg/db"
+	"fagin/pkg/errorw"
 	"fagin/pkg/request"
 	"strconv"
 
@@ -22,7 +23,8 @@ type indexController struct {
 	BaseController
 }
 
-var IndexController indexController // 外部无法修改成 nil
+// IndexController 首页控制器
+var IndexController indexController
 
 // Home
 // @Summary 首页
@@ -30,13 +32,13 @@ var IndexController indexController // 外部无法修改成 nil
 // @Produce  html
 // @Success 200
 // @Router / [get]
-func (ic *indexController) Home(ctx *gin.Context) {
+func (ctr *indexController) Home(ctx *gin.Context) {
 	var err error
 	str := ctx.GetString("web_cate")
 	var cs []category.Category
 	if str != "" {
 		if err = json.Unmarshal([]byte(str), &cs); err != nil {
-			ic.ResponseJsonErr(ctx, err, "")
+			ctr.ResponseJsonErr(ctx, err, "")
 			return
 		}
 	}
@@ -46,7 +48,7 @@ func (ic *indexController) Home(ctx *gin.Context) {
 	var tags []tag.Tag
 	if str != "" {
 		if err = json.Unmarshal([]byte(str), &tags); err != nil {
-			ic.ResponseJsonErr(ctx, errno.CtxShowErr, err.Error())
+			ctr.ResponseJsonErr(ctx, errno.CtxShowErr, err.Error())
 			return
 		}
 	}
@@ -68,19 +70,19 @@ func (ic *indexController) Home(ctx *gin.Context) {
 		}
 		data, err := service.Article.Index(params, columns, with, paginator)
 		if err != nil {
-			return nil, err
+			return nil, errorw.UP(err)
 		}
 		return json.Marshal(data)
 	})
 	bs, err := homeArticle.Get(strconv.Itoa(paginator.CurrentPage))
 	if err != nil {
-		ic.ResponseJsonErrLog(ctx, errno.CtxListErr, err.Error(), nil)
+		ctr.ResponseJsonErrLog(ctx, errno.CtxListErr, err)
 		return
 	}
 	var articles []article.Article
 	err = json.Unmarshal(bs, &articles)
 	if err != nil {
-		ic.ResponseJsonErrLog(ctx, errno.CtxListErr, err.Error(), nil)
+		ctr.ResponseJsonErrLog(ctx, errno.CtxListErr, err)
 		return
 	}
 
@@ -94,12 +96,12 @@ func (ic *indexController) Home(ctx *gin.Context) {
 }
 
 // Category 类型
-func (ic *indexController) Category(ctx *gin.Context) {
+func (ctr *indexController) Category(ctx *gin.Context) {
 	str := ctx.GetString("web_cate")
 	var cs []category.Category
 	err := json.Unmarshal([]byte(str), &cs)
 	if err != nil {
-		ic.ResponseJsonErr(ctx, errno.CtxListErr, err.Error())
+		ctr.ResponseJsonErr(ctx, errno.CtxListErr, err.Error())
 		return
 	}
 
@@ -108,13 +110,13 @@ func (ic *indexController) Category(ctx *gin.Context) {
 	var tags []tag.Tag
 	err = json.Unmarshal([]byte(str), &tags)
 	if err != nil {
-		ic.ResponseJsonErr(ctx, errno.CtxListErr, err.Error())
+		ctr.ResponseJsonErr(ctx, errno.CtxListErr, err.Error())
 		return
 	}
 
 	var r = webRequest.NewCategoryList()
 	if data, ok := r.Validate(ctx); !ok {
-		ic.ResponseJsonErr(ctx, errno.CtxListErr, data)
+		ctr.ResponseJsonErr(ctx, errno.CtxListErr, data)
 		return
 	}
 
@@ -129,7 +131,7 @@ func (ic *indexController) Category(ctx *gin.Context) {
 	paginator := db.NewPaginatorWithCtx(ctx, 1, 10)
 	articles, err := service.Article.ByCate(r.Cate, columns, with, paginator)
 	if err != nil {
-		ic.ResponseJsonErrLog(ctx, errno.CtxListErr, err, nil)
+		ctr.ResponseJsonErrLog(ctx, errno.CtxListErr, err)
 		return
 	}
 
@@ -142,12 +144,12 @@ func (ic *indexController) Category(ctx *gin.Context) {
 }
 
 // Tag 标签
-func (ic *indexController) Tag(ctx *gin.Context) {
+func (ctr *indexController) Tag(ctx *gin.Context) {
 	str := ctx.GetString("web_cate")
 	var cs []category.Category
 	err := json.Unmarshal([]byte(str), &cs)
 	if err != nil {
-		ic.ResponseJsonErr(ctx, errno.CtxShowErr, nil)
+		ctr.ResponseJsonErr(ctx, errno.CtxShowErr, nil)
 		return
 	}
 
@@ -156,13 +158,13 @@ func (ic *indexController) Tag(ctx *gin.Context) {
 	var tags []tag.Tag
 	err = json.Unmarshal([]byte(str), &tags)
 	if err != nil {
-		ic.ResponseJsonErr(ctx, errno.CtxShowErr, nil)
+		ctr.ResponseJsonErr(ctx, errno.CtxShowErr, nil)
 		return
 	}
 
 	var r = webRequest.NewTagList()
 	if data, ok := r.Validate(ctx); !ok {
-		ic.ResponseJsonErr(ctx, errno.CtxShowErr, data)
+		ctr.ResponseJsonErr(ctx, errno.CtxShowErr, data)
 		return
 	}
 
@@ -177,7 +179,7 @@ func (ic *indexController) Tag(ctx *gin.Context) {
 	paginator := db.NewPaginatorWithCtx(ctx, 1, 10)
 	articles, err := service.Article.ByTag(r.Tag, columns, with, paginator)
 	if err != nil {
-		ic.ResponseJsonErrLog(ctx, errno.CtxListErr, err, nil)
+		ctr.ResponseJsonErrLog(ctx, errno.CtxListErr, err)
 		return
 	}
 
@@ -190,18 +192,18 @@ func (ic *indexController) Tag(ctx *gin.Context) {
 }
 
 // Article 文章
-func (ic *indexController) Article(ctx *gin.Context) {
+func (ctr *indexController) Article(ctx *gin.Context) {
 	str := ctx.GetString("web_cate")
 	var cs []category.Category
 	err := json.Unmarshal([]byte(str), &cs)
 	if err != nil {
-		ic.ResponseJsonErr(ctx, errno.CtxListErr, err)
+		ctr.ResponseJsonErr(ctx, errno.CtxListErr, err)
 		return
 	}
 
 	id, err := request.ShouldBindUriUintID(ctx)
 	if err != nil {
-		ic.ResponseJsonErr(ctx, errno.ReqErr, err)
+		ctr.ResponseJsonErr(ctx, errno.ReqErr, err)
 		return
 	}
 
@@ -227,13 +229,13 @@ func (ic *indexController) Article(ctx *gin.Context) {
 	})
 	bs, err := webArticle.Get(strconv.FormatUint(uint64(id), 10))
 	if err != nil {
-		ic.ResponseJsonErrLog(ctx, errno.CtxListErr, err, nil)
+		ctr.ResponseJsonErrLog(ctx, errno.CtxListErr, err)
 		return
 	}
 	var art article.Article
 	err = json.Unmarshal(bs, &art)
 	if err != nil {
-		ic.ResponseJsonErrLog(ctx, errno.CtxListErr, err, nil)
+		ctr.ResponseJsonErrLog(ctx, errno.CtxListErr, err)
 		return
 	}
 

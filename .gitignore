@@ -2,12 +2,23 @@
 .DS_store
 .vscode
 .config.yml
+.env
+*.pid
+
+
+# gitkeep
+storage/logs/*
+storage/upload/*
+public/*
+bin/*
+
+!.gitkeep
+
+tmp
 vendor
 fagin
 main
-fagin.log
-server.log
-.env
-tmp
-*.pid
+
+
+
 

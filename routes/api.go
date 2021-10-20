@@ -14,7 +14,7 @@ import (
 var apiRoute = func(Api *gin.RouterGroup) {
 	// 404
 	no_router.NoRoute(Api.BasePath(), func(ctx *gin.Context) {
-		app.ResponseJsonWithStatus(ctx, http.StatusNotFound, errno.NotFound, nil, gin.H{"m": "api 404"})
+		app.ResponseJsonWithStatus(ctx, http.StatusNotFound, errno.NotFoundErr, nil, gin.H{"m": "api 404"})
 	})
 
 	// 测试限流中间件

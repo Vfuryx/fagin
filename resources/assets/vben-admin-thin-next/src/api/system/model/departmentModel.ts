@@ -1,9 +1,7 @@
-import { BasicFetchResult } from '/@/api/model/baseModel';
-
 export interface DeptListItem {
-  id: string;
+  id: number;
   name: string;
-  sort: string;
+  sort: number;
   created_at: string;
   remark: string;
   status: number;
@@ -18,4 +16,4 @@ export type CreateDeptParams = {
   parent_id: number;
 };
 
-export type DeptListGetResultModel = BasicFetchResult<DeptListItem>;
+export type DeptListGetResultModel = DeptListItem[];

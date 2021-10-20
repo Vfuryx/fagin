@@ -78,7 +78,7 @@ func adminOperationLogToDB(ctx *gin.Context, reqMethod string, startTime time.Ti
 		go func(adminLog mq.AdminLog) {
 			b, err := json.Marshal(adminLog)
 			if err != nil {
-				go app.Log(logger.AdminModel).Println(err, string(debug.Stack()))
+				go app.Log(logger.AdminMode).Error(err, string(debug.Stack()))
 				return
 			}
 
@@ -87,7 +87,7 @@ func adminOperationLogToDB(ctx *gin.Context, reqMethod string, startTime time.Ti
 				Body:        b,
 			})
 			if err != nil {
-				go app.Log(logger.AdminModel).Println(err, string(debug.Stack()))
+				go app.Log(logger.AdminMode).Error(err, string(debug.Stack()))
 				return
 			}
 		}(adminLog)

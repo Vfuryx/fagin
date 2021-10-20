@@ -5,6 +5,7 @@ import (
 	"fmt"
 )
 
+// DatabaseConfig 数据库配置
 type DatabaseConfig struct {
 	Host            string
 	Port            string
@@ -14,11 +15,12 @@ type DatabaseConfig struct {
 	Debug           bool
 	MaxIdleConns    int // 设置最大空闲连接数
 	MaxOpenConns    int // 设置最大连接数
-	ConnMaxLifetime int // 设置每个链接的过期时间
+	ConnMaxLifetime int // 设置每个链接的过期时间 （分钟）
 }
 
 var databaseConfig = new(DatabaseConfig)
 
+// Database 数据库配置
 func Database() DatabaseConfig {
 	return *databaseConfig
 }

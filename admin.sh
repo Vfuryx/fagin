@@ -19,7 +19,7 @@ function start()
 		exit 1
 	fi
 
-	nohup $BASE_DIR/$SERVER $ARGS  server &>/dev/null &
+	nohup $BASE_DIR/bin/$SERVER $ARGS  server &>/dev/null &
 
 	echo "sleeping..." &&  sleep $INTERVAL
 
@@ -58,14 +58,14 @@ function restart()
 	if [ "`pgrep $SERVER -u $UID`" != "" ];then
 		kill -1 `pgrep $SERVER -u $UID`
 	else
-	  nohup $BASE_DIR/$SERVER $ARGS  server &>/dev/null &
+	  nohup $BASE_DIR/bin/$SERVER $ARGS  server &>/dev/null &
 	fi
 
 	echo "sleeping..." &&  sleep $INTERVAL
 
 	# check status
 	if [ "`pgrep $SERVER -u $UID`" == "" ];then
-	  nohup $BASE_DIR/$SERVER $ARGS  server &>/dev/null &
+	  nohup $BASE_DIR/bin/$SERVER $ARGS  server &>/dev/null &
 	  if [ "`pgrep $SERVER -u $UID`" == "" ];then
 	    echo "$SERVER start failed"
 	    exit 1

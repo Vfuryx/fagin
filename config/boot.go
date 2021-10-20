@@ -6,13 +6,10 @@ import (
 	"github.com/spf13/viper"
 )
 
-func init() {
-	watchConfig()
-}
-
 // Init 初始化配置
 func Init() {
 	appConfig.init()
+	logConfig.init()
 	sessionConfig.init()
 	amqpConfig.init()
 	cacheConfig.init()
@@ -23,6 +20,8 @@ func Init() {
 	adminRouterConfig.init()
 	jwtConfig.init()
 
+	// 监听
+	watchConfig()
 }
 
 // 监控 config

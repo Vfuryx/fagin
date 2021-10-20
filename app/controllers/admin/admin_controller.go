@@ -6,10 +6,9 @@ import (
 	"fagin/app/errno"
 	"fagin/app/models/admin_role"
 	"fagin/app/models/admin_user"
-	admin_request "fagin/app/requests/admin"
+	adminRequest "fagin/app/requests/admin"
 	adminResponse "fagin/app/responses/admin"
 	"fagin/app/service"
-	"fagin/app/service/admin_auth"
 	"fagin/pkg/cache"
 	"fagin/pkg/db"
 	"fagin/pkg/request"
@@ -37,12 +36,12 @@ var AdminsController adminsController
 // @Param status query int false "状态" Enums(0, 1)
 // @Success 200 {object} response.Response "正确 {"code":0,"message":"OK","data":{"token":"XXXXX"}} <br/> 错误 {"code": 20102,"message": "找不到用户"} <br/> "{code": 20105, "message": "密码不正确"}"
 // @Router /admin/api/v1/admins/ [post]
-func (ac *adminsController) Index(ctx *gin.Context) {
+func (ctr *adminsController) Index(ctx *gin.Context) {
 	paginator := db.NewPaginatorWithCtx(ctx, 1, 15)
 
-	var r = admin_request.NewAdminUserList()
+	var r = adminRequest.NewAdminUserList()
 	if data, ok := r.Validate(ctx); !ok {
-		ac.ResponseJsonErr(ctx, errno.ReqErr, data)
+		ctr.ResponseJsonErr(ctx, errno.ReqErr, data)
 		return
 	}
 
@@ -65,23 +64,23 @@ func (ac *adminsController) Index(ctx *gin.Context) {
 
 	users, err := service.AdminUserService.Index(params, columns, with, paginator)
 	if err != nil {
-		ac.ResponseJsonErrLog(ctx, errno.CtxListErr, err, nil)
+		ctr.ResponseJsonErrLog(ctx, errno.CtxListErr, err)
 		return
 	}
 
 	data := adminResponse.AdminUserList(users...).Collection()
 
-	ac.ResponseJsonOK(ctx, gin.H{
+	ctr.ResponseJsonOK(ctx, gin.H{
 		"items": data,
 		"total": paginator.TotalCount,
 	})
 	return
 }
 
-func (ac *adminsController) Show(ctx *gin.Context) {
+func (ctr *adminsController) Show(ctx *gin.Context) {
 	id, err := request.ShouldBindUriUintID(ctx)
 	if err != nil {
-		ac.ResponseJsonErr(ctx, errno.ReqErr, err)
+		ctr.ResponseJsonErr(ctx, errno.ReqErr, err)
 		return
 	}
 
@@ -89,7 +88,7 @@ func (ac *adminsController) Show(ctx *gin.Context) {
 	with := gin.H{"Roles": nil}
 	user, err := service.AdminUserService.Show(id, columns, with)
 	if err != nil {
-		ac.ResponseJsonErrLog(ctx, errno.CtxShowErr, err, nil)
+		ctr.ResponseJsonErrLog(ctx, errno.CtxShowErr, err)
 		return
 	}
 
@@ -99,7 +98,7 @@ func (ac *adminsController) Show(ctx *gin.Context) {
 		roles = append(roles, role.ID)
 	}
 
-	ac.ResponseJsonOK(ctx, gin.H{
+	ctr.ResponseJsonOK(ctx, gin.H{
 		"id":        user.ID,
 		"username":  user.Username,
 		"nick_name": user.NickName,
@@ -116,16 +115,16 @@ func (ac *adminsController) Show(ctx *gin.Context) {
 }
 
 // Store 创建管理员
-func (ac *adminsController) Store(ctx *gin.Context) {
-	var r = admin_request.NewCreateAdminUser()
+func (ctr *adminsController) Store(ctx *gin.Context) {
+	var r = adminRequest.NewCreateAdminUser()
 	if data, ok := r.Validate(ctx); !ok {
-		ac.ResponseJsonErr(ctx, errno.ReqErr, data)
+		ctr.ResponseJsonErr(ctx, errno.ReqErr, data)
 		return
 	}
 
 	ok := service.AdminUserService.UsernameExists(r.Username, 0)
 	if ok {
-		ac.ResponseJsonErr(ctx, errno.CtxUserExistErr, nil)
+		ctr.ResponseJsonErr(ctx, errno.CtxUserExistErr, nil)
 		return
 	}
 
@@ -134,13 +133,13 @@ func (ac *adminsController) Store(ctx *gin.Context) {
 	var roles []admin_role.AdminRole
 	err := admin_role.NewDao().Query(params, []string{"*"}, nil).Find(&roles)
 	if err != nil {
-		ac.ResponseJsonErrLog(ctx, errno.CtxStoreErr, err, nil)
+		ctr.ResponseJsonErrLog(ctx, errno.CtxStoreErr, err)
 		return
 	}
 
 	pw, err := app.Encrypt(r.Password)
 	if err != nil {
-		ac.ResponseJsonErrLog(ctx, errno.CtxStoreErr, err, nil)
+		ctr.ResponseJsonErrLog(ctx, errno.CtxStoreErr, err)
 		return
 	}
 
@@ -158,31 +157,31 @@ func (ac *adminsController) Store(ctx *gin.Context) {
 
 	err = service.AdminUserService.Create(&user, roles)
 	if err != nil {
-		ac.ResponseJsonErrLog(ctx, errno.CtxStoreErr, err, nil)
+		ctr.ResponseJsonErrLog(ctx, errno.CtxStoreErr, err)
 		return
 	}
 
-	ac.ResponseJsonOK(ctx, nil)
+	ctr.ResponseJsonOK(ctx, nil)
 	return
 }
 
 // Update 编辑管理员
-func (ac *adminsController) Update(ctx *gin.Context) {
+func (ctr *adminsController) Update(ctx *gin.Context) {
 	id, err := request.ShouldBindUriUintID(ctx)
 	if err != nil {
-		ac.ResponseJsonErr(ctx, errno.ReqErr, err)
+		ctr.ResponseJsonErr(ctx, errno.ReqErr, err)
 		return
 	}
 
-	var r = admin_request.NewUpdateAdminUser()
+	var r = adminRequest.NewUpdateAdminUser()
 	if data, ok := r.Validate(ctx); !ok {
-		ac.ResponseJsonErr(ctx, errno.ReqErr, data)
+		ctr.ResponseJsonErr(ctx, errno.ReqErr, data)
 		return
 	}
 
 	ok := service.AdminUserService.UsernameExists(r.Username, id)
 	if ok {
-		ac.ResponseJsonErr(ctx, errno.CtxUserExistErr, nil)
+		ctr.ResponseJsonErr(ctx, errno.CtxUserExistErr, nil)
 		return
 	}
 
@@ -198,36 +197,36 @@ func (ac *adminsController) Update(ctx *gin.Context) {
 	}
 	err = service.AdminUserService.Update(id, data)
 	if err != nil {
-		ac.ResponseJsonErrLog(ctx, errno.CtxUpdateErr, err, nil)
+		ctr.ResponseJsonErrLog(ctx, errno.CtxUpdateErr, err)
 		return
 	}
 
 	ca := caches.NewAdminRoutesCache(nil)
 	_, err = ca.Remove(strconv.FormatUint(uint64(id), 10))
 	if err != nil && err != cache.ErrNotOpen {
-		ac.ResponseJsonErrLog(ctx, errno.CtxUpdateErr, err, nil)
+		ctr.ResponseJsonErrLog(ctx, errno.CtxUpdateErr, err)
 		return
 	}
 
-	ac.ResponseJsonOK(ctx, nil)
+	ctr.ResponseJsonOK(ctx, nil)
 	return
 }
 
 // Delete 删除
-func (ac *adminsController) Delete(ctx *gin.Context) {
+func (ctr *adminsController) Delete(ctx *gin.Context) {
 	id, err := request.ShouldBindUriUintID(ctx)
 	if err != nil {
-		ac.ResponseJsonErr(ctx, errno.ReqErr, err)
+		ctr.ResponseJsonErr(ctx, errno.ReqErr, err)
 		return
 	}
 
 	err = service.AdminUserService.Delete(id)
 	if err != nil {
-		ac.ResponseJsonErrLog(ctx, errno.CtxDeleteErr, err, nil)
+		ctr.ResponseJsonErrLog(ctx, errno.CtxDeleteErr, err)
 		return
 	}
 
-	ac.ResponseJsonOK(ctx, nil)
+	ctr.ResponseJsonOK(ctx, nil)
 	return
 }
 
@@ -235,17 +234,17 @@ type updateAdminStatus struct {
 	Status *uint8 `form:"status" json:"status" binding:"required,oneof=0 1"`
 }
 
-func (ac *adminsController) UpdateStatus(ctx *gin.Context) {
+func (ctr *adminsController) UpdateStatus(ctx *gin.Context) {
 	id, err := request.ShouldBindUriUintID(ctx)
 	if err != nil {
-		ac.ResponseJsonErr(ctx, errno.ReqErr, err)
+		ctr.ResponseJsonErr(ctx, errno.ReqErr, err)
 		return
 	}
 
 	var r updateAdminStatus
 	err = ctx.ShouldBind(&r)
 	if err != nil {
-		ac.ResponseJsonErr(ctx, errno.ReqErr, err)
+		ctr.ResponseJsonErr(ctx, errno.ReqErr, err)
 		return
 	}
 	s := 0
@@ -255,31 +254,31 @@ func (ac *adminsController) UpdateStatus(ctx *gin.Context) {
 
 	err = service.AdminUserService.UpdateStatus(id, s)
 	if err != nil {
-		ac.ResponseJsonErrLog(ctx, errno.CtxUpdateErr, err, nil)
+		ctr.ResponseJsonErrLog(ctx, errno.CtxUpdateErr, err)
 		return
 	}
 
-	ac.ResponseJsonOK(ctx, nil)
+	ctr.ResponseJsonOK(ctx, nil)
 	return
 }
 
 // ResetPassword 重置密码
-func (ac *adminsController) ResetPassword(ctx *gin.Context) {
+func (ctr *adminsController) ResetPassword(ctx *gin.Context) {
 	id, err := request.ShouldBindUriUintID(ctx)
 	if err != nil {
-		ac.ResponseJsonErr(ctx, errno.ReqErr, err)
+		ctr.ResponseJsonErr(ctx, errno.ReqErr, err)
 		return
 	}
 
-	var r = admin_request.NewResetAdminUser()
+	var r = adminRequest.NewResetAdminUser()
 	if data, ok := r.Validate(ctx); !ok {
-		ac.ResponseJsonErr(ctx, errno.ReqErr, data)
+		ctr.ResponseJsonErr(ctx, errno.ReqErr, data)
 		return
 	}
 
 	pw, err := app.Encrypt(r.Password)
 	if err != nil {
-		ac.ResponseJsonErrLog(ctx, errno.CtxUpdateErr, err, nil)
+		ctr.ResponseJsonErrLog(ctx, errno.CtxUpdateErr, err)
 		return
 	}
 
@@ -288,38 +287,38 @@ func (ac *adminsController) ResetPassword(ctx *gin.Context) {
 	}
 	err = service.AdminUserService.Update(id, data)
 	if err != nil {
-		ac.ResponseJsonErrLog(ctx, errno.CtxUpdateErr, err, nil)
+		ctr.ResponseJsonErrLog(ctx, errno.CtxUpdateErr, err)
 		return
 	}
 
-	ac.ResponseJsonOK(ctx, nil)
+	ctr.ResponseJsonOK(ctx, nil)
 	return
 }
 
 // Logout 强制用户下线
-func (ac *adminsController) Logout(ctx *gin.Context) {
+func (ctr *adminsController) Logout(ctx *gin.Context) {
 	uid, err := request.ShouldBindUriUintID(ctx)
 	if err != nil {
-		ac.ResponseJsonErr(ctx, errno.ReqErr, err)
+		ctr.ResponseJsonErr(ctx, errno.ReqErr, err)
 		return
 	}
-	_ = admin_auth.AdminAuth.Logout(uid)
-	ac.ResponseJsonOK(ctx, nil)
+	_ = service.AdminAuth.Logout(uid)
+	ctr.ResponseJsonOK(ctx, nil)
 }
 
 // UsernameExists 用户名是否已存在
-func (ac *adminsController) UsernameExists(ctx *gin.Context) {
-	var r = admin_request.NewAdminUsernameExistRequest()
+func (ctr *adminsController) UsernameExists(ctx *gin.Context) {
+	var r = adminRequest.NewAdminUsernameExistRequest()
 	if data, ok := r.Validate(ctx); !ok {
-		ac.ResponseJsonErr(ctx, errno.ReqErr, data)
+		ctr.ResponseJsonErr(ctx, errno.ReqErr, data)
 		return
 	}
 
 	ok := service.AdminUserService.UsernameExists(r.Username, r.ID)
 	if ok {
-		ac.ResponseJsonErr(ctx, errno.CtxUserExistErr, nil)
+		ctr.ResponseJsonErr(ctx, errno.CtxUserExistErr, nil)
 		return
 	}
 
-	ac.ResponseJsonOK(ctx, nil)
+	ctr.ResponseJsonOK(ctx, nil)
 }

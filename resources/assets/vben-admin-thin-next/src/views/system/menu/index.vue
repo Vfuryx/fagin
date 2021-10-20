@@ -34,7 +34,12 @@
     <MenuDrawer @register="registerDrawer" @success="handleSuccess" />
   </div>
 </template>
-<script lang="ts" setup name="MenuManagement">
+<script lang="ts">
+  export default {
+    name: 'MenuManagement',
+  };
+</script>
+<script lang="ts" setup>
   import { nextTick } from 'vue';
   import { onActivated } from '@vue/runtime-core';
   import { usePermission } from '/@/hooks/web/usePermission';
@@ -96,7 +101,7 @@
 
   function onFetchSuccess() {
     // 演示默认展开所有表项
-    nextTick(expandAll);
+    // nextTick(expandAll); // 数据量大，加载页面会卡顿
   }
 
   onActivated(() => {

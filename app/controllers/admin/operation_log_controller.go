@@ -16,14 +16,15 @@ type operationLogController struct {
 	BaseController
 }
 
+// OperationLogController 操作日志控制器
 var OperationLogController operationLogController
 
-func (oc *operationLogController) Index(ctx *gin.Context) {
+func (ctr *operationLogController) Index(ctx *gin.Context) {
 	paginator := db.NewPaginatorWithCtx(ctx, 1, 15)
 
 	r := adminRequest.NewAdminOperationLogList()
 	if data, ok := r.Validate(ctx); !ok {
-		oc.ResponseJsonErr(ctx, errno.ReqErr, data)
+		ctr.ResponseJsonErr(ctx, errno.ReqErr, data)
 		return
 	}
 
@@ -45,21 +46,21 @@ func (oc *operationLogController) Index(ctx *gin.Context) {
 
 	logs, err := service.AdminOperationLog.List(params, columns, nil, paginator)
 	if err != nil {
-		oc.ResponseJsonErrLog(ctx, errno.InternalServerErr, err, nil)
+		ctr.ResponseJsonErrLog(ctx, errno.InternalServerErr, err)
 		return
 	}
 
 	data := response.OperationLog(logs...).Collection()
-	oc.ResponseJsonOK(ctx, gin.H{
+	ctr.ResponseJsonOK(ctx, gin.H{
 		"items": data,
 		"total": paginator.TotalCount,
 	})
 }
 
-func (oc *operationLogController) Show(ctx *gin.Context) {
+func (ctr *operationLogController) Show(ctx *gin.Context) {
 	id, err := request.ShouldBindUriUintID(ctx)
 	if err != nil {
-		oc.ResponseJsonErr(ctx, errno.ReqErr, nil)
+		ctr.ResponseJsonErr(ctx, errno.ReqErr, nil)
 		return
 	}
 
@@ -69,10 +70,10 @@ func (oc *operationLogController) Show(ctx *gin.Context) {
 	}
 	l, err := service.AdminOperationLog.ShowLog(id, columns)
 	if err != nil {
-		oc.ResponseJsonErrLog(ctx, errno.CtxShowErr, err, nil)
+		ctr.ResponseJsonErrLog(ctx, errno.CtxShowErr, err)
 		return
 	}
-	oc.ResponseJsonOK(ctx, gin.H{
+	ctr.ResponseJsonOK(ctx, gin.H{
 		"id":           l.ID,
 		"user":         l.User,
 		"method":       l.Method,

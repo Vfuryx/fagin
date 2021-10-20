@@ -1,6 +1,7 @@
 package service
 
 import (
+	"errors"
 	"fagin/app/caches"
 	"fagin/app/enums"
 	"fagin/app/errno"
@@ -11,6 +12,7 @@ import (
 	"fagin/pkg/cache"
 	"fagin/pkg/casbins"
 	"fagin/pkg/db"
+	"fagin/pkg/errorw"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 	"strconv"
@@ -24,9 +26,9 @@ var AdminMenuService adminMenuService
 func (*adminMenuService) All(params gin.H, columns []string) (*[]admin_menu.AdminMenu, error) {
 	menus, err := admin_menu.NewDao().All(params, columns)
 	if err != nil {
-		return nil, err
+		return nil, errorw.UP(err)
 	}
-	return menus, err
+	return menus, nil
 }
 
 func (*adminMenuService) Index(params gin.H, columns []string, with gin.H) ([]admin_menu.AdminMenu, error) {
@@ -34,10 +36,10 @@ func (*adminMenuService) Index(params gin.H, columns []string, with gin.H) ([]ad
 
 	err := admin_menu.NewDao().Query(params, columns, with).Find(&menus)
 	if err != nil {
-		return nil, err
+		return nil, errorw.UP(err)
 	}
 
-	return menus, err
+	return menus, nil
 }
 
 func getMenuTree(data []admin_menu.AdminMenu, pID uint) []admin_menu.AdminMenu {
@@ -55,7 +57,7 @@ func getMenuTree(data []admin_menu.AdminMenu, pID uint) []admin_menu.AdminMenu {
 func (*adminMenuService) Show(id uint, columns []string) (*admin_menu.AdminMenu, error) {
 	m := admin_menu.New()
 	err := m.Dao().FindById(id, columns)
-	return m, err
+	return m, errorw.UP(err)
 }
 
 func (*adminMenuService) MenuExists(id uint) bool {
@@ -65,7 +67,7 @@ func (*adminMenuService) MenuExists(id uint) bool {
 func (*adminMenuService) Create(m *admin_menu.AdminMenu) error {
 	err := admin_menu.NewDao().Create(m)
 	if err != nil {
-		return err
+		return errorw.UP(err)
 	}
 	// 设置路径
 	return setPaths(m)
@@ -83,19 +85,19 @@ func setPaths(menus *admin_menu.AdminMenu) error {
 	} else {
 		err := adminMenu.Dao().FindById(menus.ParentID, []string{"id", "paths"})
 		if err != nil {
-			return err
+			return errorw.UP(err)
 		}
 		paths = adminMenu.Paths + "-" + strconv.FormatUint(uint64(menus.ID), 10)
 	}
 
-	return menus.Dao().Update(menus.ID, gin.H{"paths": paths})
+	return errorw.UP(menus.Dao().Update(menus.ID, gin.H{"paths": paths}))
 }
 
 func (*adminMenuService) Update(id uint, data gin.H) error {
 	menu := admin_menu.New()
 	err := menu.Dao().FindById(id, []string{"*"})
 	if err != nil {
-		return err
+		return errorw.UP(err)
 	}
 
 	// 获取path
@@ -123,7 +125,7 @@ func (*adminMenuService) Update(id uint, data gin.H) error {
 		var rms []admin_role_menu.AdminRoleMenu
 		err = admin_role_menu.NewDao().Query(gin.H{"menu_id": id}, []string{"*"}, nil).Find(&rms)
 		if err != nil {
-			return err
+			return errorw.UP(err)
 		}
 		ids := make([]uint, 0, 20)
 		if len(rms) > 0 {
@@ -134,7 +136,7 @@ func (*adminMenuService) Update(id uint, data gin.H) error {
 			var roles []admin_role.AdminRole
 			err = admin_role.NewDao().Query(gin.H{"in_id": ids}, []string{"*"}, nil).Find(&roles)
 			if err != nil {
-				return err
+				return errorw.UP(err)
 			}
 
 			for _, r := range roles {
@@ -142,13 +144,13 @@ func (*adminMenuService) Update(id uint, data gin.H) error {
 				// 删除原来的角色权限
 				_, err = casbins.Casbin.RemovePolicy(r.Key, menu.Path, menu.Method)
 				if err != nil {
-					return err
+					return errorw.UP(err)
 				}
 
 				// 新增角色权限
 				_, err = casbins.Casbin.AddPolicyForRole(r.Key, path, method)
 				if err != nil {
-					return err
+					return errorw.UP(err)
 				}
 			}
 		}
@@ -161,10 +163,10 @@ func (*adminMenuService) Delete(id uint) error {
 	adminMenu := admin_menu.New()
 	err := adminMenu.Dao().FindById(id, []string{"id", "paths"})
 	if err != nil {
-		return err
+		return errorw.UP(err)
 	}
 	if adminMenu.Paths == "" || adminMenu.Paths == "0" || adminMenu.Paths == "0-" {
-		return errno.DaoMenuPathsUnsafeErr
+		return errorw.UP(errno.DaoMenuPathsUnsafeErr)
 	}
 	params := gin.H{
 		"like_paths": adminMenu.Paths + "-%",
@@ -172,16 +174,17 @@ func (*adminMenuService) Delete(id uint) error {
 	// 是否存在下级
 	ok := adminMenu.Dao().Query(params, nil, nil).Exists()
 	if ok {
-		return errno.SerMenuSubExistErr
+		return errorw.UP(errno.SerMenuSubExistErr)
 	}
 
 	// 是否存在关联
 	ok = admin_role_menu.NewDao().MenuRelationExist(id)
 	if ok {
-		return errno.SerMenuRelationExistErr
+		return errorw.UP(errno.SerMenuRelationExistErr)
 	}
 
-	return admin_menu.NewDao().Delete(id)
+	err = admin_menu.NewDao().Delete(id)
+	return errorw.UP(err)
 }
 
 // RemoveUserMenusCache 清除用户关联菜单缓存
@@ -193,10 +196,10 @@ func (*adminMenuService) RemoveUserMenusCache(menuID uint) error {
 		Where("arm.menu_id = ?", menuID).
 		Find(&admins).Error
 	if err != nil {
-		if err == gorm.ErrRecordNotFound {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil
 		}
-		return err
+		return errorw.UP(err)
 	}
 
 	ca := caches.NewAdminRoutesCache(nil)
@@ -204,7 +207,7 @@ func (*adminMenuService) RemoveUserMenusCache(menuID uint) error {
 	for _, admin := range admins {
 		_, err = ca.Remove(strconv.FormatUint(uint64(admin.AdminID), 10))
 		if err != nil && err != cache.ErrNotOpen {
-			return err
+			return errorw.UP(err)
 		}
 	}
 	return nil
@@ -218,5 +221,5 @@ func (*adminMenuService) FindByPath(method, path string, column []string) (admin
 	}
 	var m admin_menu.AdminMenu
 	err := admin_menu.NewDao().Query(params, column, nil).First(&m)
-	return m, err
+	return m, errorw.UP(err)
 }

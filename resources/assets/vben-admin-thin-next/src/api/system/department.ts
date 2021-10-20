@@ -15,6 +15,9 @@ enum Api {
 export const getDeptList = (params?: DeptListItem) =>
   defHttp.get<DeptListGetResultModel>({ url: Api.DeptList, params });
 
+// export const getDeptList = (params?: DeptListItem) =>
+//   defHttp.get<DeptListGetResultModel>({ url: Api.DeptList, params });
+
 export const createDept = (params: CreateDeptParams) =>
   defHttp.post({ url: Api.CreateDept, params });
 

@@ -6,7 +6,7 @@ import (
 	"github.com/streadway/amqp"
 )
 
-type IAMQP interface {
+type AMQP interface {
 	Publish(msg amqp.Publishing) error // 生产者
 	Consume() error                    // 消费者
 	Destroy() error                    // 需要关闭channel，才能在下次新建

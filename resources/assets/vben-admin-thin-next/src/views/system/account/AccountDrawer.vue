@@ -11,7 +11,7 @@
   </BasicDrawer>
 </template>
 <script lang="ts" setup name="AccountDrawer">
-  import { ref, computed, unref, defineEmits, toRaw } from 'vue';
+  import { ref, computed, unref, toRaw } from 'vue';
   import { BasicForm, useForm } from '/@/components/Form/index';
   import { BasicDrawer, useDrawerInner } from '/@/components/Drawer';
   import { accountFormSchemaFun } from './account.data';

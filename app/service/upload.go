@@ -1,6 +1,7 @@
 package service
 
 import (
+	"fagin/pkg/errorw"
 	"fagin/utils"
 	"mime/multipart"
 	"path"
@@ -11,6 +12,7 @@ type uploadService struct {
 	BasePath string
 }
 
+// NewUploadService 上传服务
 func NewUploadService(basePath string) *uploadService {
 	return &uploadService{
 		BasePath: basePath,
@@ -22,5 +24,5 @@ func (u *uploadService) UploadFile(dist string, file *multipart.FileHeader) (str
 	absolutePath := u.BasePath + filePath
 	utils.MkdirAll(absolutePath)
 	err := utils.SaveUploadedFile(file, absolutePath)
-	return filePath, err
+	return filePath, errorw.UP(err)
 }

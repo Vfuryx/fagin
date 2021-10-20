@@ -10,7 +10,7 @@ type authorList struct {
 	response.Collect
 }
 
-var _ response.IResponse = &authorList{}
+var _ response.Response = &authorList{}
 
 func AuthorList(models ...author.Author) *authorList {
 	res := authorList{Ms: models}

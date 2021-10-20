@@ -11,7 +11,7 @@ type videoList struct {
 	response.Collect
 }
 
-var _ response.IResponse = &videoList{}
+var _ response.Response = &videoList{}
 
 func VideoList(models ...video_info.VideoInfo) *videoList {
 	res := videoList{Ms: models}

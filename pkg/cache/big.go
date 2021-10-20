@@ -3,6 +3,7 @@ package cache
 import (
 	"bytes"
 	"encoding/gob"
+	"errors"
 	"fagin/config"
 	"github.com/allegro/bigcache/v3"
 	"time"
@@ -12,7 +13,7 @@ type bigCache struct {
 	Cache *bigcache.BigCache
 }
 
-var _ iCache = &bigCache{}
+var _ cache = &bigCache{}
 
 type BigConfig struct {
 	Eviction time.Duration // 失效时间
@@ -37,7 +38,7 @@ func NewBigCache(config BigConfig) (*bigCache, error) {
 	return &bigCache{Cache: c}, nil
 }
 
-func newBigCache() (iCache, error) {
+func newBigCache() (cache, error) {
 	var ok bool
 	var eviction string
 	var c map[string]string
@@ -62,7 +63,7 @@ func newBigCache() (iCache, error) {
 func (b *bigCache) Exists(key string) (bool, error) {
 	bs, err := b.Cache.Get(key)
 	if err != nil {
-		if err == bigcache.ErrEntryNotFound {
+		if errors.Is(err, bigcache.ErrEntryNotFound) {
 			return false, nil
 		}
 		return false, err

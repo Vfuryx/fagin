@@ -66,6 +66,6 @@ func Close() {
 	if err != nil {
 		return
 	}
-	db.Close()
+	_ = db.Close()
 	return
 }

@@ -19,7 +19,7 @@ type tagController struct {
 var TagController tagController
 
 // Index 列表
-func (tc *tagController) Index(ctx *gin.Context) {
+func (ctr *tagController) Index(ctx *gin.Context) {
 	paginator := db.NewPaginatorWithCtx(ctx, 1, 15)
 
 	params := gin.H{
@@ -29,13 +29,13 @@ func (tc *tagController) Index(ctx *gin.Context) {
 	with := gin.H{}
 	result, err := service.Tag.Index(params, columns, with, paginator)
 	if err != nil {
-		tc.ResponseJsonErrLog(ctx, errno.CtxListErr, err, nil)
+		ctr.ResponseJsonErrLog(ctx, errno.CtxListErr, err)
 		return
 	}
 
 	data := response.TagList(result...).Collection()
 
-	tc.ResponseJsonOK(ctx, gin.H{
+	ctr.ResponseJsonOK(ctx, gin.H{
 		"tags":      data,
 		"paginator": paginator,
 	})
@@ -43,21 +43,21 @@ func (tc *tagController) Index(ctx *gin.Context) {
 }
 
 // Show 展示
-func (tc *tagController) Show(ctx *gin.Context) {
+func (ctr *tagController) Show(ctx *gin.Context) {
 	id, err := request.ShouldBindUriUintID(ctx)
 	if err != nil {
-		tc.ResponseJsonErr(ctx, errno.ReqErr, nil)
+		ctr.ResponseJsonErr(ctx, errno.ReqErr, nil)
 		return
 	}
 
 	columns := []string{"id", "name", "status"}
 	data, err := service.Tag.Show(id, columns)
 	if err != nil {
-		tc.ResponseJsonErrLog(ctx, errno.CtxShowErr, err, nil)
+		ctr.ResponseJsonErrLog(ctx, errno.CtxShowErr, err)
 		return
 	}
 
-	tc.ResponseJsonOK(ctx, gin.H{
+	ctr.ResponseJsonOK(ctx, gin.H{
 		"id":     data.ID,
 		"name":   data.Name,
 		"status": data.Status,
@@ -66,10 +66,10 @@ func (tc *tagController) Show(ctx *gin.Context) {
 }
 
 // Store 创建
-func (tc *tagController) Store(ctx *gin.Context) {
+func (ctr *tagController) Store(ctx *gin.Context) {
 	var r = admin_request.NewCreateTag()
 	if data, ok := r.Validate(ctx); !ok {
-		tc.ResponseJsonErr(ctx, errno.ReqErr, data)
+		ctr.ResponseJsonErr(ctx, errno.ReqErr, data)
 		return
 	}
 
@@ -80,25 +80,25 @@ func (tc *tagController) Store(ctx *gin.Context) {
 
 	err := service.Tag.Create(&c)
 	if err != nil {
-		tc.ResponseJsonErrLog(ctx, errno.CtxStoreErr, err, nil)
+		ctr.ResponseJsonErrLog(ctx, errno.CtxStoreErr, err)
 		return
 	}
 
-	tc.ResponseJsonOK(ctx, nil)
+	ctr.ResponseJsonOK(ctx, nil)
 	return
 }
 
 // Update 更新
-func (tc *tagController) Update(ctx *gin.Context) {
+func (ctr *tagController) Update(ctx *gin.Context) {
 	id, err := request.ShouldBindUriUintID(ctx)
 	if err != nil {
-		tc.ResponseJsonErr(ctx, errno.ReqErr, nil)
+		ctr.ResponseJsonErr(ctx, errno.ReqErr, nil)
 		return
 	}
 
 	var r = admin_request.NewCreateTag()
 	if data, ok := r.Validate(ctx); !ok {
-		tc.ResponseJsonErr(ctx, errno.ReqErr, data)
+		ctr.ResponseJsonErr(ctx, errno.ReqErr, data)
 		return
 	}
 	data := map[string]interface{}{
@@ -107,56 +107,56 @@ func (tc *tagController) Update(ctx *gin.Context) {
 	}
 	err = service.Tag.Update(id, data)
 	if err != nil {
-		tc.ResponseJsonErrLog(ctx, errno.CtxUpdateErr, err, nil)
+		ctr.ResponseJsonErrLog(ctx, errno.CtxUpdateErr, err)
 		return
 	}
 
-	tc.ResponseJsonOK(ctx, nil)
+	ctr.ResponseJsonOK(ctx, nil)
 	return
 }
 
 // Del 删除
-func (tc *tagController) Del(ctx *gin.Context) {
+func (ctr *tagController) Del(ctx *gin.Context) {
 	id, err := request.ShouldBindUriUintID(ctx)
 	if err != nil {
-		tc.ResponseJsonErr(ctx, errno.ReqErr, nil)
+		ctr.ResponseJsonErr(ctx, errno.ReqErr, nil)
 		return
 	}
 
 	err = service.Tag.Delete(id)
 	if err != nil {
-		tc.ResponseJsonErrLog(ctx, errno.CtxDeleteErr, err, nil)
+		ctr.ResponseJsonErrLog(ctx, errno.CtxDeleteErr, err)
 		return
 	}
 
-	tc.ResponseJsonOK(ctx, nil)
+	ctr.ResponseJsonOK(ctx, nil)
 	return
 }
 
 // Deletes 批量删除
-func (tc *tagController) Deletes(ctx *gin.Context) {
+func (ctr *tagController) Deletes(ctx *gin.Context) {
 	type R struct {
 		IDs []uint `form:"ids" json:"ids" binding:"required"`
 	}
 	var ids R
 	err := ctx.ShouldBind(&ids)
 	if err != nil {
-		tc.ResponseJsonErr(ctx, errno.ReqErr, nil)
+		ctr.ResponseJsonErr(ctx, errno.ReqErr, nil)
 		return
 	}
 
 	err = service.Tag.Deletes(ids.IDs)
 	if err != nil {
-		tc.ResponseJsonErrLog(ctx, errno.CtxDeleteErr, err, nil)
+		ctr.ResponseJsonErrLog(ctx, errno.CtxDeleteErr, err)
 		return
 	}
 
-	tc.ResponseJsonOK(ctx, nil)
+	ctr.ResponseJsonOK(ctx, nil)
 	return
 }
 
 // All 所有
-func (tc *tagController) All(ctx *gin.Context) {
+func (ctr *tagController) All(ctx *gin.Context) {
 	params := gin.H{
 		"status":  1,
 		"orderBy": "id asc",
@@ -165,13 +165,13 @@ func (tc *tagController) All(ctx *gin.Context) {
 	with := gin.H{}
 	result, err := service.Tag.All(params, columns, with)
 	if err != nil {
-		tc.ResponseJsonErrLog(ctx, errno.CtxListErr, err, nil)
+		ctr.ResponseJsonErrLog(ctx, errno.CtxListErr, err)
 		return
 	}
 
 	data := response.TagList(result...).Collection()
 
-	tc.ResponseJsonOK(ctx, gin.H{
+	ctr.ResponseJsonOK(ctx, gin.H{
 		"tags": data,
 	})
 	return

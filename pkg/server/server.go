@@ -39,7 +39,7 @@ func Run() {
 
 	// 初始化MQ
 	if config.AMQP().Open {
-		mq.InitMQ()
+		mq.Init()
 	}
 
 	// 初始化 web 服务

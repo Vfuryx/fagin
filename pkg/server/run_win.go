@@ -32,13 +32,8 @@ func listenAndServe() {
 		fmt.Printf("[GIN-debug] Listening and serving HTTP on %s \n", config.App().Port)
 	}
 
-	// 优雅重启
-	go func() {
-		// service connections
-		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			log.Fatalf("listen: %s\n", err)
-		}
-	}()
+	// 开始监听服务
+	go serve(srv)
 
 	// Wait for interrupt signal to gracefully shutdown the server with
 	// a timeout of 5 seconds.
@@ -48,6 +43,7 @@ func listenAndServe() {
 	// kill -9 is syscall. SIGKILL but can"t be catch, so don't need add it
 	signal.Notify(quit, syscall.SIGHUP, syscall.SIGINT, syscall.SIGTERM)
 	<-quit
+
 	log.Println("Shutdown Server ...")
 
 	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
@@ -55,10 +51,19 @@ func listenAndServe() {
 	if err := srv.Shutdown(ctx); err != nil {
 		log.Fatal("Server Shutdown:", err)
 	}
+
 	// catching ctx.Done(). timeout of 1 seconds.
 	select {
 	case <-ctx.Done():
 		log.Println("timeout of 1 seconds.")
 	}
 	log.Println("Server exiting")
+}
+
+// 开始监听服务 (阻塞进程)
+func serve(server *http.Server) {
+	// service connections
+	if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+		log.Fatalf("listen: %s\n", err)
+	}
 }

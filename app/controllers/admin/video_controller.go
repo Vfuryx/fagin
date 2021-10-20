@@ -24,7 +24,7 @@ type videoController struct {
 var VideoController videoController
 
 // VideoList 视频列表
-func (vc *videoController) VideoList(ctx *gin.Context) {
+func (ctr *videoController) VideoList(ctx *gin.Context) {
 	paginator := db.NewPaginatorWithCtx(ctx, 1, 15)
 
 	params := make(map[string]interface{})
@@ -32,7 +32,7 @@ func (vc *videoController) VideoList(ctx *gin.Context) {
 
 	videos, err := service.VideoInfo.VideoList(params, columns, nil, paginator)
 	if err != nil {
-		vc.ResponseJsonErrLog(ctx, errno.CtxListErr, err, nil)
+		ctr.ResponseJsonErrLog(ctx, errno.CtxListErr, err)
 		return
 	}
 
@@ -45,10 +45,10 @@ func (vc *videoController) VideoList(ctx *gin.Context) {
 }
 
 // CreateVideo 创建视频
-func (vc *videoController) CreateVideo(ctx *gin.Context) {
+func (ctr *videoController) CreateVideo(ctx *gin.Context) {
 	var r = admin_request.NewCreateVideo()
 	if data, ok := r.Validate(ctx); !ok {
-		vc.ResponseJsonErr(ctx, errno.ReqErr, data)
+		ctr.ResponseJsonErr(ctx, errno.ReqErr, data)
 		return
 	}
 	v := video_info.VideoInfo{
@@ -59,25 +59,25 @@ func (vc *videoController) CreateVideo(ctx *gin.Context) {
 	}
 	err := service.VideoInfo.CreateVideo(&v)
 	if err != nil {
-		vc.ResponseJsonErrLog(ctx, errno.CtxStoreErr, err, nil)
+		ctr.ResponseJsonErrLog(ctx, errno.CtxStoreErr, err)
 		return
 	}
 
-	vc.ResponseJsonOK(ctx, nil)
+	ctr.ResponseJsonOK(ctx, nil)
 	return
 }
 
 // UpdateVideo 更新视频
-func (vc *videoController) UpdateVideo(ctx *gin.Context) {
+func (ctr *videoController) UpdateVideo(ctx *gin.Context) {
 	id, err := request.ShouldBindUriUintID(ctx)
 	if err != nil {
-		vc.ResponseJsonErr(ctx, errno.ReqErr, nil)
+		ctr.ResponseJsonErr(ctx, errno.ReqErr, nil)
 		return
 	}
 
 	var r = admin_request.NewUpdateVideo()
 	if data, ok := r.Validate(ctx); !ok {
-		vc.ResponseJsonErr(ctx, errno.ReqErr, data)
+		ctr.ResponseJsonErr(ctx, errno.ReqErr, data)
 		return
 	}
 
@@ -90,29 +90,29 @@ func (vc *videoController) UpdateVideo(ctx *gin.Context) {
 
 	err = service.VideoInfo.UpdateVideo(id, data)
 	if err != nil {
-		vc.ResponseJsonErrLog(ctx, errno.CtxUpdateErr, err, nil)
+		ctr.ResponseJsonErrLog(ctx, errno.CtxUpdateErr, err)
 		return
 	}
 
-	vc.ResponseJsonOK(ctx, nil)
+	ctr.ResponseJsonOK(ctx, nil)
 	return
 }
 
 // DeleteVideo 删除视频
-func (vc *videoController) DeleteVideo(ctx *gin.Context) {
+func (ctr *videoController) DeleteVideo(ctx *gin.Context) {
 	id, err := request.ShouldBindUriUintID(ctx)
 	if err != nil {
-		vc.ResponseJsonErr(ctx, errno.ReqErr, nil)
+		ctr.ResponseJsonErr(ctx, errno.ReqErr, nil)
 		return
 	}
 
 	err = service.VideoInfo.DeleteVideo(id)
 	if err != nil {
-		vc.ResponseJsonErrLog(ctx, errno.CtxDeleteErr, err, nil)
+		ctr.ResponseJsonErrLog(ctx, errno.CtxDeleteErr, err)
 		return
 	}
 
-	vc.ResponseJsonOK(ctx, nil)
+	ctr.ResponseJsonOK(ctx, nil)
 }
 
 type VideoIDs struct {
@@ -120,46 +120,46 @@ type VideoIDs struct {
 }
 
 // DeleteVideos 批量删除视频
-func (vc *videoController) DeleteVideos(ctx *gin.Context) {
+func (ctr *videoController) DeleteVideos(ctx *gin.Context) {
 	var ids VideoIDs
 	err := ctx.ShouldBind(&ids)
 	if err != nil {
-		vc.ResponseJsonErr(ctx, errno.ReqErr, nil)
+		ctr.ResponseJsonErr(ctx, errno.ReqErr, nil)
 		return
 	}
 
 	err = service.VideoInfo.DeleteVideos(ids.IDs)
 	if err != nil {
-		vc.ResponseJsonErrLog(ctx, errno.CtxDeleteErr, err, nil)
+		ctr.ResponseJsonErrLog(ctx, errno.CtxDeleteErr, err)
 		return
 	}
 
-	vc.ResponseJsonOK(ctx, nil)
+	ctr.ResponseJsonOK(ctx, nil)
 }
 
 // UploadVideo 上传视频
-func (vc *videoController) UploadVideo(ctx *gin.Context) {
+func (ctr *videoController) UploadVideo(ctx *gin.Context) {
 	var r = admin_request.NewUploadVideo()
 	if data, ok := r.Validate(ctx); !ok {
-		vc.ResponseJsonErr(ctx, errno.ReqErr, data)
+		ctr.ResponseJsonErr(ctx, errno.ReqErr, data)
 		return
 	}
 
 	upload := service.NewUploadService(config.App().PublicPath)
 	path, err := upload.UploadFile("/upload/video/", r.File)
 	if err != nil {
-		vc.ResponseJsonErrLog(ctx, errno.ReqUploadFileErr, err, nil)
+		ctr.ResponseJsonErrLog(ctx, errno.ReqUploadFileErr, err)
 		return
 	}
 
-	vc.ResponseJsonOK(ctx, gin.H{"path": "/public/" + path})
+	ctr.ResponseJsonOK(ctx, gin.H{"path": "/public/" + path})
 }
 
 // PlayVideo 播放视频
-func (vc *videoController) PlayVideo(ctx *gin.Context) {
+func (ctr *videoController) PlayVideo(ctx *gin.Context) {
 	id, err := request.ShouldBindUriUintID(ctx)
 	if err != nil {
-		vc.ResponseJsonErr(ctx, errno.ReqErr, nil)
+		ctr.ResponseJsonErr(ctx, errno.ReqErr, nil)
 		return
 	}
 
@@ -168,14 +168,14 @@ func (vc *videoController) PlayVideo(ctx *gin.Context) {
 	var v video_info.VideoInfo
 	err = service.VideoInfo.Query(params, columns, nil).Find(&v)
 	if err != nil {
-		vc.ResponseJsonErrLog(ctx, errno.CtxOpenFileErr, err, nil)
+		ctr.ResponseJsonErrLog(ctx, errno.CtxOpenFileErr, err)
 		return
 	}
 
 	path := config.App().StoragePath + v.Path
 	file, err := os.Open(path)
 	if err != nil {
-		vc.ResponseJsonErrLog(ctx, errno.CtxOpenFileErr, err, nil)
+		ctr.ResponseJsonErrLog(ctx, errno.CtxOpenFileErr, err)
 		return
 	}
 	http.ServeContent(ctx.Writer, ctx.Request, "", time.Now(), file)

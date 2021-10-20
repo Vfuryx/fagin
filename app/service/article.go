@@ -4,6 +4,7 @@ import (
 	"fagin/app/models/article"
 	"fagin/app/models/category"
 	"fagin/pkg/db"
+	"fagin/pkg/errorw"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 )
@@ -15,7 +16,7 @@ var Article articleService
 func (*articleService) Index(params gin.H, columns []string, with gin.H, p *db.Paginator) ([]article.Article, error) {
 	var art []article.Article
 	err := article.NewDao().Query(params, columns, with).Paginate(&art, p)
-	return art, err
+	return art, errorw.UP(err)
 }
 
 func (*articleService) Show(id uint, columns []string) (*article.Article, error) {
@@ -28,29 +29,31 @@ func (*articleService) Show(id uint, columns []string) (*article.Article, error)
 		},
 	}
 	err := b.Dao().Query(gin.H{"id": id}, columns, with).First(&b)
-	return b, err
+	return b, errorw.UP(err)
 }
 
 func (*articleService) Create(m *article.Article) error {
-	return article.NewDao().Create(m)
+	return errorw.UP(article.NewDao().Create(m))
 }
 
 func (*articleService) Update(id uint, data gin.H) error {
-	return article.NewDao().Update(id, data)
+	return errorw.UP(article.NewDao().Update(id, data))
 }
 
 func (*articleService) Delete(id uint) error {
-	return article.NewDao().Destroy(id)
+	err := article.NewDao().Destroy(id)
+	return errorw.UP(err)
 }
 
 func (*articleService) Deletes(ids []uint) error {
-	return article.NewDao().Deletes(ids)
+	err := article.NewDao().Deletes(ids)
+	return errorw.UP(err)
 }
 
 func (*articleService) All(params gin.H, columns []string, with gin.H) ([]article.Article, error) {
 	var ms []article.Article
 	err := article.NewDao().Query(params, columns, with).Find(&ms)
-	return ms, err
+	return ms, errorw.UP(err)
 }
 
 func (*articleService) ByCate(cateName string, columns []string, with gin.H, p *db.Paginator) (ms []article.Article, err error) {
@@ -62,7 +65,7 @@ func (*articleService) ByCate(cateName string, columns []string, with gin.H, p *
 	cate := category.New()
 	err = cate.Dao().Query(params, []string{"id"}, nil).First(&cate)
 	if err != nil {
-		return nil, err
+		return nil, errorw.UP(err)
 	}
 
 	// 获取文章
@@ -72,7 +75,7 @@ func (*articleService) ByCate(cateName string, columns []string, with gin.H, p *
 		"orderBy":     "post_at desc, id asc",
 	}
 	err = article.NewDao().Query(params, columns, with).Find(&ms)
-	return ms, err
+	return ms, errorw.UP(err)
 }
 
 func (*articleService) ByTag(cateName string, columns []string, with gin.H, p *db.Paginator) (ms []article.Article, err error) {
@@ -86,7 +89,7 @@ func (*articleService) ByTag(cateName string, columns []string, with gin.H, p *d
 		Where("a.deleted_at is Null").
 		Find(&as).Error
 	if err != nil || len(as) < 1 {
-		return nil, gorm.ErrRecordNotFound
+		return nil, errorw.UP(gorm.ErrRecordNotFound)
 	}
 
 	ids := make([]uint, 0, 15)
@@ -101,5 +104,5 @@ func (*articleService) ByTag(cateName string, columns []string, with gin.H, p *d
 		"orderBy": "post_at desc, id asc",
 	}
 	err = article.NewDao().Query(params, columns, with).Paginate(&ms, p)
-	return
+	return ms, errorw.UP(err)
 }

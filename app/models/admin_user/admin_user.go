@@ -8,7 +8,7 @@ import (
 
 // AdminUserGuard guard
 const AdminUserGuard = "admin"
-const AdminUserIdKey = "admin_user_id"
+const AdminUserIDKey = "admin_user_id"
 const AdminUserNameKey = "admin_user_name"
 
 // AdminUser 管理员

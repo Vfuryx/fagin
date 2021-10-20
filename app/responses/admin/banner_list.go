@@ -10,7 +10,7 @@ type bannerList struct {
 	response.Collect
 }
 
-var _ response.IResponse = &bannerList{}
+var _ response.Response = &bannerList{}
 
 func BannerList(models ...banner.Banner) *bannerList {
 	res := bannerList{Ms: models}

@@ -4,7 +4,7 @@
   </BasicModal>
 </template>
 <script lang="ts" setup>
-  import { ref, computed, unref, toRaw, defineEmits } from 'vue';
+  import { ref, computed, unref, toRaw } from 'vue';
   import { BasicModal, useModalInner } from '/@/components/Modal';
   import { BasicForm, useForm } from '/@/components/Form/index';
   import { formSchema } from './dept.data';
@@ -32,6 +32,16 @@
       });
     }
     const treeData = await getDeptList();
+    console.log(treeData);
+    treeData.unshift({
+      id: 0,
+      parent_id: 0,
+      name: '顶级部门',
+      sort: 999,
+      created_at: '',
+      remark: '',
+      status: 1,
+    });
     updateSchema({
       field: 'parent_id',
       componentProps: { treeData },
@@ -56,11 +66,10 @@
         sort: values.sort || 0,
       });
 
-      let res = {};
       if (!unref(isUpdate)) {
-        res = await createDept(param);
+        await createDept(param);
       } else {
-        res = await updateDept(id.value, param);
+        await updateDept(id.value, param);
       }
 
       console.log(values);

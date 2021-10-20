@@ -17,7 +17,7 @@ type Dao struct {
 	db.Dao
 }
 
-var _ db.IDao = &Dao{}
+var _ db.DAO = &Dao{}
 
 // Dao 实例DAO
 func (m *AdminMenu) Dao() *Dao {
@@ -43,7 +43,7 @@ func (d *Dao) All(params gin.H, columns []string) (*[]AdminMenu, error) {
 	return &model, err
 }
 
-func (d *Dao) Query(params map[string]interface{}, columns []string, with map[string]interface{}) db.IDao {
+func (d *Dao) Query(params map[string]interface{}, columns []string, with map[string]interface{}) db.DAO {
 	model := db.ORM().Select(columns)
 
 	var (
@@ -146,7 +146,6 @@ func (d *Dao) Delete(id uint) error {
 }
 
 func (d *Dao) ExistsByID(id uint) bool {
-	return d.
-		Query(gin.H{"id": id}, nil, nil).
+	return d.Query(gin.H{"id": id}, nil, nil).
 		Exists()
 }

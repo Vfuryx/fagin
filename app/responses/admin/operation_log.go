@@ -11,7 +11,7 @@ type operationLog struct {
 	response.Collect
 }
 
-var _ response.IResponse = &operationLog{}
+var _ response.Response = &operationLog{}
 
 func OperationLog(models ...aol.AdminOperationLog) *operationLog {
 	res := operationLog{Ms: models}

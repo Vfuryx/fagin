@@ -3,7 +3,6 @@ package cache
 import (
 	"fagin/config"
 	"fagin/utils"
-	"fmt"
 	"github.com/dgraph-io/ristretto"
 	"time"
 )
@@ -12,20 +11,23 @@ type ristrettoCache struct {
 	Cache *ristretto.Cache
 }
 
-var _ iCache = &ristrettoCache{}
+var _ cache = &ristrettoCache{}
 
+// RistrettoConfig 配置
 type RistrettoConfig struct {
 	NumCounters int64
 	MaxCost     int64
 	BufferItems int64
 }
 
+// DriverRistrettoCache ristretto
 const DriverRistrettoCache = "ristretto"
 
 func init() {
 	engineMap[DriverRistrettoCache] = newRistrettoCache
 }
 
+// NewRistrettoCache 实例化
 func NewRistrettoCache(config RistrettoConfig) (*ristrettoCache, error) {
 	c, err := ristretto.NewCache(&ristretto.Config{
 		// num of keys to track frequency, usually 10*MaxCost
@@ -43,7 +45,7 @@ func NewRistrettoCache(config RistrettoConfig) (*ristrettoCache, error) {
 	return &ristrettoCache{Cache: c}, nil
 }
 
-func newRistrettoCache() (iCache, error) {
+func newRistrettoCache() (cache, error) {
 	var ok bool
 	var err error
 	var c map[string]string
@@ -96,9 +98,8 @@ func (r *ristrettoCache) Exists(key string) (bool, error) {
 }
 
 func (r *ristrettoCache) Set(key string, value []byte, expiration time.Duration) (string, error) {
-	ok := r.Cache.SetWithTTL(key, value, 1, expiration)
+	r.Cache.SetWithTTL(key, value, 1, expiration)
 	r.Cache.Wait()
-	fmt.Println(ok)
 	return "ok", nil
 }
 

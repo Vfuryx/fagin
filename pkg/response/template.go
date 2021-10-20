@@ -44,7 +44,7 @@ type %[2]s struct {
 	ms []M.m
 	response.Collect
 }
-var _ response.IResponse = &%[2]s{}
+var _ response.Response = &%[2]s{}
 
 func %[3]s(models ...M.m) *%[2]s {
 	res := %[2]s{ms:models}

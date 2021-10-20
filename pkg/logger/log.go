@@ -1,81 +1,69 @@
 package logger
 
 import (
-	"fagin/app/enums"
+	"errors"
 	"fagin/config"
-	"github.com/lestrrat/go-file-rotatelogs"
-	"github.com/rifflock/lfshook"
-	"github.com/sirupsen/logrus"
 	"os"
-	"time"
 )
 
-const AdminModel = "admin"
+// Logger 日志接口
+type Logger interface {
+	Debug(args ...interface{})
+	Info(args ...interface{})
+	Warn(args ...interface{})
+	Error(args ...interface{})
 
-var DefaultLog *logrus.Logger
-
-func Init() {
-	DefaultLog = New("")
+	Debugf(format string, args ...interface{})
+	Infof(format string, args ...interface{})
+	Warnf(format string, args ...interface{})
+	Errorf(format string, args ...interface{})
 }
 
-func New(name string) *logrus.Logger {
-	log := logrus.New()
-	// 禁止 logrus 的输出
-	file, err := os.OpenFile(os.DevNull, os.O_APPEND|os.O_WRONLY, os.ModeAppend)
-	if err != nil {
-		panic(err)
-	}
-	log.SetOutput(file)
+// DefaultMode 默认
+const DefaultMode = "default"
 
-	// 设置LfHook
-	var lfHook *lfshook.LfsHook
-	var path = config.App().StoragePath + `/logs/server` // 默认路径
-	if name != "" {                                      // 重置路径
-		path = config.App().StoragePath + "/logs/" + name
-	}
+// AdminMode 后台
+const AdminMode = "admin"
+
+// APIMode API
+const APIMode = "api"
+
+var ErrChannelNotFound = errors.New("channel not found")
+var ErrDriverNotFound = errors.New("driver not found")
+
+var driverMap = map[string]func(name string) Logger{}
+
+// DefaultLog 默认日志
+var defaultLog Logger
+
+// Init 初始化
+func Init() {
+	channel, ok := config.Log().Channels[config.Log().Default]
 
 	// 创建文件夹 可以多层
-	err = os.MkdirAll(path, os.ModePerm)
+	err := os.MkdirAll(channel.Path, os.ModePerm)
 	if err != nil {
 		panic(err)
 	}
 
-	lfHook, err = NewLfHook(path + "/%Y-%m-%d.log")
-	if err != nil {
-		panic(err)
+	if !ok {
+		panic(ErrChannelNotFound)
 	}
-	log.AddHook(lfHook)
-	return log
+	driver, ok := driverMap[channel.Driver]
+	if !ok {
+		panic(ErrDriverNotFound)
+	}
+
+	defaultLog = driver(config.Log().Default)
 }
 
-// NewLfHook path 日志文件路径
-// linkName 软连接路径
-func NewLfHook(path string) (*lfshook.LfsHook, error) {
-	logWriter, err := rotatelogs.New(
-		path,
-		rotatelogs.WithMaxAge(365*24*time.Hour),   // 文件最大保存时间
-		rotatelogs.WithRotationTime(24*time.Hour), // 日志切割时间间隔
-	)
-	if err != nil {
-		return nil, err
-	}
+// Log 默认日志
+func Log() Logger {
+	return defaultLog
+}
 
-	// 不同等级可以配置不同的写入方式
-	// 一下用的是同一种方式
-	writeMap := lfshook.WriterMap{
-		logrus.DebugLevel: logWriter,
-		logrus.InfoLevel:  logWriter,
-		logrus.WarnLevel:  logWriter,
-		logrus.ErrorLevel: logWriter,
-		//logrus.FatalLevel: logWriter,
-		//logrus.PanicLevel: logWriter,
-	}
-
-	lfHook := lfshook.NewHook(writeMap, &Formatter{
-		TimestampFormat: enums.TimeFormatDef.Get(),
-		NoColors:        true,
-		TrimMessages:    false,
-	})
-
-	return lfHook, nil
+// Channel 通道
+func Channel(name string) Logger {
+	channel := config.Log().Channels[name]
+	return driverMap[channel.Driver](name)
 }

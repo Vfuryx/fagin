@@ -8,7 +8,6 @@ default:
 
 install:
 	go mod tidy
-	go mod vendor
 
 web:
 	cd ./resources/assets/vben-admin-thin-next && yarn run dev
@@ -21,49 +20,49 @@ doc:
 	sudo swag init -o ./docs/swag
 
 create-cmd:
-	cd ./console && cobra add ${name}
+	cd ./cmd/console && cobra add ${name}
 
 h:
-	go run main.go help
+	go run ./cmd/console/main.go help
 
 enum:
-	go run main.go enum ${Name}
+	go run ./cmd/console/main.go enum ${Name}
 
 request:
-	go run main.go request ${Name}
+	go run ./cmd/console/main.go request ${Name}
 
 response:
-	go run main.go response ${Name}
+	go run ./cmd/console/main.go response ${Name}
 
 model:
-	go run main.go model ${Name}
+	go run ./cmd/console/main.go model ${Name}
 
 cache:
-	go run main.go cache ${Name}
+	go run ./cmd/console/main.go cache ${Name}
 
 controller:
-	go run main.go controller ${Name}
+	go run ./cmd/console/main.go controller ${Name}
 
 service:
-	go run main.go service ${Name}
+	go run ./cmd/console/main.go service ${Name}
 
 create-admin:
-	go run main.go admin
+	go run ./cmd/console/main.go admin
 
 migrate:
-	go run main.go migrate
+	go run ./cmd/console/main.go migrate
 
 migrate\:create:
-	go run main.go migrate create ${Name}
+	go run ./cmd/console/main.go migrate create ${Name}
 
 migrate\:reset:
-	go run main.go migrate reset
+	go run ./cmd/console/main.go migrate reset
 
 migrate\:rollback:
-	go run main.go migrate rollback
+	go run ./cmd/console/main.go migrate rollback
 
 build:
-	go build -o ${Name} .
+	go build -o ./bin/${Name} ./cmd/server
 
 build\:winamd64:
 	CGO_ENABLED=0 GOOS=windows GOARCH=amd64 go build -o ${Name} .
@@ -104,8 +103,8 @@ jwt-secret:
 pipeline:
 	go env -w GOPROXY=https://goproxy.cn,direct
 	go mod tidy
-	go run main.go migrate
-	go build -o ${Name} .
+	go run ./cmd/console/main.go migrate
+	go build -o ./bin/${Name} ./cmd/server
 	sh admin.sh restart ${Name}
 	sh admin.sh status ${Name}
 

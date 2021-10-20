@@ -10,8 +10,9 @@ type adminSelectRoleList struct {
 	response.Collect
 }
 
-var _ response.IResponse = &adminSelectRoleList{}
+var _ response.Response = &adminSelectRoleList{}
 
+// AdminSelectRoleList AdminSelectRoleList
 func AdminSelectRoleList(models ...admin_role.AdminRole) *adminSelectRoleList {
 	res := adminSelectRoleList{Ms: models}
 	res.SetCollect(&res)

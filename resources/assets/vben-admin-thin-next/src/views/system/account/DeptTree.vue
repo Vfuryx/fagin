@@ -12,7 +12,7 @@
   </div>
 </template>
 <script lang="ts" setup>
-  import { defineEmits, onMounted, ref } from 'vue';
+  import { onMounted, ref } from 'vue';
 
   import { BasicTree, TreeItem } from '/@/components/Tree';
   import { getDeptList } from '/@/api/system/account';

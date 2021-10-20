@@ -14,17 +14,17 @@ type companyIntroductionController struct {
 
 var CompanyIntroductionController companyIntroductionController
 
-func (cc *companyIntroductionController) ShowCompanyIntroduction(ctx *gin.Context) {
+func (ctr *companyIntroductionController) ShowCompanyIntroduction(ctx *gin.Context) {
 	column := []string{
 		"id", "name", "image", "content", "status",
 	}
 	ci, err := service.CompanyIntroduction.ShowCompanyIntroduction(1, column)
 	if err != nil {
-		cc.ResponseJsonErrLog(ctx, errno.CtxShowErr, err, nil)
+		ctr.ResponseJsonErrLog(ctx, errno.CtxShowErr, err)
 		return
 	}
 
-	cc.ResponseJsonOK(ctx, gin.H{
+	ctr.ResponseJsonOK(ctx, gin.H{
 		"id":      ci.ID,
 		"name":    ci.Name,
 		"image":   ci.Image,
@@ -34,10 +34,10 @@ func (cc *companyIntroductionController) ShowCompanyIntroduction(ctx *gin.Contex
 	return
 }
 
-func (cc *companyIntroductionController) UpdateCompanyIntroduction(ctx *gin.Context) {
+func (ctr *companyIntroductionController) UpdateCompanyIntroduction(ctx *gin.Context) {
 	var r = adminRequest.NewUpdateCompanyIntroduction()
 	if data, ok := r.Validate(ctx); !ok {
-		cc.ResponseJsonErr(ctx, errno.ReqErr, data)
+		ctr.ResponseJsonErr(ctx, errno.ReqErr, data)
 		return
 	}
 
@@ -50,28 +50,28 @@ func (cc *companyIntroductionController) UpdateCompanyIntroduction(ctx *gin.Cont
 
 	err := service.CompanyIntroduction.UpdateCompanyIntroduction(1, data)
 	if err != nil {
-		cc.ResponseJsonErrLog(ctx, errno.CtxUpdateErr, err, nil)
+		ctr.ResponseJsonErrLog(ctx, errno.CtxUpdateErr, err)
 		return
 	}
 
-	cc.ResponseJsonOK(ctx, nil)
+	ctr.ResponseJsonOK(ctx, nil)
 	return
 }
 
 // Upload 上传
-func (cc *companyIntroductionController) Upload(ctx *gin.Context) {
+func (ctr *companyIntroductionController) Upload(ctx *gin.Context) {
 	var r = adminRequest.NewUploadCompanyImage()
 	if data, ok := r.Validate(ctx); !ok {
-		cc.ResponseJsonErr(ctx, errno.ReqErr, data)
+		ctr.ResponseJsonErr(ctx, errno.ReqErr, data)
 		return
 	}
 
 	upload := service.NewUploadService(config.App().PublicPath)
 	path, err := upload.UploadFile("/web/company/", r.File)
 	if err != nil {
-		cc.ResponseJsonErrLog(ctx, errno.ReqUploadFileErr, err, nil)
+		ctr.ResponseJsonErrLog(ctx, errno.ReqUploadFileErr, err)
 		return
 	}
 
-	cc.ResponseJsonOK(ctx, gin.H{"path": "/public/" + path})
+	ctr.ResponseJsonOK(ctx, gin.H{"path": "/public/" + path})
 }

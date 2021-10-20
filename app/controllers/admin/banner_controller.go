@@ -19,7 +19,7 @@ type bannerController struct {
 
 var BannerController bannerController
 
-func (bc *bannerController) Index(ctx *gin.Context) {
+func (ctr *bannerController) Index(ctx *gin.Context) {
 	paginator := db.NewPaginatorWithCtx(ctx, 1, 15)
 
 	params := gin.H{
@@ -29,34 +29,34 @@ func (bc *bannerController) Index(ctx *gin.Context) {
 
 	banners, err := service.Banner.Index(params, columns, nil, paginator)
 	if err != nil {
-		bc.ResponseJsonErrLog(ctx, errno.CtxListErr, err, nil)
+		ctr.ResponseJsonErrLog(ctx, errno.CtxListErr, err)
 		return
 	}
 
 	data := response.BannerList(banners...).Collection()
 
-	bc.ResponseJsonOK(ctx, gin.H{
+	ctr.ResponseJsonOK(ctx, gin.H{
 		"banners":   data,
 		"paginator": paginator,
 	})
 	return
 }
 
-func (bc *bannerController) Show(ctx *gin.Context) {
+func (ctr *bannerController) Show(ctx *gin.Context) {
 	id, err := request.ShouldBindUriUintID(ctx)
 	if err != nil {
-		bc.ResponseJsonErr(ctx, errno.ReqErr, nil)
+		ctr.ResponseJsonErr(ctx, errno.ReqErr, nil)
 		return
 	}
 
 	columns := []string{"id", "title", "banner", "path", "sort", "status"}
 	b, err := service.Banner.Show(id, columns)
 	if err != nil {
-		bc.ResponseJsonErrLog(ctx, errno.CtxShowErr, err, nil)
+		ctr.ResponseJsonErrLog(ctx, errno.CtxShowErr, err)
 		return
 	}
 
-	bc.ResponseJsonOK(ctx, gin.H{
+	ctr.ResponseJsonOK(ctx, gin.H{
 		"id":     b.ID,
 		"title":  b.Title,
 		"banner": b.Banner,
@@ -67,10 +67,10 @@ func (bc *bannerController) Show(ctx *gin.Context) {
 	return
 }
 
-func (bc *bannerController) Store(ctx *gin.Context) {
+func (ctr *bannerController) Store(ctx *gin.Context) {
 	var r = admin_request.NewCreateBanner()
 	if data, ok := r.Validate(ctx); !ok {
-		bc.ResponseJsonErr(ctx, errno.ReqErr, data)
+		ctr.ResponseJsonErr(ctx, errno.ReqErr, data)
 		return
 	}
 
@@ -84,24 +84,24 @@ func (bc *bannerController) Store(ctx *gin.Context) {
 
 	err := service.Banner.Create(&b)
 	if err != nil {
-		bc.ResponseJsonErrLog(ctx, errno.CtxStoreErr, err, nil)
+		ctr.ResponseJsonErrLog(ctx, errno.CtxStoreErr, err)
 		return
 	}
 
-	bc.ResponseJsonOK(ctx, nil)
+	ctr.ResponseJsonOK(ctx, nil)
 	return
 }
 
-func (bc *bannerController) Update(ctx *gin.Context) {
+func (ctr *bannerController) Update(ctx *gin.Context) {
 	id, err := request.ShouldBindUriUintID(ctx)
 	if err != nil {
-		bc.ResponseJsonErr(ctx, errno.ReqErr, nil)
+		ctr.ResponseJsonErr(ctx, errno.ReqErr, nil)
 		return
 	}
 
 	var r = admin_request.NewUpdateBanner()
 	if data, ok := r.Validate(ctx); !ok {
-		bc.ResponseJsonErr(ctx, errno.ReqErr, data)
+		ctr.ResponseJsonErr(ctx, errno.ReqErr, data)
 		return
 	}
 	data := map[string]interface{}{
@@ -113,47 +113,47 @@ func (bc *bannerController) Update(ctx *gin.Context) {
 	}
 	err = service.Banner.Update(id, data)
 	if err != nil {
-		bc.ResponseJsonErrLog(ctx, errno.CtxUpdateErr, err, nil)
+		ctr.ResponseJsonErrLog(ctx, errno.CtxUpdateErr, err)
 		return
 	}
 
-	bc.ResponseJsonOK(ctx, nil)
+	ctr.ResponseJsonOK(ctx, nil)
 	return
 }
 
 // Upload 上传视频
-func (bc *bannerController) Upload(ctx *gin.Context) {
+func (ctr *bannerController) Upload(ctx *gin.Context) {
 	var r = admin_request.NewUploadBanner()
 	if data, ok := r.Validate(ctx); !ok {
-		bc.ResponseJsonErr(ctx, errno.ReqErr, data)
+		ctr.ResponseJsonErr(ctx, errno.ReqErr, data)
 		return
 	}
 
 	upload := service.NewUploadService(config.App().PublicPath)
 	path, err := upload.UploadFile("/web/banner/", r.File)
 	if err != nil {
-		bc.ResponseJsonErrLog(ctx, errno.ReqUploadFileErr, err, nil)
+		ctr.ResponseJsonErrLog(ctx, errno.ReqUploadFileErr, err)
 		return
 	}
 
-	bc.ResponseJsonOK(ctx, gin.H{"path": "/public/" + path})
+	ctr.ResponseJsonOK(ctx, gin.H{"path": "/public/" + path})
 	return
 }
 
-func (bc *bannerController) Del(ctx *gin.Context) {
+func (ctr *bannerController) Del(ctx *gin.Context) {
 	id, err := request.ShouldBindUriUintID(ctx)
 	if err != nil {
-		bc.ResponseJsonErr(ctx, errno.ReqErr, nil)
+		ctr.ResponseJsonErr(ctx, errno.ReqErr, nil)
 		return
 	}
 
 	err = service.Banner.Delete(id)
 	if err != nil {
-		bc.ResponseJsonErrLog(ctx, errno.CtxDeleteErr, err, nil)
+		ctr.ResponseJsonErrLog(ctx, errno.CtxDeleteErr, err)
 		return
 	}
 
-	bc.ResponseJsonOK(ctx, nil)
+	ctr.ResponseJsonOK(ctx, nil)
 	return
 }
 
@@ -162,19 +162,19 @@ type BannerIDs struct {
 }
 
 // DeleteBanners 批量删除轮播图
-func (bc *bannerController) DeleteBanners(ctx *gin.Context) {
+func (ctr *bannerController) DeleteBanners(ctx *gin.Context) {
 	var ids BannerIDs
 	err := ctx.ShouldBind(&ids)
 	if err != nil {
-		bc.ResponseJsonErr(ctx, errno.ReqErr, nil)
+		ctr.ResponseJsonErr(ctx, errno.ReqErr, nil)
 		return
 	}
 
 	err = service.Banner.DeleteBanners(ids.IDs)
 	if err != nil {
-		bc.ResponseJsonErrLog(ctx, errno.CtxDeleteErr, err, nil)
+		ctr.ResponseJsonErrLog(ctx, errno.CtxDeleteErr, err)
 		return
 	}
 
-	bc.ResponseJsonOK(ctx, nil)
+	ctr.ResponseJsonOK(ctx, nil)
 }

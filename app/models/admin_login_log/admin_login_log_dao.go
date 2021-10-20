@@ -14,7 +14,7 @@ type Dao struct {
 	db.Dao
 }
 
-var _ db.IDao = &Dao{}
+var _ db.DAO = &Dao{}
 
 // Dao DAO
 func (m *AdminLoginLog) Dao() *Dao {
@@ -38,7 +38,7 @@ func (d *Dao) All(columns []string) (*[]AdminLoginLog, error) {
 }
 
 // Query 查询
-func (d *Dao) Query(params map[string]interface{}, columns []string, with map[string]interface{}) db.IDao {
+func (d *Dao) Query(params map[string]interface{}, columns []string, with map[string]interface{}) db.DAO {
 	model := db.ORM().Select(columns)
 
 	var (

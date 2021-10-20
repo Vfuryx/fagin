@@ -42,7 +42,7 @@ func (ctr *loginLogController) Index(ctx *gin.Context) {
 
 	logs, err := service.AdminLoginLog.List(params, columns, nil, paginator)
 	if err != nil {
-		ctr.ResponseJsonErrLog(ctx, errno.InternalServerErr, err, nil)
+		ctr.ResponseJsonErrLog(ctx, errno.InternalServerErr, err)
 		return
 	}
 
@@ -63,7 +63,7 @@ func (ctr *loginLogController) Show(ctx *gin.Context) {
 	columns := []string{"*"}
 	l, err := service.AdminLoginLog.ShowLog(id, columns)
 	if err != nil {
-		ctr.ResponseJsonErrLog(ctx, errno.CtxShowErr, err, nil)
+		ctr.ResponseJsonErrLog(ctx, errno.CtxShowErr, err)
 		return
 	}
 	ctr.ResponseJsonOK(ctx, gin.H{

@@ -32,7 +32,7 @@ func (*webTags) WebTags() gin.HandlerFunc {
 		})
 		str, err := homeTags.Get()
 		if err != nil {
-			go app.Log().Println(err, string(debug.Stack()))
+			go app.Log().Error(err, string(debug.Stack()))
 			response.JsonErr(ctx, errno.CtxShowErr, nil)
 			return
 		}

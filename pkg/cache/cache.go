@@ -8,7 +8,7 @@ import (
 	"time"
 )
 
-type iCache interface {
+type cache interface {
 	Get(key string) ([]byte, error)
 	Exists(key string) (bool, error)
 	Set(key string, value []byte, expiration time.Duration) (string, error)
@@ -26,13 +26,13 @@ var ErrNotOpen = errors.New("缓存服务未开启")
 var ErrConfig = errors.New("缓存配置错误")
 var ErrCache = errors.New("缓存获取失败")
 
-var engineMap = map[string]func() (iCache, error){}
+var engineMap = map[string]func() (cache, error){}
 
-var engine iCache
+var engine cache
 
 // Init 初始化
 func Init() {
-	if _, err := cache(); err != nil && err != ErrNotOpen {
+	if _, err := cacheEngine(); err != nil && err != ErrNotOpen {
 		panic(err)
 	}
 }
@@ -44,8 +44,8 @@ func Close() {
 	}
 }
 
-// 获取缓存
-func cache() (iCache, error) {
+// cacheEngine 获取缓存
+func cacheEngine() (cache, error) {
 	if !config.Cache().Open {
 		return nil, ErrNotOpen
 	}
@@ -65,34 +65,36 @@ func cache() (iCache, error) {
 	return engine, nil
 }
 
-type SCache struct {
-	prefix   string
+type Cache struct {
+	format   string
 	lifeTime time.Duration
 	content  GetterFunc // 获取回源数据方法
 }
 
-func (sc *SCache) SetConfPrefix(prefix string) {
-	sc.prefix = config.Cache().Prefix + prefix
+func (sc *Cache) SetKeyFormat(format string) {
+	sc.format = config.Cache().Prefix + format
 }
-func (sc *SCache) SetConfLifeTime(t time.Duration) {
+
+func (sc *Cache) SetLifeTime(t time.Duration) {
 	sc.lifeTime = t
 }
-func (sc *SCache) SetFunc(f GetterFunc) {
+
+func (sc *Cache) SetFunc(f GetterFunc) {
 	sc.content = f
 }
 
-func (sc *SCache) Lift() time.Duration {
+func (sc *Cache) Lift() time.Duration {
 	return sc.lifeTime
 }
 
 // Key 获取键名称
-func (sc *SCache) Key(value ...interface{}) string {
-	return fmt.Sprintf(sc.prefix, value...)
+func (sc *Cache) Key(value ...interface{}) string {
+	return fmt.Sprintf(sc.format, value...)
 }
 
 // Exists 是键是否存在
-func (sc *SCache) Exists(value ...interface{}) (bool, error) {
-	c, err := cache()
+func (sc *Cache) Exists(value ...interface{}) (bool, error) {
+	c, err := cacheEngine()
 	if err != nil {
 		return false, err
 	}
@@ -100,8 +102,8 @@ func (sc *SCache) Exists(value ...interface{}) (bool, error) {
 }
 
 // Remove 删除
-func (sc *SCache) Remove(value ...interface{}) (int64, error) {
-	c, err := cache()
+func (sc *Cache) Remove(value ...interface{}) (int64, error) {
+	c, err := cacheEngine()
 	if err != nil {
 		return 0, err
 	}
@@ -112,11 +114,11 @@ var lock sync.Mutex
 var num = 0
 
 // Get 根据键获取数据
-func (sc *SCache) Get(value ...interface{}) (data []byte, err error) {
-	c, err := cache()
+func (sc *Cache) Get(value ...interface{}) (data []byte, err error) {
+	c, err := cacheEngine()
 	if err != nil {
 		// 缓存关闭直接获取数据
-		if err == ErrNotOpen {
+		if errors.Is(err, ErrNotOpen) {
 			if data, err = sc.content.Get(); err == nil {
 				return data, nil
 			}
@@ -154,8 +156,8 @@ func (sc *SCache) Get(value ...interface{}) (data []byte, err error) {
 	return data, nil
 }
 
-func (sc *SCache) Close() error {
-	c, err := cache()
+func (sc *Cache) Close() error {
+	c, err := cacheEngine()
 	if err != nil {
 		return err
 	}

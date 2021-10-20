@@ -1,6 +1,7 @@
 package request
 
 import (
+	"errors"
 	"fagin/app/errno"
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
@@ -8,24 +9,29 @@ import (
 	"strings"
 )
 
+// Request 请求接口
 type Request interface {
 	Validate(*gin.Context) (map[string]string, bool)
 	Message() map[string]string
 	Attributes() map[string]string
 }
 
+// Validation 验证
 type Validation struct {
 	Request
 }
 
+// SetRequest 设置请求实例
 func (v *Validation) SetRequest(r Request) {
 	v.Request = r
 }
 
+// Validate 验证
 func (v *Validation) Validate(ctx *gin.Context) (map[string]string, bool) {
 	return Validated(v.Request, ctx)
 }
 
+// ValidateUri 验证 Uri
 func (v *Validation) ValidateUri(ctx *gin.Context) (map[string]string, bool) {
 	return ValidateUri(v.Request, ctx)
 }
@@ -37,6 +43,7 @@ func (v *Validation) FileValidate(ctx *gin.Context, maxSize int64, typeFunc func
 	return FileValidate(v.Request, ctx, maxSize, typeFunc)
 }
 
+// Validated 验证
 func Validated(request Request, ctx *gin.Context) (map[string]string, bool) {
 	err := ctx.ShouldBind(request)
 	if err == nil {
@@ -45,6 +52,7 @@ func Validated(request Request, ctx *gin.Context) (map[string]string, bool) {
 	return validate(err, request), false
 }
 
+// ValidateUri 验证 Uri
 func ValidateUri(request Request, ctx *gin.Context) (map[string]string, bool) {
 	err := ctx.ShouldBindUri(request)
 	if err == nil {
@@ -68,7 +76,7 @@ func validationErrorMessageHandle(request Request, errs validator.ValidationErro
 		} else {
 			// 占位符 :attribute 替换
 			msg = replaceAttribute(msg, attributes[value.StructField()])
-			// 占位符 :attribute 替换
+			// 占位符 :input 替换
 			if v, ok := value.Value().(string); ok {
 				msg = replaceInput(msg, v)
 			}
@@ -141,7 +149,7 @@ func fileValidate(err error, request Request) map[string]string {
 			// default
 			data[name] = "上传文件错误"
 
-			if err == http.ErrMissingFile {
+			if errors.Is(err, http.ErrMissingFile) {
 				data[name] = "不是文件"
 			}
 			if err.Error() == "multipart: NextPart: EOF" {

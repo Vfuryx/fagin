@@ -10,7 +10,7 @@ type tagList struct {
 	response.Collect
 }
 
-var _ response.IResponse = &tagList{}
+var _ response.Response = &tagList{}
 
 func TagList(models ...tag.Tag) *tagList {
 	res := tagList{Ms: models}

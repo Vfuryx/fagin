@@ -10,7 +10,7 @@ type adminMenusAll struct {
 	response.Collect
 }
 
-var _ response.IResponse = &adminMenusAll{}
+var _ response.Response = &adminMenusAll{}
 
 func AdminMenusAll(models ...admin_menu.AdminMenu) *adminMenusAll {
 	res := adminMenusAll{ms: models}

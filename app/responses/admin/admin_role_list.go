@@ -12,7 +12,7 @@ type adminRoleList struct {
 	response.Collect
 }
 
-var _ response.IResponse = &adminRoleList{}
+var _ response.Response = &adminRoleList{}
 
 func AdminRoleList(models ...admin_role.AdminRole) *adminRoleList {
 	res := adminRoleList{Ms: models}

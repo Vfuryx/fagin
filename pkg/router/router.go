@@ -24,13 +24,13 @@ func New() *gin.Engine {
 	// 不是是正式环境
 	if ok := app.IsProd(); !ok {
 		view.DebugPrintLoadTemplate(temp)
-		e.Use(gin.Logger(), gin.Recovery())
+		e.Use(gin.Logger())
 	} else {
 		gin.SetMode(gin.ReleaseMode)
 	}
 
-	// 收集日志
-	e.Use(middleware.RecoveryLog())
+	// 收集日志并恢复
+	e.Use(gin.Recovery(), middleware.RecoveryLog())
 
 	// 加载路由
 	routes.Handle(e)

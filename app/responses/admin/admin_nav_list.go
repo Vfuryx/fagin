@@ -10,7 +10,7 @@ type adminNavList struct {
 	response.Collect
 }
 
-var _ response.IResponse = &adminNavList{}
+var _ response.Response = &adminNavList{}
 
 func AdminNavList(models ...admin_menu.AdminMenu) *adminNavList {
 	res := adminNavList{ms: models}

@@ -2,7 +2,6 @@ import { defHttp } from '/@/utils/http/axios';
 import {
   CreateMenuParams,
   MenuItem,
-  MenuListGetResultModel,
   MenuParams,
 } from '/@/api/system/model/menuModel';
 
@@ -17,8 +16,7 @@ enum Api {
 
 export const getMenuAll = () => defHttp.get({ url: Api.MenuAll });
 
-export const getMenuList = (params?: MenuParams) =>
-  defHttp.get<MenuListGetResultModel>({ url: Api.MenuList, params });
+export const getMenuList = (params?: MenuParams) => defHttp.get({ url: Api.MenuList, params });
 
 export const getMenuDetail = (id: number) =>
   defHttp.get<MenuItem>({ url: Api.MenuDetail + id.toString() });

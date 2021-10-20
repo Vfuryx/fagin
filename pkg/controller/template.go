@@ -60,7 +60,7 @@ func (ctr *%[2]s) Index(ctx *gin.Context) {
 	with := gin.H{}
 	result, err := service.S.Index(params, columns, with, paginator)
 	if err != nil {
-		ctr.ResponseJsonErr(ctx, errno.CtxListErr, nil)
+		ctr.ResponseJsonErrLog(ctx, errno.CtxListErr, err)
 		return
 	}
 
@@ -84,7 +84,7 @@ func (ctr *%[2]s) Show(ctx *gin.Context) {
 	columns := []string{"id"}
 	data, err := service.S.Show(id, columns)
 	if err != nil {
-		ctr.ResponseJsonErrLog(ctx, errno.CtxShowErr, err, nil)
+		ctr.ResponseJsonErrLog(ctx, errno.CtxShowErr, err)
 		return
 	}
 
@@ -106,7 +106,7 @@ func (ctr *%[2]s) Store(ctx *gin.Context) {
 
 	err := service.S.Create(&m)
 	if err != nil {
-		ctr.ResponseJsonErrLog(ctx, errno.CtxStoreErr, err, nil)
+		ctr.ResponseJsonErrLog(ctx, errno.CtxStoreErr, err)
 		return
 	}
 
@@ -130,7 +130,7 @@ func (ctr *%[2]s) Update(ctx *gin.Context) {
 	data := map[string]interface{}{}
 	err = service.S.Update(id, data)
 	if err != nil {
-		ctr.ResponseJsonErrLog(ctx, errno.CtxUpdateErr, err, nil)
+		ctr.ResponseJsonErrLog(ctx, errno.CtxUpdateErr, err)
 		return
 	}
 
@@ -148,7 +148,7 @@ func (ctr *%[2]s) Del(ctx *gin.Context) {
 
 	err = service.S.Delete(id)
 	if err != nil {
-		ctr.ResponseJsonErrLog(ctx, errno.CtxDeleteErr, err, nil)
+		ctr.ResponseJsonErrLog(ctx, errno.CtxDeleteErr, err)
 		return
 	}
 
@@ -170,7 +170,7 @@ func (ctr *%[2]s) Deletes(ctx *gin.Context) {
 
 	err = service.S.Deletes(ids.IDs)
 	if err != nil {
-		ctr.ResponseJsonErrLog(ctx, errno.CtxDeleteErr, err, nil)
+		ctr.ResponseJsonErrLog(ctx, errno.CtxDeleteErr, err)
 		return
 	}
 

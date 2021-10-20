@@ -39,6 +39,7 @@ func CreateServiceTemplate(path, name string) {
 import (
 	"fagin/app/models/%[4]s"
 	"fagin/pkg/db"
+	"fagin/pkg/errorw"
 	"github.com/gin-gonic/gin"
 )
 
@@ -48,29 +49,33 @@ var %[3]s %[2]sService
 
 func (*%[2]sService) Index(params gin.H, columns []string, with gin.H, p *db.Paginator) (ms []%[4]s.%[3]s, err error) {
 	err = %[4]s.NewDao().Query(params, columns, with).Paginate(&ms, p)
-	return
+	return ms, errorw.UP(err)
 }
 
 func (*%[2]sService) Show(id uint, columns []string) (*%[4]s.%[3]s, error) {
 	b := %[4]s.New()
 	err := b.Dao().FindById(id, columns)
-	return b, err
+	return b, errorw.UP(err)
 }
 
 func (*%[2]sService) Create(m *%[4]s.%[3]s) error {
-	return %[4]s.NewDao().Create(m)
+	err := %[4]s.NewDao().Create(m)
+	return errorw.UP(err)
 }
 
 func (*%[2]sService) Update(id uint, data gin.H) error {
-	return %[4]s.NewDao().Update(id, data)
+	err := %[4]s.NewDao().Update(id, data)
+	return errorw.UP(err)
 }
 
 func (*%[2]sService) Delete(id uint) error {
-	return %[4]s.NewDao().Destroy(id)
+	err := %[4]s.NewDao().Destroy(id)
+	return errorw.UP(err)
 }
 
 func (*%[2]sService) Deletes(ids []uint) error {
-	return %[4]s.NewDao().Deletes(ids)
+	err := %[4]s.NewDao().Deletes(ids)
+	return errorw.UP(err)
 }
 `
 	fmt.Println(packageName, structName, varName, name)

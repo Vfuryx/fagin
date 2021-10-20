@@ -6,10 +6,10 @@ import (
 )
 
 // NewHomeArticles 首页文章
-func NewHomeArticles(f cache.GetterFunc) *cache.SCache {
-	var c = new(cache.SCache)
-	c.SetConfPrefix("home:article:page:%s")
-	c.SetConfLifeTime(60 * time.Minute)
+func NewHomeArticles(f cache.GetterFunc) *cache.Cache {
+	var c = new(cache.Cache)
+	c.SetKeyFormat("home:article:page:%s")
+	c.SetLifeTime(60 * time.Minute)
 	c.SetFunc(f)
 
 	return c

@@ -11,7 +11,7 @@ type adminDepartment struct {
 	response.Collect
 }
 
-var _ response.IResponse = &adminDepartment{}
+var _ response.Response = &adminDepartment{}
 
 // AdminDepartment AdminDepartment
 func AdminDepartment(models ...admin_department.AdminDepartment) *adminDepartment {

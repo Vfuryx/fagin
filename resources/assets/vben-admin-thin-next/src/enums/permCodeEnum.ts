@@ -11,7 +11,7 @@ export enum PermCodeEnum {
   AdminSystemAccountExists = 'admin.system.account:exists',
   AdminSystemAccountRoles = 'admin.system.account:roles',
 
-  // 部门管理
+  // 菜单管理
   AdminSystemMenuQuery = 'admin.system.menu:query',
   AdminSystemMenuDetail = 'admin.system.menu:detail',
   AdminSystemMenuCreate = 'admin.system.menu:create',
