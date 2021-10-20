@@ -5,30 +5,33 @@ import (
 	"fagin/app/caches"
 	"fagin/app/errno"
 	"fagin/app/models/admin_user"
-	"fagin/app/service/admin_auth"
+	"fagin/app/service"
 	"fagin/pkg/auths"
 	"fagin/pkg/casbins"
 	"fagin/pkg/response"
 	"github.com/gin-gonic/gin"
+	"net/http"
 	"strconv"
+	"strings"
 )
 
 type adminAuth struct{}
 
+// AdminAuth 后台验证
 var AdminAuth adminAuth
 
 // IsLogin 验证后台管理员是否登录
 func (*adminAuth) IsLogin() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		c, err := admin_auth.AdminAuth.ParseRequest(ctx)
+		c, err := service.AdminAuth.ParseRequest(ctx)
 		if err != nil {
-			response.JsonErr(ctx, err, nil)
+			response.JsonWithStatus(ctx, http.StatusUnauthorized, err, nil, nil)
 			ctx.Abort()
 			return
 		}
 
 		ctx.Set(admin_user.AdminUserNameKey, c.Name)
-		ctx.Set(admin_user.AdminUserIdKey, c.UserID)
+		ctx.Set(admin_user.AdminUserIDKey, c.UserID)
 
 		ctx.Next()
 	}
@@ -39,7 +42,7 @@ func (*adminAuth) AuthCheckRole() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		userID := auths.GetAdminID(c)
 
-		roles, err := casbins.Casbin.GetRolesForUser(strconv.FormatUint(userID, 10))
+		roles, err := casbins.Casbin.GetRolesForUser(strconv.FormatUint(uint64(userID), 10))
 		if err != nil {
 			response.JsonErr(c, errno.MidAuthCheckRoleErr, nil)
 			c.Abort()
@@ -69,11 +72,17 @@ func (*adminAuth) AuthCheckRole() gin.HandlerFunc {
 	}
 }
 
-// AuthCheckRoleCache 权限检查中间件 有缓存
-func (*adminAuth) AuthCheckRoleCache() gin.HandlerFunc {
+// CheckRoleCache 权限检查中间件 有缓存
+func (*adminAuth) CheckRoleCache() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		uid := auths.GetAdminID(c)
-		strUID := strconv.FormatUint(uid, 10)
+		fullPath := c.FullPath()
+		// 判断是否公共接口 公共接口不用鉴权
+		if strings.HasPrefix(fullPath, "/admin/api/common") {
+			c.Next()
+			return
+		}
+
+		strUID := strconv.FormatUint(uint64(auths.GetAdminID(c)), 10)
 
 		roleCache := caches.NewAdminCasbin(func() ([]byte, error) {
 			// 缓存用户的角色
@@ -109,7 +118,6 @@ func (*adminAuth) AuthCheckRoleCache() gin.HandlerFunc {
 		if isAdmin {
 			c.Next()
 		} else {
-			fullPath := c.FullPath()
 			method := c.Request.Method
 			rbacCache := caches.NewAdminRBAC(func() ([]byte, error) {
 				ok, err := casbins.Casbin.CheckRoles(roles, fullPath, method)

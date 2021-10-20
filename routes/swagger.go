@@ -18,7 +18,7 @@ var swaggerRoute = func(Swagger *gin.RouterGroup) {
 	}
 
 	no_router.NoRoute(Swagger.BasePath(), func(ctx *gin.Context) {
-		app.ResponseJsonWithStatus(ctx, http.StatusNotFound, errno.NotFound, nil, gin.H{"m": "swagger 404"})
+		app.ResponseJsonWithStatus(ctx, http.StatusNotFound, errno.NotFoundErr, nil, gin.H{"m": "swagger 404"})
 	})
 
 	// 访问 swagger 首页必须是 /swagger/index.html

@@ -9,6 +9,7 @@ import (
 	"time"
 )
 
+// RecoveryLog 恢复日志
 func RecoveryLog() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		defer func() {
@@ -26,19 +27,19 @@ func RecoveryLog() gin.HandlerFunc {
 
 // 写入日志
 func writeLog(httpRequest []byte, r interface{}, s []byte) {
-	headers := strings.Split(string(httpRequest), "\r\n")
-
-	for idx, header := range headers {
-		current := strings.Split(header, ":")
-		if current[0] == "Authorization" {
-			headers[idx] = current[0] + ": *"
+	prefix := "Authorization:"
+	lines := strings.Split(string(httpRequest), "\r\n")
+	for idx, header := range lines {
+		if strings.HasPrefix(header, prefix) {
+			lines[idx] = header[:len(prefix)] + " *"
+			break
 		}
 	}
 
-	logger.Log.Errorf(
+	go logger.Log().Errorf(
 		"[Recovery] %s panic recovered:\n%s\n%s\n%s\n",
 		time.Now(),
-		strings.Join(headers, "\r\n"),
+		strings.Join(lines, "\r\n"),
 		r,
 		s,
 	)

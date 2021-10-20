@@ -5,8 +5,9 @@ import (
 )
 
 type adminUsernameExistRequest struct {
-	ID                 uint   `form:"id" json:"id" binding:"min=0"`
-	Username           string `form:"username" json:"username" binding:"required,max=32"`
+	ID       uint   `form:"id" json:"id" binding:"min=0"`
+	Username string `form:"username" json:"username" binding:"required,max=32"`
+
 	request.Validation `binding:"-"`
 }
 

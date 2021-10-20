@@ -8,59 +8,61 @@ default:
 
 install:
 	go mod tidy
-	go mod vendor
 
 web:
-	cd ./resources/assets/admin2 && yarn run serve
+	cd ./resources/assets/vben-admin-thin-next && yarn run dev
 
 web\:build:
-	cd ./resources/assets/admin2 && yarn run build
+	cd ./resources/assets/vben-admin-thin-next && yarn run build
 
 doc:
 	#需要权限来修改文件
 	sudo swag init -o ./docs/swag
 
 create-cmd:
-	cd ./console && cobra add ${name}
+	cd ./cmd/console && cobra add ${name}
+
+h:
+	go run ./cmd/console/main.go help
 
 enum:
-	go run main.go -c enum ${Name}
+	go run ./cmd/console/main.go enum ${Name}
 
 request:
-	go run main.go -c request ${Name}
+	go run ./cmd/console/main.go request ${Name}
 
 response:
-	go run main.go -c response ${Name}
+	go run ./cmd/console/main.go response ${Name}
 
 model:
-	go run main.go -c model ${Name}
+	go run ./cmd/console/main.go model ${Name}
 
 cache:
-	go run main.go -c cache ${Name}
+	go run ./cmd/console/main.go cache ${Name}
 
 controller:
-	go run main.go -c controller ${Name}
+	go run ./cmd/console/main.go controller ${Name}
 
 service:
-	go run main.go -c service ${Name}
+	go run ./cmd/console/main.go service ${Name}
 
 create-admin:
-	go run main.go -c admin
+	go run ./cmd/console/main.go admin
 
 migrate:
-	go run main.go -c migrate
+	go run ./cmd/console/main.go migrate
 
 migrate\:create:
-	go run main.go -c migrate create ${Name}
+	go run ./cmd/console/main.go migrate create ${Name}
 
 migrate\:reset:
-	go run main.go -c migrate reset
+	go run ./cmd/console/main.go migrate reset
 
 migrate\:rollback:
-	go run main.go -c migrate rollback
+	go run ./cmd/console/main.go migrate rollback
 
 build:
-	go build -o ${Name} .
+	go build -o ./bin/${Name} ./cmd/server
 
 build\:winamd64:
 	CGO_ENABLED=0 GOOS=windows GOARCH=amd64 go build -o ${Name} .
@@ -101,8 +103,8 @@ jwt-secret:
 pipeline:
 	go env -w GOPROXY=https://goproxy.cn,direct
 	go mod tidy
-	go run main.go -c migrate
-	go build -o ${Name} .
+	go run ./cmd/console/main.go migrate
+	go build -o ./bin/${Name} ./cmd/server
 	sh admin.sh restart ${Name}
 	sh admin.sh status ${Name}
 

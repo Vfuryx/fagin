@@ -19,7 +19,7 @@ CREATE TABLE `admin_roles`
   COLLATE = utf8mb4_unicode_ci COMMENT ='后台角色表';
 
 INSERT INTO `admin_roles` (`id`, `created_at`, `updated_at`, `name`, `key`, `remark`, `sort`, `status`)
-VALUES (1, NULL, NULL, 'admin', 'admin', 'admin', 0, 1);
+VALUES (1, '2021-10-01 01:01:01', '2021-10-01 01:01:01', 'admin', 'admin', 'admin', 100, 1);
 
 -- +migrate Down
 DROP TABLE `admin_roles`;

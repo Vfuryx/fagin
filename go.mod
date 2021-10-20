@@ -19,6 +19,8 @@ require (
 	github.com/golang-jwt/jwt/v4 v4.0.0
 	github.com/lestrrat/go-file-rotatelogs v0.0.0-20180223000712-d3151e2a480f
 	github.com/mojocn/base64Captcha v1.3.5
+	github.com/mssola/user_agent v0.5.3
+	github.com/natefinch/lumberjack v2.0.0+incompatible
 	github.com/rifflock/lfshook v0.0.0-20180920164130-b9218ef580f5
 	github.com/rubenv/sql-migrate v0.0.0-20210614095031-55d5740dbbcc
 	github.com/sirupsen/logrus v1.8.1
@@ -29,6 +31,7 @@ require (
 	github.com/swaggo/files v0.0.0-20210815190702-a29dd2bc99b2
 	github.com/swaggo/gin-swagger v1.3.1
 	github.com/swaggo/swag v1.7.1
+	go.uber.org/zap v1.19.1
 	golang.org/x/crypto v0.0.0-20210817164053-32db794688a5
 	gorm.io/driver/mysql v1.1.2
 	gorm.io/gorm v1.21.13
@@ -92,6 +95,8 @@ require (
 	github.com/tebeka/strftime v0.1.5 // indirect
 	github.com/ugorji/go/codec v1.2.6 // indirect
 	github.com/ziutek/mymysql v1.5.4 // indirect
+	go.uber.org/atomic v1.9.0 // indirect
+	go.uber.org/multierr v1.7.0 // indirect
 	golang.org/x/image v0.0.0-20190802002840-cff245a6509b // indirect
 	golang.org/x/net v0.0.0-20210805182204-aaa1db679c0d // indirect
 	golang.org/x/sys v0.0.0-20210806184541-e5e7981a1069 // indirect
@@ -100,6 +105,7 @@ require (
 	google.golang.org/protobuf v1.27.1 // indirect
 	gopkg.in/gorp.v1 v1.7.2 // indirect
 	gopkg.in/ini.v1 v1.62.0 // indirect
+	gopkg.in/natefinch/lumberjack.v2 v2.0.0 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b // indirect
 	gorm.io/driver/postgres v1.1.0 // indirect

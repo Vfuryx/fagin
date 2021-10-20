@@ -9,7 +9,7 @@ import (
 	"sync"
 )
 
-// Casbin 模型配置
+// casbinModel 模型配置
 var casbinModel model.Model
 
 func init() {
@@ -93,12 +93,12 @@ func (c *casbinService) casbin() (*casbin.Enforcer, error) {
 	var mx sync.Mutex
 	// 防止并发出错
 	mx.Lock()
-	casbin, err := NewCanbin()
+	casbinObj, err := NewCanbin()
 	mx.Unlock()
 	if err != nil {
 		return nil, err
 	}
-	c.E = casbin.E
+	c.E = casbinObj.E
 	return c.E, nil
 }
 

@@ -7,7 +7,8 @@ import (
 	"time"
 )
 
-type app struct {
+// AppConfig APP 配置
+type AppConfig struct {
 	RootPath       string
 	AppPath        string
 	PublicPath     string
@@ -21,35 +22,43 @@ type app struct {
 	Port     string
 	Key      string
 	Debug    bool
-	Url      string
+	URL      string
 	Locale   string
 	Timezone *time.Location
 }
 
-var App app
+var appConfig = new(AppConfig)
 
-func init() {
-	// 初始化项目路径
-	App.RootPath = conf.RootPath
-	App.AppPath = App.RootPath + "/app"
-	App.PublicPath = App.RootPath + "/public"
-	App.StaticPath = App.RootPath + "/static"
-	App.StoragePath = App.RootPath + "/storage"
-	App.MigrationsPath = App.RootPath + "/database/migrations"
-	App.ResourcePath = App.RootPath + "/resources"
-
-	App.Name = App.GetName()
-	App.Env = conf.GetString("app.env", "local")  // 环境：prod、dev、local
-	App.Port = conf.GetString("app.port", "8080") // 端口
-	App.Key = conf.GetString("app.key", "")
-	App.Url = conf.GetString("app.url", "")
-	App.Debug = conf.GetBool("app.debug")
-	App.Locale = conf.GetString("app.local", "zh")
-
-	// 默认时区
-	App.Timezone = time.FixedZone("CST", 8*3600)
+// App App
+func App() AppConfig {
+	return *appConfig
 }
 
-func (app app) GetName() string {
+func (app *AppConfig) init() {
+	// 初始化项目路径
+	app.RootPath = conf.RootPath
+	app.AppPath = app.RootPath + "/app"
+	app.PublicPath = app.RootPath + "/public"
+	app.StaticPath = app.RootPath + "/static"
+	app.StoragePath = app.RootPath + "/storage"
+	app.MigrationsPath = app.RootPath + "/database/migrations"
+	app.ResourcePath = app.RootPath + "/resources"
+
+	app.Name = app.GetName()
+	app.Env = conf.GetString("app.env", "local")  // 环境：prod、dev、local
+	app.Port = conf.GetString("app.port", "8080") // 端口
+	app.Key = conf.GetString("app.key", "")
+	app.URL = conf.GetString("app.url", "")
+	app.Debug = conf.GetBool("app.debug")
+	app.Locale = conf.GetString("app.local", "zh")
+
+	// 默认时区
+	app.Timezone = time.FixedZone("CST", 8*3600)
+	//location, _ := time.LoadLocation("Asia/Shanghai")
+	//_ = os.Setenv("TZ", location.String())
+}
+
+// GetName 获取名称
+func (app AppConfig) GetName() string {
 	return strings.Split(reflect.TypeOf(app).PkgPath(), "/")[0]
 }

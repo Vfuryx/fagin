@@ -6,7 +6,6 @@ import (
 
 type permissionList struct {
 	Name               string `form:"name" json:"name" binding:"max=35"`
-	Type               uint8  `form:"type" json:"type" binding:""`
 	request.Validation `binding:"-"`
 }
 

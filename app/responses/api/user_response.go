@@ -10,11 +10,11 @@ type userResponse struct {
 	response.Collect
 }
 
-var _ response.IResponse = &userResponse{}
+var _ response.Response = &userResponse{}
 
 func UserResponse(users ...user.User) *userResponse {
 	ur := userResponse{Users: users}
-	ur.Collect.IResponse = &ur
+	ur.Collect.Response = &ur
 	return &ur
 }
 

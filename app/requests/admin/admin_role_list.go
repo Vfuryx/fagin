@@ -5,10 +5,11 @@ import (
 )
 
 type adminRoleList struct {
-	Type               uint8  `form:"type" json:"type" binding:""`
-	Name               string `form:"name" json:"name" binding:"max=128"`
-	Key                string `form:"key" json:"key" binding:"max=32"`
-	Status             *uint8 `form:"status" json:"status" binding:""`
+	Type   uint8  `form:"type" json:"type" binding:""`
+	Name   string `form:"name" json:"name" binding:"max=128"`
+	Key    string `form:"key" json:"key" binding:"max=32"`
+	Status *uint8 `form:"status" json:"status" binding:""`
+
 	request.Validation `binding:"-"`
 }
 

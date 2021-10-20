@@ -6,9 +6,9 @@ import (
 
 type updateAdminUser struct {
 	NickName           string `form:"nick_name" json:"nick_name" binding:"required,max=64"`
+	Username           string `form:"username" json:"username" binding:"required,max=64"`
 	Phone              string `form:"phone" json:"phone" binding:"required,max=64"`
 	Email              string `form:"email" json:"email" binding:"required,max=64"`
-	Username           string `form:"username" json:"username" binding:"required,max=64"`
 	Sex                *uint8 `form:"sex" json:"sex" binding:"required,oneof=0 1 2"`
 	Roles              []uint `form:"roles" json:"roles" binding:"dive,required"`
 	Status             *uint8 `form:"status" json:"status" binding:"required,oneof=0 1"`

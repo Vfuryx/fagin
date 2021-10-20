@@ -3,9 +3,9 @@ package conf
 import (
 	"fagin/pkg/paths"
 	"fmt"
-	"github.com/fsnotify/fsnotify"
 	"github.com/spf13/viper"
 	"os"
+	"path"
 	"path/filepath"
 )
 
@@ -13,7 +13,6 @@ var RootPath string
 
 func init() {
 	configLoad()
-	watchConfig()
 }
 
 // 读取 config
@@ -30,17 +29,26 @@ func configLoad() {
 		panic(err)
 	}
 
+	var pathFiles = []string{
+		workPath,
+		path.Clean(workPath + "/.."),
+		path.Clean(workPath + "/../.."),
+		appPath,
+	}
 	var filename = ".config"
 	var configType = "yml"
-	appConfigPath := filepath.Join(workPath, "/", filename+"."+configType)
+	var l, i = len(pathFiles) - 1, 0
 
-	if !paths.FileExists(appConfigPath) {
-		appConfigPath = filepath.Join(appPath, "/", filename+"."+configType)
-		if !paths.FileExists(appConfigPath) {
+	for i, workPath = range pathFiles {
+		appConfigPath := filepath.Join(workPath, "/", filename+"."+configType)
+		if paths.FileExists(appConfigPath) {
+			break
+		}
+		if i == l {
 			fmt.Printf("ERROR：配置文件 .config.yml 读取失败\n %v", err)
 		}
-		workPath = appPath
 	}
+
 	// 设置项目根目录
 	RootPath = workPath
 
@@ -53,14 +61,6 @@ func configLoad() {
 	if err != nil {
 		panic(err)
 	}
-}
-
-// 监控 config
-func watchConfig() {
-	viper.WatchConfig()
-	viper.OnConfigChange(func(e fsnotify.Event) {
-		fmt.Println("Config file changed:", e.Name)
-	})
 }
 
 // GetString 获取 string 类型并返回

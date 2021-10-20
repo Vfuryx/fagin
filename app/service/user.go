@@ -24,7 +24,7 @@ func (*userService) AddUser(data *user.User) error {
 func (*userService) ShowUser(id uint, columns []string) (*user.User, error) {
 	params := map[string]interface{}{
 		"id":     id,
-		"status": enums.StatusActive,
+		"status": enums.StatusActive.Get(),
 	}
 	u := user.New()
 	err := u.Dao().Query(params, columns, nil).First(u)

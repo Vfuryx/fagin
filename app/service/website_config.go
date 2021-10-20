@@ -2,6 +2,7 @@ package service
 
 import (
 	"fagin/app/models/website_config"
+	"fagin/pkg/errorw"
 )
 
 type websiteConfigService struct{}
@@ -13,15 +14,15 @@ func (*websiteConfigService) ShowInfo(id uint, columns []string) (*website_confi
 	wc := website_config.New()
 	err := wc.Dao().FindById(id, columns)
 	if err != nil {
-		return nil, err
+		return nil, errorw.UP(err)
 	}
-	return wc, err
+	return wc, nil
 }
 
 func (*websiteConfigService) UpdateInfo(id uint, data map[string]interface{}) error {
 	err := website_config.NewDao().Update(id, data)
 	if err != nil {
-		return err
+		return errorw.UP(err)
 	}
 	// 删除缓存
 	//go func() {

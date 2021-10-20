@@ -8,8 +8,8 @@ import (
 	"time"
 )
 
-// 模版配置
-type template struct {
+// TemplateConfig 模版配置
+type TemplateConfig struct {
 	Public       string // 设置公开静态资源
 	PublicRouter string // 设置公开静态资源路由地址
 	Static       string // 设置静态资源
@@ -23,20 +23,24 @@ type template struct {
 	TemplatePattern string    // 模版路径
 }
 
-var Template template
+var templateConfig = new(TemplateConfig)
 
-func init() {
-	Template.Public = App.PublicPath
-	Template.PublicRouter = "/public"
-	Template.Static = App.StaticPath
-	Template.StaticRouter = "/static"
-	Template.StaticEmbed = static.Static
+func Template() TemplateConfig {
+	return *templateConfig
+}
 
-	Template.DelimitersL = "[["
-	Template.DelimitersR = "]]"
-	Template.FuncMap = FuncMap()
-	Template.TemplatesEmbed = resources.Templates
-	Template.TemplatePattern = "views/**/*"
+func (template *TemplateConfig) init() {
+	template.Public = App().PublicPath
+	template.PublicRouter = "/public"
+	template.Static = App().StaticPath
+	template.StaticRouter = "/static"
+	template.StaticEmbed = static.Static
+
+	template.DelimitersL = "[["
+	template.DelimitersR = "]]"
+	template.FuncMap = FuncMap()
+	template.TemplatesEmbed = resources.Templates
+	template.TemplatePattern = "views/**/*"
 }
 
 func FuncMap() t.FuncMap {
@@ -47,10 +51,10 @@ func FuncMap() t.FuncMap {
 }
 
 func WebAsset(path string) string {
-	if App.Env == "local" {
+	if App().Env == "local" {
 		return path
 	}
-	return CDN.URL + path + "?t=" + time.Now().Format("200612154")
+	return cdnConfig.URL + path + "?t=" + time.Now().Format("200612154")
 }
 
 func HtmlSafe(html string) t.HTML {

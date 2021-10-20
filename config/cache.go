@@ -4,23 +4,24 @@ import (
 	"fagin/pkg/conf"
 )
 
-type cache struct {
+type CacheConfig struct {
 	Open      bool   // 是否开启缓存
 	Prefix    string // 前缀
 	DefDriver string // 默认
 	Stores    map[string]map[string]string
 }
 
-var Cache cache
+var cacheConfig = new(CacheConfig)
 
-func init() {
-	Cache.Open = conf.GetBool("cache.open")
+func Cache() CacheConfig {
+	return *cacheConfig
+}
 
-	Cache.Prefix = conf.GetString("cache.prefix", "app:")
-
-	Cache.DefDriver = conf.GetString("cache.driver", "big")
-
-	Cache.Stores = map[string]map[string]string{
+func (cache *CacheConfig) init() {
+	cache.Open = conf.GetBool("cache.open")
+	cache.Prefix = conf.GetString("cache.prefix", "app:")
+	cache.DefDriver = conf.GetString("cache.driver", "big")
+	cache.Stores = map[string]map[string]string{
 		"big": {
 			"eviction": conf.GetString("cache.big.eviction", "3600"),
 		},

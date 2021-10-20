@@ -1,14 +1,21 @@
 package config
 
-import "fagin/pkg/conf"
+import (
+	"fagin/pkg/conf"
+)
 
-// cdn 配置
-type cdn struct {
+// CDNConfig 配置
+type CDNConfig struct {
 	URL string // 链接
 }
 
-var CDN cdn
+var cdnConfig = new(CDNConfig)
 
-func init() {
-	CDN.URL = conf.GetString("cdn.host", "")
+// CDN CDN配置
+func CDN() CDNConfig {
+	return *cdnConfig
+}
+
+func (cdn *CDNConfig) init() {
+	cdn.URL = conf.GetString("cdn.host", "")
 }

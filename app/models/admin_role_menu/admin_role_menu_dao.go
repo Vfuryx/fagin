@@ -2,6 +2,7 @@ package admin_role_menu
 
 import (
 	"fagin/pkg/db"
+	"github.com/gin-gonic/gin"
 )
 
 func New() *AdminRoleMenu {
@@ -12,7 +13,7 @@ type Dao struct {
 	db.Dao
 }
 
-var _ db.IDao = &Dao{}
+var _ db.DAO = &Dao{}
 
 func (m *AdminRoleMenu) Dao() *Dao {
 	dao := &Dao{}
@@ -32,7 +33,7 @@ func (d *Dao) All(columns []string) (*[]AdminRoleMenu, error) {
 	return &model, err
 }
 
-func (d *Dao) Query(params map[string]interface{}, columns []string, with map[string]interface{}) db.IDao {
+func (d *Dao) Query(params map[string]interface{}, columns []string, with map[string]interface{}) db.DAO {
 	model := db.ORM().Select(columns)
 
 	var (
@@ -51,14 +52,6 @@ func (d *Dao) Query(params map[string]interface{}, columns []string, with map[st
 }
 
 // MenuRelationExist 是否存在菜单关联
-func (d *Dao) MenuRelationExist(menuID uint) (bool, error) {
-	var count int64
-	err := db.ORM().Model(d.GetModel()).Where("menu_id = ?", menuID).Count(&count).Error
-	if err != nil {
-		return false, err
-	}
-	if count > 0 {
-		return true, nil
-	}
-	return false, nil
+func (d *Dao) MenuRelationExist(menuID uint) bool {
+	return d.Query(gin.H{"menu_id": menuID}, nil, nil).Exists()
 }

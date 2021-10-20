@@ -3,6 +3,7 @@ package cache
 import (
 	"bytes"
 	"encoding/gob"
+	"errors"
 	"fagin/config"
 	"github.com/allegro/bigcache/v3"
 	"time"
@@ -12,7 +13,7 @@ type bigCache struct {
 	Cache *bigcache.BigCache
 }
 
-var _ iCache = &bigCache{}
+var _ cache = &bigCache{}
 
 type BigConfig struct {
 	Eviction time.Duration // 失效时间
@@ -37,14 +38,14 @@ func NewBigCache(config BigConfig) (*bigCache, error) {
 	return &bigCache{Cache: c}, nil
 }
 
-func newBigCache() (iCache, error) {
+func newBigCache() (cache, error) {
 	var ok bool
 	var eviction string
 	var c map[string]string
 	var e time.Duration
 	var err error
 
-	if c, ok = config.Cache.Stores[DriverBigCache]; !ok {
+	if c, ok = config.Cache().Stores[DriverBigCache]; !ok {
 		return nil, ErrConfig
 	}
 	if eviction, ok = c["eviction"]; !ok {
@@ -62,7 +63,7 @@ func newBigCache() (iCache, error) {
 func (b *bigCache) Exists(key string) (bool, error) {
 	bs, err := b.Cache.Get(key)
 	if err != nil {
-		if err == bigcache.ErrEntryNotFound {
+		if errors.Is(err, bigcache.ErrEntryNotFound) {
 			return false, nil
 		}
 		return false, err
@@ -112,7 +113,11 @@ func (b *bigCache) Set(key string, value []byte, expiration time.Duration) (stri
 }
 
 func (b *bigCache) Remove(key string) (int64, error) {
-	return 1, b.Cache.Delete(key)
+	err := b.Cache.Delete(key)
+	if err != nil && err != bigcache.ErrEntryNotFound {
+		return 0, err
+	}
+	return 1, nil
 }
 
 func (b *bigCache) Close() error {

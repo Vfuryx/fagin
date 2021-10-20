@@ -17,7 +17,7 @@ type websiteConfigController struct {
 
 var WebsiteConfigController websiteConfigController
 
-func (wc *websiteConfigController) Info(ctx *gin.Context) {
+func (ctr *websiteConfigController) Info(ctx *gin.Context) {
 	webConfig := caches.NewWebsiteConfig(func() (b []byte, err error) {
 		column := []string{
 			"web_name", "web_en_name", "web_title", "keywords", "description", "company_name",
@@ -33,24 +33,24 @@ func (wc *websiteConfigController) Info(ctx *gin.Context) {
 	})
 	str, err := webConfig.Get()
 	if err != nil {
-		wc.ResponseJsonErrLog(ctx, errno.CtxShowErr, err, nil)
+		ctr.ResponseJsonErrLog(ctx, errno.CtxShowErr, err)
 		return
 	}
 
 	var data gin.H
-	err = json.Unmarshal([]byte(str), &data)
+	err = json.Unmarshal(str, &data)
 	if err != nil {
-		wc.ResponseJsonErrLog(ctx, errno.CtxShowErr, err, nil)
+		ctr.ResponseJsonErrLog(ctx, errno.CtxShowErr, err)
 		return
 	}
-	wc.ResponseJsonOK(ctx, data)
+	ctr.ResponseJsonOK(ctx, data)
 	return
 }
 
-func (wc *websiteConfigController) UpdateInfo(ctx *gin.Context) {
+func (ctr *websiteConfigController) UpdateInfo(ctx *gin.Context) {
 	var r = adminRequest.NewUpdateWebsiteConfig()
 	if data, ok := r.Validate(ctx); !ok {
-		wc.ResponseJsonErr(ctx, errno.ReqErr, data)
+		ctr.ResponseJsonErr(ctx, errno.ReqErr, data)
 		return
 	}
 
@@ -72,28 +72,28 @@ func (wc *websiteConfigController) UpdateInfo(ctx *gin.Context) {
 
 	err := service.WebsiteConfigService.UpdateInfo(1, data)
 	if err != nil {
-		wc.ResponseJsonErrLog(ctx, errno.CtxUpdateErr, err, nil)
+		ctr.ResponseJsonErrLog(ctx, errno.CtxUpdateErr, err)
 		return
 	}
 
-	wc.ResponseJsonOK(ctx, nil)
+	ctr.ResponseJsonOK(ctx, nil)
 	return
 }
 
 // Upload 上传
-func (wc *websiteConfigController) Upload(ctx *gin.Context) {
+func (ctr *websiteConfigController) Upload(ctx *gin.Context) {
 	var r = adminRequest.NewUploadWebsiteConfigPic()
 	if data, ok := r.Validate(ctx); !ok {
-		wc.ResponseJsonErr(ctx, errno.ReqErr, data)
+		ctr.ResponseJsonErr(ctx, errno.ReqErr, data)
 		return
 	}
 
-	upload := service.NewUploadService(config.App.PublicPath)
+	upload := service.NewUploadService(config.App().PublicPath)
 	path, err := upload.UploadFile("/web/website/", r.File)
 	if err != nil {
-		wc.ResponseJsonErrLog(ctx, errno.ReqUploadFileErr, err, nil)
+		ctr.ResponseJsonErrLog(ctx, errno.ReqUploadFileErr, err)
 		return
 	}
 
-	wc.ResponseJsonOK(ctx, gin.H{"path": "/public/" + path})
+	ctr.ResponseJsonOK(ctx, gin.H{"path": "/public/" + path})
 }

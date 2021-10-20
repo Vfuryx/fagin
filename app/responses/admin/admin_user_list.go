@@ -12,7 +12,7 @@ type adminUserList struct {
 	response.Collect
 }
 
-var _ response.IResponse = &adminUserList{}
+var _ response.Response = &adminUserList{}
 
 func AdminUserList(models ...admin_user.AdminUser) *adminUserList {
 	res := adminUserList{Ms: models}
@@ -31,8 +31,11 @@ func (res *adminUserList) Serialize() []map[string]interface{} {
 			"id":        model.ID,
 			"username":  model.Username,
 			"nick_name": model.NickName,
+			"email":     model.Email,
+			"remark":    model.Remark,
 			"phone":     model.Phone,
 			"roles":     roles,
+			"status":    model.Status,
 			"create_at": app.TimeToStr(model.CreatedAt),
 		}
 		sm = append(sm, m)

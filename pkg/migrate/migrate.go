@@ -13,7 +13,8 @@ import (
 )
 
 func CreateMigration(name string) error {
-	dir := config.App.MigrationsPath
+	dir := config.App().MigrationsPath
+
 	var templateContent = `
 -- +migrate Up
 
@@ -46,7 +47,7 @@ func CreateMigration(name string) error {
 // Migration 迁移数据库
 func Migration() {
 	migrations := &migrate.FileMigrationSource{
-		Dir: config.App.MigrationsPath,
+		Dir: config.App().MigrationsPath,
 	}
 
 	database, err := db.ORM().DB()
@@ -65,7 +66,7 @@ func Migration() {
 // Rollback 重置最后一条迁移
 func Rollback() {
 	source := &migrate.FileMigrationSource{
-		Dir: config.App.MigrationsPath,
+		Dir: config.App().MigrationsPath,
 	}
 
 	database, err := db.ORM().DB()
@@ -84,7 +85,7 @@ func Rollback() {
 // Reset 重置数据库
 func Reset() {
 	migrations := &migrate.FileMigrationSource{
-		Dir: config.App.MigrationsPath,
+		Dir: config.App().MigrationsPath,
 	}
 
 	database, err := db.ORM().DB()

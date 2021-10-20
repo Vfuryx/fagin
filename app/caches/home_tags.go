@@ -6,10 +6,10 @@ import (
 )
 
 // NewHomeTags 首页tag
-func NewHomeTags(f cache.GetterFunc) *cache.SCache {
-	var c = new(cache.SCache)
-	c.SetConfPrefix("home:tags")
-	c.SetConfLifeTime(24 * time.Hour)
+func NewHomeTags(f cache.GetterFunc) *cache.Cache {
+	var c = new(cache.Cache)
+	c.SetKeyFormat("home:tags")
+	c.SetLifeTime(24 * time.Hour)
 	c.SetFunc(f)
 
 	return c

@@ -11,7 +11,7 @@ import (
 var webRoute = func(Web *gin.RouterGroup) {
 	// 404
 	no_router.NoRoute(Web.BasePath(), func(ctx *gin.Context) {
-		ctx.String(http.StatusNotFound, "404 NotFound")
+		ctx.String(http.StatusNotFound, "404 NotFoundErr")
 	})
 
 	//limiter := middleware.LimitMiddleware(2, func(ctx *gin.Context) {

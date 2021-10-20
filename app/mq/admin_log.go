@@ -10,6 +10,7 @@ import (
 	"fagin/config"
 	"fagin/pkg/logger"
 	"fagin/pkg/rabbitmq"
+	"fagin/utils"
 	"fmt"
 	"github.com/streadway/amqp"
 	"runtime/debug"
@@ -22,6 +23,7 @@ type adminLogMQ struct {
 	sync.Mutex
 }
 
+// AdminLog 日志
 type AdminLog struct {
 	LatencyTime time.Duration
 	Body        []byte
@@ -36,13 +38,14 @@ type AdminLog struct {
 	Content string
 }
 
+// AdminLogMQ 消息队列日志
 var AdminLogMQ *adminLogMQ
 
-var _ rabbitmq.IAMQP = &adminLogMQ{}
+var _ rabbitmq.AMQP = &adminLogMQ{}
 
 func init() {
 	var err error
-	if config.AMQP.Open {
+	if config.AMQP().Open {
 		AdminLogMQ, err = NewAdminLogMQ()
 		if err != nil {
 			panic(err)
@@ -50,6 +53,7 @@ func init() {
 	}
 }
 
+// NewAdminLogMQ 消息队列日志
 func NewAdminLogMQ() (mq *adminLogMQ, err error) {
 	mq = new(adminLogMQ)
 	mq.RabbitMQ, err = rabbitmq.NewRabbitMQ("admin_log_mq", "", "")
@@ -114,7 +118,7 @@ func (a *adminLogMQ) Consume() error {
 			var l AdminLog
 			err := json.Unmarshal(d.Body, &l)
 			if err != nil {
-				go app.Log(logger.AdminModel).Println(err, string(debug.Stack()))
+				go app.Log(logger.AdminMode).Error(err, string(debug.Stack()))
 			} else {
 				LogStore(
 					l.Body, l.LatencyTime, l.AdminID, l.Method, l.ClientIP,
@@ -122,7 +126,7 @@ func (a *adminLogMQ) Consume() error {
 				)
 				err = d.Ack(false)
 				if err != nil {
-					go app.Log(logger.AdminModel).Println(err, string(debug.Stack()))
+					go app.Log(logger.AdminMode).Error(err, string(debug.Stack()))
 				}
 			}
 			time.Sleep(1 * time.Second)
@@ -132,6 +136,7 @@ func (a *adminLogMQ) Consume() error {
 	return nil
 }
 
+// LogStore 日志
 func LogStore(
 	body []byte, latencyTime time.Duration, adminID uint, reqMethod, clientIP,
 	userName, userAgent, uri, path string,
@@ -140,7 +145,7 @@ func LogStore(
 	log.User = userName
 	log.Method = reqMethod
 	log.IP = clientIP
-	log.Location = app.GetLocation(clientIP)
+	log.Location = utils.GetLocation(clientIP)
 	log.LatencyTime = latencyTime.String()
 	log.UserAgent = userAgent
 	log.Status = 1
@@ -148,42 +153,28 @@ func LogStore(
 
 	// 请求路由
 	log.Path = uri
-	switch log.Path {
-	case "/admin/api/login":
-		log.Module = "用户登录"
-		log.Operation = admin_operation_log.OperationLogin
-		log.User = "-"
-	case "/admin/api/v1/user/logout":
-		log.Module = "退出登录"
-		log.Operation = admin_operation_log.OperationLogout
-	case "/admin/api/captcha":
-		return
-	default:
-		log.Operation = map[string]string{
-			"POST":   admin_operation_log.OperationADD,
-			"PUT":    admin_operation_log.OperationUpdate,
-			"DELETE": admin_operation_log.OperationDelete,
-		}[reqMethod]
-		menuCache := caches.NewAdminOperationLog(func() ([]byte, error) {
-			// 缓存菜单
-			m, err := service.AdminPermissionService.
-				FindByPath(reqMethod, path, []string{"name"})
-			if err != nil {
-				return nil, err
-			}
-			return []byte(m.Name), nil
-		})
-		str, err := menuCache.Get(reqMethod, path)
+	log.Operation = map[string]string{
+		"POST":   admin_operation_log.OperationADD,
+		"PUT":    admin_operation_log.OperationUpdate,
+		"DELETE": admin_operation_log.OperationDelete,
+	}[reqMethod]
+	menuCache := caches.NewAdminOperationLog(func() ([]byte, error) {
+		// 缓存菜单
+		m, err := service.AdminMenuService.FindByPath(reqMethod, path, []string{"title"})
 		if err != nil {
-			log.Module = ""
-		} else {
-			log.Module = string(str)
+			return nil, err
 		}
-		log.Input = string(body)
-	}
-
-	err := log.Dao().Create(log)
+		return []byte(m.Title), nil
+	})
+	str, err := menuCache.Get(reqMethod, path)
 	if err != nil {
-		go app.Log(logger.AdminModel).Errorln(err, string(debug.Stack()))
+		log.Module = ""
+	} else {
+		log.Module = string(str)
+	}
+	log.Input = string(body)
+
+	if err = log.Dao().Create(log); err != nil {
+		go app.Log(logger.AdminMode).Error(err, string(debug.Stack()))
 	}
 }

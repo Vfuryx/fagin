@@ -2,40 +2,45 @@ package admin_user
 
 import (
 	"fagin/pkg/db"
-	"fmt"
 	"gorm.io/gorm"
 	"time"
 )
 
+// New 实例化
 func New() *AdminUser {
 	return &AdminUser{}
 }
 
+// Dao Dao
 type Dao struct {
 	db.Dao
 }
 
-var _ db.IDao = &Dao{}
+var _ db.DAO = &Dao{}
 
+// Dao 获取Dao
 func (m *AdminUser) Dao() *Dao {
 	dao := &Dao{}
 	dao.Dao.SetModel(m)
 	return dao
 }
 
+// NewDao 实例化
 func NewDao() *Dao {
 	dao := &Dao{}
 	dao.Dao.SetModel(New())
 	return dao
 }
 
+// All 所有数据
 func (d *Dao) All(columns []string) (*[]AdminUser, error) {
 	var model []AdminUser
 	err := db.ORM().Select(columns).Find(&model).Error
 	return &model, err
 }
 
-func (d *Dao) Query(params map[string]interface{}, columns []string, with map[string]interface{}) db.IDao {
+// Query 通用查询
+func (d *Dao) Query(params map[string]interface{}, columns []string, with map[string]interface{}) db.DAO {
 	model := db.ORM().Select(columns)
 
 	var (
@@ -62,17 +67,17 @@ func (d *Dao) Query(params map[string]interface{}, columns []string, with map[st
 	return d
 }
 
+// Deletes 批量删除
 func (d *Dao) Deletes(ids []uint) error {
 	var admin AdminUser
 	return db.ORM().Where("id in (?)", ids).Delete(&admin).Error
 }
 
+// Login 登录
 func (d *Dao) Login(id uint) {
 	t := time.Now().Unix()
-	err := d.SetLoginAt(id, t)
-	fmt.Println(err)
-	err = d.SetCheckInAt(id, t)
-	fmt.Println(err)
+	_ = d.SetLoginAt(id, t)
+	_ = d.SetCheckInAt(id, t)
 }
 
 // SetLoginAt 设置登录时间

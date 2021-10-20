@@ -9,9 +9,10 @@ import (
 	"strings"
 )
 
+// CreateModelTemplate 创建模版
 func CreateModelTemplate(path, name string) {
-	modelPath := config.App.AppPath + "/models/" + path + "/" + name + ".go"
-	daoPath := config.App.AppPath + "/models/" + path + "/" + name + "_dao.go"
+	modelPath := config.App().AppPath + "/models/" + path + "/" + name + ".go"
+	daoPath := config.App().AppPath + "/models/" + path + "/" + name + "_dao.go"
 	sl := strings.Split(modelPath, "/")
 	packageName := sl[len(sl)-2]
 	dirPath := strings.Join(sl[:len(sl)-1], "/")
@@ -61,35 +62,41 @@ import (
 	"%[3]s/pkg/db"
 )
 
+// New 实例化
 func New() *%[2]s {
 	return &%[2]s{}
 }
 
+// Dao Dao
 type Dao struct {
 	db.Dao
 }
 
-var _ db.IDao = &Dao{}
+var _ db.DAO = &Dao{}
 
+// Dao 获取Dao
 func (m *%[2]s) Dao() *Dao {
 	dao := &Dao{}
 	dao.Dao.SetModel(m)
 	return dao
 }
 
+// NewDao 实例化
 func NewDao() *Dao {
 	dao := &Dao{}
 	dao.Dao.SetModel(New())
 	return dao
 }
 
+// All 所有数据
 func (d *Dao) All(columns []string) (*[]%[2]s, error) {
 	var model []%[2]s
 	err := db.ORM().Select(columns).Find(&model).Error
 	return &model, err
 }
 
-func (d *Dao) Query(params map[string]interface{}, columns []string, with map[string]interface{}) db.IDao {
+// Query 通用查询
+func (d *Dao) Query(params map[string]interface{}, columns []string, with map[string]interface{}) db.DAO {
 	model := db.ORM().Select(columns)
 
 	var (
@@ -108,6 +115,7 @@ func (d *Dao) Query(params map[string]interface{}, columns []string, with map[st
 	return d
 }
 
+// Deletes 批量删除
 func (d *Dao) Deletes(ids []uint) error {
 	return db.ORM().Where("id in (?)", ids).Delete(d.GetModel()).Error
 }
@@ -116,7 +124,7 @@ func (d *Dao) Deletes(ids []uint) error {
 	if _, err = modelFile.WriteString(content); err != nil {
 		panic(err)
 	}
-	content = fmt.Sprintf(DaoTemp, packageName, utils.Camel(name), config.App.Name)
+	content = fmt.Sprintf(DaoTemp, packageName, utils.Camel(name), config.App().Name)
 	if _, err = daoFile.WriteString(content); err != nil {
 		panic(err)
 	}

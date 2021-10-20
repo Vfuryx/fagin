@@ -5,10 +5,11 @@ import (
 )
 
 type loginRequest struct {
-	Name               string `form:"username" json:"username" binding:"required"`
-	Password           string `form:"password" json:"password" binding:"required"`
-	ID                 string `form:"id" json:"id" binding:"required"`
-	Code               string `form:"code" json:"code" binding:"required"`
+	Name     string `form:"username" json:"username" binding:"required"`
+	Password string `form:"password" json:"password" binding:"required"`
+	ID       string `form:"id" json:"id" binding:"required"`
+	Code     string `form:"code" json:"code" binding:"required"`
+
 	request.Validation `binding:"-"`
 }
 

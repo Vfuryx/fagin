@@ -6,10 +6,10 @@ import (
 )
 
 // NewHomeNavbar 首页navbar
-func NewHomeNavbar(f cache.GetterFunc) *cache.SCache {
-	var c = new(cache.SCache)
-	c.SetConfPrefix("home:navbar:cate")
-	c.SetConfLifeTime(10 * time.Second)
+func NewHomeNavbar(f cache.GetterFunc) *cache.Cache {
+	var c = new(cache.Cache)
+	c.SetKeyFormat("home:navbar:cate")
+	c.SetLifeTime(10 * time.Second)
 	c.SetFunc(f)
 
 	return c

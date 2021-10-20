@@ -1,19 +1,21 @@
 package db
 
 import (
+	"errors"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 )
 
-type IDao interface {
+type DAO interface {
 	FindById(id uint, columns []string) error
 	Create(data interface{}) error
 	Update(id uint, data map[string]interface{}) error
 	Destroy(id uint) error
-	Query(params map[string]interface{}, columns []string, with map[string]interface{}) IDao
+	Query(params map[string]interface{}, columns []string, with map[string]interface{}) DAO
 	Find(model interface{}) error
 	First(model interface{}) error
 	Count() (int64, error)
+	Exists() bool
 	Paginate(model interface{}, p *Paginator) error
 }
 
@@ -85,6 +87,23 @@ func (d *Dao) With(db *gorm.DB, with map[string]interface{}) *gorm.DB {
 func (d *Dao) Count() (count int64, err error) {
 	err = d.DB.Model(d.GetModel()).Select([]string{}).Count(&count).Error
 	return count, err
+}
+
+func (d *Dao) Exists() bool {
+	err := d.DB.Model(d.GetModel()).
+		Select([]string{"1"}).
+		First(&struct {
+			A bool `gorm:"column:1;"`
+		}{}).
+		Error
+
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return false
+		}
+		return true
+	}
+	return true
 }
 
 // Paginate 分页处理

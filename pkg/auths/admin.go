@@ -5,14 +5,16 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func GetAdminID(ctx *gin.Context) uint64 {
-	return ctx.GetUint64(admin_user.AdminUserIdKey)
+// GetAdminID 获取后台用户ID
+func GetAdminID(ctx *gin.Context) uint {
+	return ctx.GetUint(admin_user.AdminUserIDKey)
 }
 
+// GetAdmin 获取后台用户
 func GetAdmin(ctx *gin.Context) (*admin_user.AdminUser, error) {
-	uid := ctx.GetUint64(admin_user.AdminUserIdKey)
+	uid := GetAdminID(ctx)
 	admin := admin_user.New()
-	err := admin_user.NewDao().FindById(uint(uid), []string{"*"})
+	err := admin_user.NewDao().FindById(uid, []string{"*"})
 	if err != nil {
 		return nil, err
 	}

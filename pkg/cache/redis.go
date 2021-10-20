@@ -2,6 +2,7 @@ package cache
 
 import (
 	"context"
+	"errors"
 	"fagin/config"
 	"github.com/go-redis/redis/v8"
 	"time"
@@ -20,7 +21,7 @@ type RedisOption struct {
 
 const DriverRedis = "redis"
 
-var _ iCache = &redisCache{}
+var _ cache = &redisCache{}
 
 func init() {
 	engineMap[DriverRedis] = newRedis
@@ -43,12 +44,12 @@ func NewRedis(option RedisOption) (*redisCache, error) {
 	return &redisCache{client: rdb}, nil
 }
 
-func newRedis() (iCache, error) {
+func newRedis() (cache, error) {
 	var ok bool
 	var address, password string
 	var c map[string]string
 
-	if c, ok = config.Cache.Stores[DriverRedis]; !ok {
+	if c, ok = config.Cache().Stores[DriverRedis]; !ok {
 		return nil, ErrConfig
 	}
 	if address, ok = c["address"]; !ok {
@@ -68,7 +69,7 @@ func newRedis() (iCache, error) {
 func (cache *redisCache) Exists(key string) (b bool, err error) {
 	_, err = cache.client.Exists(ctx, key).Result()
 	if err != nil {
-		if err == redis.Nil {
+		if errors.Is(err, redis.Nil) {
 			return false, nil
 		}
 		return false, err
@@ -89,7 +90,7 @@ func (cache *redisCache) Get(key string) ([]byte, error) {
 func (cache *redisCache) Set(key string, data []byte, expiration time.Duration) (str string, err error) {
 	str, err = cache.client.Set(ctx, key, data, expiration).Result()
 	if err != nil {
-		if err == redis.Nil {
+		if errors.Is(err, redis.Nil) {
 			return "", nil
 		}
 		return "", err
@@ -101,7 +102,7 @@ func (cache *redisCache) Set(key string, data []byte, expiration time.Duration) 
 func (cache *redisCache) Remove(key string) (v int64, err error) {
 	v, err = cache.client.Del(ctx, key).Result()
 	if err != nil {
-		if err == redis.Nil {
+		if errors.Is(err, redis.Nil) {
 			return 0, nil
 		}
 		return 0, err

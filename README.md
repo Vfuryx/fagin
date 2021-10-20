@@ -96,6 +96,11 @@ Gin 构建的 web 项目
  make install 
 ```
 
+#### 查看命令行帮助
+
+```
+ make h
+```
 #### 生成表枚举模版 「 name 为文件路径加名称」
 
 ```
@@ -189,7 +194,7 @@ Gin 构建的 web 项目
 <summary>展开查看</summary>
 <pre><code>
 生成 win64位程序
-make build:winamd64 [name=xxx] 
+make build:winamd64 [name=xxx]
 
 生成 win32位程序
 make build:win386 [name=xxx]

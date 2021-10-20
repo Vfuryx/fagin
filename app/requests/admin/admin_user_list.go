@@ -5,12 +5,14 @@ import (
 )
 
 type adminUserList struct {
-	Username           string `form:"username" json:"username" binding:"max=64"`
-	Phone              string `form:"phone" json:"phone" binding:"max=11"`
-	Status             *uint8 `form:"status" json:"status" binding:""`
+	Username string `form:"username" json:"username" binding:"max=64"`
+	Phone    string `form:"phone" json:"phone" binding:"max=11"`
+	Status   *uint8 `form:"status" json:"status" binding:""`
+
 	request.Validation `binding:"-"`
 }
 
+// NewAdminUserList 后台管理员列表查询
 func NewAdminUserList() *adminUserList {
 	r := new(adminUserList)
 	r.SetRequest(r)

@@ -18,7 +18,7 @@ type authorController struct {
 
 var AuthorController authorController
 
-func (ac *authorController) Index(ctx *gin.Context) {
+func (ctr *authorController) Index(ctx *gin.Context) {
 	paginator := db.NewPaginatorWithCtx(ctx, 1, 15)
 
 	params := gin.H{
@@ -28,34 +28,34 @@ func (ac *authorController) Index(ctx *gin.Context) {
 
 	authors, err := service.Author.Index(params, columns, nil, paginator)
 	if err != nil {
-		ac.ResponseJsonErrLog(ctx, errno.CtxListErr, err, nil)
+		ctr.ResponseJsonErrLog(ctx, errno.CtxListErr, err)
 		return
 	}
 
 	data := response.AuthorList(authors...).Collection()
 
-	ac.ResponseJsonOK(ctx, gin.H{
+	ctr.ResponseJsonOK(ctx, gin.H{
 		"authors":   data,
 		"paginator": paginator,
 	})
 	return
 }
 
-func (ac *authorController) Show(ctx *gin.Context) {
+func (ctr *authorController) Show(ctx *gin.Context) {
 	id, err := request.ShouldBindUriUintID(ctx)
 	if err != nil {
-		ac.ResponseJsonErr(ctx, errno.ReqErr, nil)
+		ctr.ResponseJsonErr(ctx, errno.ReqErr, nil)
 		return
 	}
 
 	columns := []string{"id", "name", "status"}
 	b, err := service.Author.Show(id, columns)
 	if err != nil {
-		ac.ResponseJsonErrLog(ctx, errno.CtxShowErr, err, nil)
+		ctr.ResponseJsonErrLog(ctx, errno.CtxShowErr, err)
 		return
 	}
 
-	ac.ResponseJsonOK(ctx, gin.H{
+	ctr.ResponseJsonOK(ctx, gin.H{
 		"id":     b.ID,
 		"name":   b.Name,
 		"status": b.Status,
@@ -63,10 +63,10 @@ func (ac *authorController) Show(ctx *gin.Context) {
 	return
 }
 
-func (ac *authorController) Store(ctx *gin.Context) {
+func (ctr *authorController) Store(ctx *gin.Context) {
 	var r = admin_request.NewCreateAuthor()
 	if data, ok := r.Validate(ctx); !ok {
-		ac.ResponseJsonErr(ctx, errno.ReqErr, data)
+		ctr.ResponseJsonErr(ctx, errno.ReqErr, data)
 		return
 	}
 
@@ -77,24 +77,24 @@ func (ac *authorController) Store(ctx *gin.Context) {
 
 	err := service.Author.Create(&c)
 	if err != nil {
-		ac.ResponseJsonErrLog(ctx, errno.CtxStoreErr, err, nil)
+		ctr.ResponseJsonErrLog(ctx, errno.CtxStoreErr, err)
 		return
 	}
 
-	ac.ResponseJsonOK(ctx, nil)
+	ctr.ResponseJsonOK(ctx, nil)
 	return
 }
 
-func (ac *authorController) Update(ctx *gin.Context) {
+func (ctr *authorController) Update(ctx *gin.Context) {
 	id, err := request.ShouldBindUriUintID(ctx)
 	if err != nil {
-		ac.ResponseJsonErr(ctx, errno.ReqErr, nil)
+		ctr.ResponseJsonErr(ctx, errno.ReqErr, nil)
 		return
 	}
 
 	var r = admin_request.NewCreateAuthor()
 	if data, ok := r.Validate(ctx); !ok {
-		ac.ResponseJsonErr(ctx, errno.ReqErr, data)
+		ctr.ResponseJsonErr(ctx, errno.ReqErr, data)
 		return
 	}
 	data := map[string]interface{}{
@@ -103,28 +103,28 @@ func (ac *authorController) Update(ctx *gin.Context) {
 	}
 	err = service.Author.Update(id, data)
 	if err != nil {
-		ac.ResponseJsonErrLog(ctx, errno.CtxUpdateErr, err, nil)
+		ctr.ResponseJsonErrLog(ctx, errno.CtxUpdateErr, err)
 		return
 	}
 
-	ac.ResponseJsonOK(ctx, nil)
+	ctr.ResponseJsonOK(ctx, nil)
 	return
 }
 
-func (ac *authorController) Del(ctx *gin.Context) {
+func (ctr *authorController) Del(ctx *gin.Context) {
 	id, err := request.ShouldBindUriUintID(ctx)
 	if err != nil {
-		ac.ResponseJsonErr(ctx, errno.ReqErr, nil)
+		ctr.ResponseJsonErr(ctx, errno.ReqErr, nil)
 		return
 	}
 
 	err = service.Author.Delete(id)
 	if err != nil {
-		ac.ResponseJsonErrLog(ctx, errno.CtxDeleteErr, err, nil)
+		ctr.ResponseJsonErrLog(ctx, errno.CtxDeleteErr, err)
 		return
 	}
 
-	ac.ResponseJsonOK(ctx, nil)
+	ctr.ResponseJsonOK(ctx, nil)
 	return
 }
 
@@ -132,25 +132,25 @@ type AuthorIDs struct {
 	IDs []uint `form:"ids" json:"ids" binding:"required"`
 }
 
-func (ac *authorController) Deletes(ctx *gin.Context) {
+func (ctr *authorController) Deletes(ctx *gin.Context) {
 	var ids AuthorIDs
 	err := ctx.ShouldBind(&ids)
 	if err != nil {
-		ac.ResponseJsonErr(ctx, errno.ReqErr, nil)
+		ctr.ResponseJsonErr(ctx, errno.ReqErr, nil)
 		return
 	}
 
 	err = service.Author.Deletes(ids.IDs)
 	if err != nil {
-		ac.ResponseJsonErrLog(ctx, errno.CtxDeleteErr, err, nil)
+		ctr.ResponseJsonErrLog(ctx, errno.CtxDeleteErr, err)
 		return
 	}
 
-	ac.ResponseJsonOK(ctx, nil)
+	ctr.ResponseJsonOK(ctx, nil)
 	return
 }
 
-func (ac *authorController) All(ctx *gin.Context) {
+func (ctr *authorController) All(ctx *gin.Context) {
 	params := gin.H{
 		"status":  1,
 		"orderBy": "id asc",
@@ -159,13 +159,13 @@ func (ac *authorController) All(ctx *gin.Context) {
 
 	authors, err := service.Author.All(params, columns, nil)
 	if err != nil {
-		ac.ResponseJsonErrLog(ctx, errno.CtxListErr, err, nil)
+		ctr.ResponseJsonErrLog(ctx, errno.CtxListErr, err)
 		return
 	}
 
 	data := response.AuthorList(authors...).Collection()
 
-	ac.ResponseJsonOK(ctx, gin.H{
+	ctr.ResponseJsonOK(ctx, gin.H{
 		"authors": data,
 	})
 	return

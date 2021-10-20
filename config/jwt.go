@@ -4,12 +4,16 @@ import (
 	"fagin/pkg/conf"
 )
 
-type jwt struct {
+type JWTConfig struct {
 	Secret string
 }
 
-var Jwt jwt
+var jwtConfig = new(JWTConfig)
 
-func init() {
-	Jwt.Secret = conf.GetString("jwt.secret", "")
+func JWT() JWTConfig {
+	return *jwtConfig
+}
+
+func (jwt *JWTConfig) init() {
+	jwt.Secret = conf.GetString("jwt.secret", "")
 }

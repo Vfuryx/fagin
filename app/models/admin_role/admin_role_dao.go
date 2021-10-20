@@ -2,10 +2,11 @@ package admin_role
 
 import (
 	"fagin/app/models/admin_menu"
-	"fagin/app/models/admin_permission"
 	"fagin/app/models/admin_role_menu"
 	"fagin/pkg/db"
 	"github.com/gin-gonic/gin"
+	"strconv"
+	"strings"
 )
 
 func New() *AdminRole {
@@ -16,7 +17,7 @@ type Dao struct {
 	db.Dao
 }
 
-var _ db.IDao = &Dao{}
+var _ db.DAO = &Dao{}
 
 func (m *AdminRole) Dao() *Dao {
 	dao := &Dao{}
@@ -30,13 +31,15 @@ func NewDao() *Dao {
 	return dao
 }
 
+// All 所有
 func (d *Dao) All(columns []string) (*[]AdminRole, error) {
 	var model []AdminRole
 	err := db.ORM().Select(columns).Find(&model).Error
 	return &model, err
 }
 
-func (d *Dao) Query(params map[string]interface{}, columns []string, with map[string]interface{}) db.IDao {
+// Query 查询
+func (d *Dao) Query(params map[string]interface{}, columns []string, with map[string]interface{}) db.DAO {
 	model := db.ORM().Select(columns)
 
 	var (
@@ -79,13 +82,18 @@ func (d *Dao) Query(params map[string]interface{}, columns []string, with map[st
 	return d
 }
 
+// Show 展示
 func (d *Dao) Show(id uint, columns []string) (*AdminRole, error) {
 	var role AdminRole
-	err := db.ORM().Select(columns).Where("id = ?", id).
-		Preload("Menus").Preload("Permissions").First(&role).Error
+	err := db.ORM().
+		Select(columns).
+		Where("id = ?", id).
+		Preload("Menus").
+		First(&role).Error
 	return &role, err
 }
 
+// Update 更新
 func (d *Dao) Update(id uint, data map[string]interface{}) error {
 	err := db.ORM().Model(d.GetModel()).Omit("menuIDs", "permissionsIDs").Where("id = ?", id).Updates(data).Error
 	if err != nil {
@@ -96,27 +104,62 @@ func (d *Dao) Update(id uint, data map[string]interface{}) error {
 	var menus []admin_menu.AdminMenu
 	if v, ok := data["menuIDs"]; ok {
 		ids := v.([]uint)
-		err := admin_menu.NewDao().Query(gin.H{"in_id": ids}, []string{"id"}, nil).Find(&menus)
+		err = admin_menu.NewDao().Query(gin.H{"in_id": ids}, []string{"id", "paths"}, nil).Find(&menus)
 		if err != nil {
 			return err
 		}
 		delete(data, "menuIDs")
 	}
-	// 获取权限组
-	var permissions []admin_permission.AdminPermission
-	if v, ok := data["permissionsIDs"]; ok {
-		ids := v.([]uint)
-		err := admin_permission.NewDao().Query(gin.H{"in_id": ids}, []string{"id"}, nil).Find(&permissions)
-		if err != nil {
-			return err
-		}
-		delete(data, "permissionsIDs")
+	menus, err = GetMenuAll(menus)
+	if err != nil {
+		return err
 	}
 	err = db.ORM().Model(&AdminRole{ID: id}).Association("Menus").Replace(menus)
-	err = db.ORM().Model(&AdminRole{ID: id}).Association("Permissions").Replace(permissions)
 	return err
 }
 
+func GetMenuAll(menus []admin_menu.AdminMenu) ([]admin_menu.AdminMenu, error) {
+	var mIDsExists = make(map[int]struct{})
+	var mIDs = make(map[int]struct{})
+	var err error
+
+	var i int
+	var idSlice []string
+	var s string
+	var ok, ok2 bool
+	for _, menu := range menus {
+		mIDsExists[int(menu.ID)] = struct{}{}
+		idSlice = strings.Split(menu.Paths, "-")
+		idSlice = idSlice[1 : len(idSlice)-1]
+		for _, s = range idSlice {
+			i, err = strconv.Atoi(s)
+			if err != nil {
+				return nil, err
+			}
+			_, ok = mIDs[i]
+			_, ok2 = mIDsExists[i]
+			if !ok && !ok2 {
+				mIDs[i] = struct{}{}
+			}
+		}
+	}
+	var ids []int
+	for i = range mIDs {
+		if i != 0 {
+			ids = append(ids, i)
+		}
+	}
+	var menus2 []admin_menu.AdminMenu
+	err = admin_menu.NewDao().Query(gin.H{"in_id": ids}, []string{"id"}, nil).Find(&menus2)
+	if err != nil {
+		return nil, err
+	}
+	// 追加父级菜单
+	menus = append(menus, menus2...)
+	return menus, nil
+}
+
+// Delete 删除
 func (d *Dao) Delete(id uint) error {
 	var role AdminRole
 	err := db.ORM().Where("id = ?", id).Delete(&role).Error
@@ -127,6 +170,7 @@ func (d *Dao) Delete(id uint) error {
 	return db.ORM().Where("role_id = ?", id).Delete(&roleMenu).Error
 }
 
+// Deletes 批量删除
 func (d *Dao) Deletes(ids []uint) error {
 	var role AdminRole
 	err := db.ORM().Where("id in (?)", ids).Delete(&role).Error

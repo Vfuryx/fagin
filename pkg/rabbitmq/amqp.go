@@ -6,7 +6,7 @@ import (
 	"github.com/streadway/amqp"
 )
 
-type IAMQP interface {
+type AMQP interface {
 	Publish(msg amqp.Publishing) error // 生产者
 	Consume() error                    // 消费者
 	Destroy() error                    // 需要关闭channel，才能在下次新建
@@ -26,7 +26,7 @@ func NewRabbitMQ(queueName, exchange, key string) (*RabbitMQ, error) {
 		Exchange:  exchange,
 		Key:       key,
 	}
-	link := config.AMQP.GetConnectLink()
+	link := config.AMQP().GetConnectLink()
 	fmt.Println(link)
 	var err error
 	rabbitMQ.conn, err = amqp.Dial(link)

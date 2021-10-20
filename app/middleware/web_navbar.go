@@ -26,7 +26,7 @@ func (*webNavbar) WebNavbar() gin.HandlerFunc {
 		})
 		str, err := navbar.Get()
 		if err != nil {
-			go app.Log().Println(errno.MidErr, err, string(debug.Stack()))
+			go app.Log().Error(errno.MidErr, err, string(debug.Stack()))
 			response.JsonErr(ctx, errno.MidErr, nil)
 			ctx.Abort()
 			return

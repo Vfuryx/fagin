@@ -20,11 +20,11 @@ var IndexController indexController
 // @Tags user
 // @Accept  json
 // @Produce  json
-func (ic *indexController) Index(ctx *gin.Context) {
+func (ctr *indexController) Index(ctx *gin.Context) {
 	var v = api_request.NewIndexRequest()
 
 	if data, ok := v.Validate(ctx); !ok {
-		ic.ResponseJsonErr(ctx, errno.ReqErr, data)
+		ctr.ResponseJsonErr(ctx, errno.ReqErr, data)
 		return
 	}
 

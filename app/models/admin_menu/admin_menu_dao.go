@@ -1,6 +1,7 @@
 package admin_menu
 
 import (
+	"fagin/app/errno"
 	"fagin/pkg/db"
 	"github.com/gin-gonic/gin"
 	"strconv"
@@ -16,7 +17,7 @@ type Dao struct {
 	db.Dao
 }
 
-var _ db.IDao = &Dao{}
+var _ db.DAO = &Dao{}
 
 // Dao 实例DAO
 func (m *AdminMenu) Dao() *Dao {
@@ -42,7 +43,7 @@ func (d *Dao) All(params gin.H, columns []string) (*[]AdminMenu, error) {
 	return &model, err
 }
 
-func (d *Dao) Query(params map[string]interface{}, columns []string, with map[string]interface{}) db.IDao {
+func (d *Dao) Query(params map[string]interface{}, columns []string, with map[string]interface{}) db.DAO {
 	model := db.ORM().Select(columns)
 
 	var (
@@ -88,6 +89,7 @@ func (d *Dao) Query(params map[string]interface{}, columns []string, with map[st
 	if v, ok = params["orderBy"]; ok {
 		model = model.Order(v)
 	}
+
 	if v, ok = params["status"]; ok {
 		model = model.Where("status = ?", v)
 	}
@@ -137,6 +139,13 @@ func (d *Dao) Delete(id uint) error {
 	if err != nil {
 		return err
 	}
-
+	if m.Paths == "" || m.Paths == "0" || m.Paths == "0-" {
+		return errno.DaoMenuPathsUnsafeErr
+	}
 	return db.ORM().Where(`paths like ?`, m.Paths+"%").Delete(&AdminMenu{}).Error
+}
+
+func (d *Dao) ExistsByID(id uint) bool {
+	return d.Query(gin.H{"id": id}, nil, nil).
+		Exists()
 }

@@ -10,7 +10,7 @@ type videoInfoList struct {
 	response.Collect
 }
 
-var _ response.IResponse = &videoInfoList{}
+var _ response.Response = &videoInfoList{}
 
 func VideoInfoList(models ...video_info.VideoInfo) *videoInfoList {
 	res := videoInfoList{Ms: models}
@@ -35,7 +35,7 @@ type videoInfoShow struct {
 	response.Collect
 }
 
-var _ response.IResponse = &videoInfoShow{}
+var _ response.Response = &videoInfoShow{}
 
 func VideoInfoShow(models ...video_info.VideoInfo) *videoInfoShow {
 	res := videoInfoShow{Ms: models}

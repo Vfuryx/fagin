@@ -11,7 +11,7 @@ type adminMenusList struct {
 	response.Collect
 }
 
-var _ response.IResponse = &adminMenusList{}
+var _ response.Response = &adminMenusList{}
 
 func AdminMenusList(models ...admin_menu.AdminMenu) *adminMenusList {
 	res := adminMenusList{ms: models}
@@ -20,34 +20,30 @@ func AdminMenusList(models ...admin_menu.AdminMenu) *adminMenusList {
 }
 
 func (res *adminMenusList) Serialize() []map[string]interface{} {
-	sm := make([]map[string]interface{}, 0, 20)
-	sm = getMenuTree(res.ms)
-	return sm
+	return res.getMenuTree(res.ms, 0)
 }
 
-func getMenuTree(data []admin_menu.AdminMenu) []map[string]interface{} {
-	sm := make([]map[string]interface{}, 0, 20)
-	for _, menu := range data {
-		mc := getMenuTree(menu.Children)
-		m := make(map[string]interface{})
-		m["children"] = mc
-		m["id"] = menu.ID
-		m["parent_id"] = menu.ParentID
-		m["paths"] = menu.Paths
-		m["name"] = menu.Name
-		m["title"] = menu.Title
-		m["icon"] = menu.Icon
-		m["type"] = menu.Type
-		m["path"] = menu.Path
-		m["sort"] = menu.Sort
-		m["is_show"] = menu.IsShow
-		m["component"] = menu.Component
-		m["redirect"] = menu.Redirect
-		m["target"] = menu.Target
-		m["status"] = menu.Status
-		m["is_hide_child"] = menu.IsHideChild
-		m["created_at"] = app.TimeToStr(menu.CreatedAt)
-		sm = append(sm, m)
+func (res *adminMenusList) getMenuTree(data []admin_menu.AdminMenu, pid uint) []map[string]interface{} {
+	result := make([]map[string]interface{}, 0, 10)
+	for index := range data {
+		if data[index].ParentID == pid {
+			m := map[string]interface{}{
+				"id":         data[index].ID,
+				"parent_id":  data[index].ParentID,
+				"icon":       data[index].Icon,
+				"title":      data[index].Title,
+				"permission": data[index].Permission,
+				"path":       data[index].Path,
+				"component":  data[index].Component,
+				"sort":       data[index].Sort,
+				"status":     data[index].Status,
+				"created_at": app.TimeToStr(data[index].CreatedAt),
+			}
+			if children := res.getMenuTree(data, data[index].ID); len(children) > 0 {
+				m["children"] = children
+			}
+			result = append(result, m)
+		}
 	}
-	return sm
+	return result
 }

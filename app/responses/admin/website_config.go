@@ -10,7 +10,7 @@ type websiteConfig struct {
 	response.Collect
 }
 
-var _ response.IResponse = &websiteConfig{}
+var _ response.Response = &websiteConfig{}
 
 func WebsiteConfig(models ...website_config.WebsiteConfig) *websiteConfig {
 	res := websiteConfig{Ms: models}

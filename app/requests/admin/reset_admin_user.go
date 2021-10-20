@@ -5,7 +5,7 @@ import (
 )
 
 type resetAdminUser struct {
-	Password           string `form:"password" json:"password" binding:"required,min=8"`
+	Password           string `form:"password" json:"password" binding:"required,min=6"`
 	request.Validation `binding:"-"`
 }
 

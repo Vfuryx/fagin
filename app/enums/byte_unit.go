@@ -38,13 +38,13 @@ func (code ByteUnit) Get() uint64 {
 	return uint64(code)
 }
 
-func AllByteUnit() map[string]uint64 {
-	return map[string]uint64{
-		ByteUnitB.String():  ByteUnitB.Get(),
-		ByteUnitKB.String(): ByteUnitKB.Get(),
-		ByteUnitMB.String(): ByteUnitMB.Get(),
-		ByteUnitGB.String(): ByteUnitGB.Get(),
-		ByteUnitTB.String(): ByteUnitTB.Get(),
+func AllByteUnit() map[uint64]string {
+	return map[uint64]string{
+		ByteUnitB.Get():  ByteUnitB.String(),
+		ByteUnitKB.Get(): ByteUnitKB.String(),
+		ByteUnitMB.Get(): ByteUnitMB.String(),
+		ByteUnitGB.Get(): ByteUnitGB.String(),
+		ByteUnitTB.Get(): ByteUnitTB.String(),
 		//b.PB: "PB",
 		//b.EB: "EB",
 		//b.ZB: "ZB",

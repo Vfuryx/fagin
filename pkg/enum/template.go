@@ -10,7 +10,7 @@ import (
 )
 
 func CreateEnumTemplate(path, name string) {
-	filePath := config.App.AppPath + "/enums/" + path + ".go"
+	filePath := config.App().AppPath + "/enums/" + path + ".go"
 	sl := strings.Split(filePath, "/")
 	packageName := sl[len(sl)-2]
 	name = utils.Camel(name)
@@ -61,13 +61,13 @@ func (code %[4]s) Get() int {
 }
 
 // All%[4]s 所有
-func All%[4]s() map[string]int {
-	return map[string]int{
-		Code.String():  Code.Get(),
+func All%[4]s() map[int] string {
+	return map[int] string{
+		Code.Get(): Code.String(),
 	}
 }
 `
-	content := fmt.Sprintf(temp, packageName, structName, config.App.Name, name)
+	content := fmt.Sprintf(temp, packageName, structName, config.App().Name, name)
 
 	if _, err = file.WriteString(content); err != nil {
 		panic(err)

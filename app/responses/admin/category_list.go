@@ -10,7 +10,7 @@ type categoryList struct {
 	response.Collect
 }
 
-var _ response.IResponse = &categoryList{}
+var _ response.Response = &categoryList{}
 
 func CategoryList(models ...category.Category) *categoryList {
 	res := categoryList{Ms: models}

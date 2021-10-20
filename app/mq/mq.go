@@ -5,17 +5,18 @@ import (
 	"runtime/debug"
 )
 
-func InitMQ()  {
+// Init 初始化
+func Init() {
 	rabbitmq, err := NewAdminLogMQ()
 	if err != nil {
-		go app.Log().Println(err, string(debug.Stack()))
+		go app.Log().Error(err, string(debug.Stack()))
 		panic(err)
 	}
 	go func() {
 		defer rabbitmq.Destroy()
 		err = rabbitmq.Consume()
 		if err != nil {
-			go app.Log().Println(err, string(debug.Stack()))
+			go app.Log().Error(err, string(debug.Stack()))
 		}
 	}()
 }
