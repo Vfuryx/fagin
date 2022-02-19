@@ -2,28 +2,82 @@
 
 Gin 构建的 web 项目
 
+### 代码检查 golangci-lint
+
+当前使用的版本 v1.43.0
+
+#### macOS
+
+```
+brew install golangci-lint
+brew upgrade golangci-lint
+```
+
+#### Linux and Windows
+
+```
+# binary will be $(go env GOPATH)/bin/golangci-lint
+curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.43.0
+
+golangci-lint --version
+```
+
+#### 使用
+
+```
+golangci-lint run
+```
+
+### git hooks
+
+#### 安装
+
+```
+pip install pre-commit
+# 或者
+curl https://pre-commit.com/install-local.py | python -
+# 或者
+brew install pre-commit
+
+pre-commit --version
+```
+
+#### 获取 hooks 配置
+
+https://pre-commit.com/hooks.html
+查询 golangci-lint hooks
+
+#### 安装 git hook 脚本
+
+```
+pre-commit install
+```
+
 ## 扩展包
 
- 包 | 详情 
- ---|--- 
- gin | Gin 
- gorm V2 | ORM 
- sql-migrate | 数据迁移 
- spf13/viper | 配置 
- spf13/cobra  | CLI
- swaggo | Swagger 
- casbin V2 | 权限配置 
- logrus  | 日志包 
- go-file-rotatelogs | 日志文件分割 
- gin-contrib/sessions | Session包
- go-redis V8 | 缓存
- BigCache | 缓存
- tableflip | 进程重启
+| 包                    | 详情          |
+|----------------------|-------------|
+| gin                  | Gin         |
+| gorm V2              | ORM         |
+| sql-migrate          | 数据迁移        |
+| spf13/viper          | 配置          |
+| spf13/cobra          | CLI         |
+| swaggo               | Swagger     |
+| casbin V2            | 权限配置        |
+| logrus               | 日志包         |
+| go-file-rotatelogs   | 日志文件分割      |
+| gin-contrib/sessions | Session包    |
+| go-redis V8          | 缓存          |
+| BigCache             | 缓存          |
+| tableflip            | 进程重启        |
+| ants                 | goroutine 池 |
 
 # 热更新 air
+
 热更新需要安装 air
 
 ## 项目目录结构
+
 <details>
 <summary>展开查看</summary>
 <pre><code>
@@ -83,7 +137,6 @@ Gin 构建的 web 项目
 </code></pre>
 </details>
 
-
 ### 启动web server
 
 ```
@@ -101,6 +154,7 @@ Gin 构建的 web 项目
 ```
  make h
 ```
+
 #### 生成表枚举模版 「 name 为文件路径加名称」
 
 ```
@@ -172,11 +226,13 @@ Gin 构建的 web 项目
 ```
  make build [name=xxx] 
 ```
+
 #### 运行程序
 
 ```
  make start name=xxx
 ```
+
 #### 关闭程序
 
 ```
@@ -190,44 +246,47 @@ Gin 构建的 web 项目
 ```
 
 #### 交叉编译
+
 <details>
 <summary>展开查看</summary>
-<pre><code>
-生成 win64位程序
+<pre>
+<code>
+
+生成 win64位程序 
 make build:winamd64 [name=xxx]
 
-生成 win32位程序
+生成 win32位程序 
 make build:win386 [name=xxx]
 
-生成 darwin386 程序
+生成 darwin386 程序 
 make build:darwin386 [name=xxx]
 
-生成 darwinamd64 程序
+生成 darwinamd64 程序 
 make build:darwinamd64 [name=xxx]
 
-生成 darwinarm程序
+生成 darwinarm程序 
 make build:darwinarm [name=xxx]
 
-生成 darwinarm64程序
+生成 darwinarm64程序 
 make build:darwinarm64 [name=xxx]
 
-生成 linux386程序
+生成 linux386程序 
 make build:linux386 [name=xxx]
 
-生成 linuxamd64程序
+生成 linuxamd64程序 
 make build:linuxamd64 [name=xxx]
 
-生成 linuxarm程序
+生成 linuxarm程序 
 make build:linuxarm [name=xxx]
 
 生成 linuxarm64程序
 make build:linuxarm64 [name=xxx]
 
-
-</code></pre>
+</code>
+</pre>
 </details>
 
-#### 生成 api 文档 查看文档 
+#### 生成 api 文档 查看文档
 
 http://localhost:8080/swagger/index.html
 
@@ -241,7 +300,7 @@ http://localhost:8080/swagger/index.html
  make key:generate 
 ```
 
-#### 生成jwt的secret 
+#### 生成jwt的secret
 
 ```
  make jwt-secret
@@ -259,6 +318,12 @@ http://localhost:8080/swagger/index.html
  make create-admin
 ```
 
+#### 检查代码
+
+```
+make verifiers
+```
+
 #### session 使用
 
 ```
@@ -272,7 +337,6 @@ if id := session.Get("user"); id == nil {
 }
 ```
 
-
 ---
 
 > 提示 如果无法下载 golang.org/x 等包，可用 proxy 的方式下载包
@@ -283,9 +347,6 @@ export GOPROXY=https://goproxy.cn,direct
 go env -w GOPROXY=https://goproxy.cn,direct
 ```
 
-
-
-
 ### CICD方式
 
 1. gitlab + jenkins
@@ -295,29 +356,41 @@ go env -w GOPROXY=https://goproxy.cn,direct
 ## 总后台 前端
 
 #### 快速运行
+
 ```
 make web
 ```
+
 #### 快速打包
+
 ```
 make web:build
 ```
+
 #### 位置
+
 ```
 cd /resources/assets/admin 
 ```
+
 #### install npm
+
 ```
 npm i 
 ```
+
 #### 运行项目
+
 ```
 npm run dev
 ```
+
 #### 新增并设置生产环境配置 （参考 .env.development 配置）
+
 ```
 vim .env.production
 ```
+
 #### 打包项目
 
 ```
@@ -346,8 +419,7 @@ go build .
 
 ```
 
-
-## 进程守护 systemd （ 适配 tableflip ） 
+## 进程守护 systemd （ 适配 tableflip ）
 
 > tableflip 仅适用于 Linux 和 macOS。
 > 运行程序后，会在根目录下生成 pid 文件。

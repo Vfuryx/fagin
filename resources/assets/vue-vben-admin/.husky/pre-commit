@@ -1,0 +1,10 @@
+#!/bin/sh
+. "$(dirname "$0")/_/husky.sh"
+. "$(dirname "$0")/common.sh"
+
+[ -n "$CI" ] && exit 0
+
+# git commit 触发代码 lint 检查
+# Format and submit code according to lintstagedrc.js configuration
+cd resources/assets/vue-vben-admin &&
+npm run lint:lint-staged

@@ -1,25 +1,27 @@
-package web_request
+package request
 
 import (
 	"fagin/pkg/request"
 )
 
-type tagList struct {
-	Tag                string `uri:"tag" binding:"required,max=32"`
+type TagList struct {
+	Tag string `uri:"tag" binding:"required,max=32"`
+
 	request.Validation `binding:"-"`
 }
 
-func NewTagList() *tagList {
-	r := new(tagList)
+func NewTagList() *TagList {
+	r := new(TagList)
 	r.SetRequest(r)
+
 	return r
 }
 
-func (*tagList) Message() map[string]string {
+func (*TagList) Message() map[string]string {
 	return map[string]string{}
 }
 
-func (*tagList) Attributes() map[string]string {
+func (*TagList) Attributes() map[string]string {
 	return map[string]string{
 		"Tag": "名称",
 	}

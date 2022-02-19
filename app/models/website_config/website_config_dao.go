@@ -17,19 +17,22 @@ var _ db.DAO = &Dao{}
 func (m *WebsiteConfig) Dao() *Dao {
 	dao := &Dao{}
 	dao.Dao.SetModel(m)
+
 	return dao
 }
 
 func NewDao() *Dao {
 	dao := &Dao{}
 	dao.Dao.SetModel(New())
+
 	return dao
 }
 
-func (d *Dao) All(columns []string) (*[]WebsiteConfig, error) {
-	var model []WebsiteConfig
+func (d *Dao) All(columns []string) ([]*WebsiteConfig, error) {
+	var model []*WebsiteConfig
 	err := db.ORM().Select(columns).Find(&model).Error
-	return &model, err
+
+	return model, err
 }
 
 func (d *Dao) Query(params map[string]interface{}, columns []string, with map[string]interface{}) db.DAO {
@@ -39,10 +42,12 @@ func (d *Dao) Query(params map[string]interface{}, columns []string, with map[st
 		v  interface{}
 		ok bool
 	)
+
 	if v, ok = params["id"]; ok {
 		model = model.Where("id = ?", v)
 	}
 
 	d.DB = d.With(model, with)
+
 	return d
 }

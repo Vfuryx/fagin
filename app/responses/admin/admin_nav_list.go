@@ -1,4 +1,4 @@
-package admin_responses
+package responses
 
 import (
 	"fagin/app/models/admin_menu"
@@ -6,55 +6,53 @@ import (
 )
 
 type adminNavList struct {
-	ms []admin_menu.AdminMenu
+	ms []*admin_menu.AdminMenu
+
 	response.Collect
 }
 
-var _ response.Response = &adminNavList{}
-
-func AdminNavList(models ...admin_menu.AdminMenu) *adminNavList {
+func NewAdminNavList(models ...*admin_menu.AdminMenu) response.Response {
 	res := adminNavList{ms: models}
 	res.SetCollect(&res)
+
 	return &res
 }
 
 func (r *adminNavList) Serialize() []map[string]interface{} {
-	return r.RouteTree(r.ms, 0)
-}
+	var menu *admin_menu.AdminMenu
 
-func (r adminNavList) RouteTree(data []admin_menu.AdminMenu, pid uint) []map[string]interface{} {
-	res := make([]map[string]interface{}, 0, 10)
-	for index := range data {
-		if data[index].ParentID == pid {
+	res := make([]map[string]interface{}, 0, response.DefCap)
 
-			meta := map[string]interface{}{
-				"title":              data[index].Title,
-				"hideMenu":           data[index].IsShow == 0,
-				"hideChildrenInMenu": data[index].IsHideChild != 0,
-				"ignoreKeepAlive":    data[index].IsNoCache != 0,
-				"orderNo":            data[index].Sort,
-				"frameSrc":           data[index].FrameSrc,
-				"currentActiveMenu":  data[index].CurrentActive,
-				"ignoreRoute":        false, // 默认不忽略路由
-			}
-			if data[index].Icon != "" {
-				meta["icon"] = data[index].Icon
-			}
-			m := map[string]interface{}{
-				"id":        data[index].ID,
-				"parentID":  data[index].ParentID,
-				"name":      data[index].Name,
-				"path":      data[index].Path,
-				"component": data[index].Component,
-				"redirect":  data[index].Redirect,
-				"status":    data[index].Status,
-				"meta":      meta,
-			}
-			if children := r.RouteTree(data, data[index].ID); len(children) > 0 {
-				m["children"] = children
-			}
-			res = append(res, m)
+	for index := range r.ms {
+		menu = r.ms[index]
+
+		meta := map[string]interface{}{
+			"title":              menu.Title,
+			"hideMenu":           menu.IsShow == 0,
+			"hideChildrenInMenu": menu.IsHideChild != 0,
+			"ignoreKeepAlive":    menu.IsNoCache != 0,
+			"orderNo":            menu.Sort,
+			"frameSrc":           menu.FrameSrc,
+			"currentActiveMenu":  menu.CurrentActive,
+			"ignoreRoute":        false, // 默认不忽略路由
 		}
+		if menu.Icon != "" {
+			meta["icon"] = menu.Icon
+		}
+
+		m := map[string]interface{}{
+			"id":        menu.ID,
+			"pid":       menu.ParentID,
+			"name":      menu.Name,
+			"path":      menu.Path,
+			"component": menu.Component,
+			"redirect":  menu.Redirect,
+			"status":    menu.Status,
+			"meta":      meta,
+		}
+
+		res = append(res, m)
 	}
+
 	return res
 }

@@ -6,21 +6,21 @@ import (
 	"fagin/app"
 	"fagin/app/caches"
 	"fagin/app/models/admin_operation_log"
-	"fagin/app/service"
+	"fagin/app/services"
 	"fagin/config"
 	"fagin/pkg/logger"
 	"fagin/pkg/rabbitmq"
 	"fagin/utils"
 	"fmt"
-	"github.com/streadway/amqp"
 	"runtime/debug"
-	"sync"
 	"time"
+
+	amqp "github.com/rabbitmq/amqp091-go"
 )
 
-type adminLogMQ struct {
+// AdminLogMQ 后台日志消息队列
+type AdminLogMQ struct {
 	*rabbitmq.RabbitMQ
-	sync.Mutex
 }
 
 // AdminLog 日志
@@ -38,15 +38,15 @@ type AdminLog struct {
 	Content string
 }
 
-// AdminLogMQ 消息队列日志
-var AdminLogMQ *adminLogMQ
+// AdminLogMQProduction 消息队列日志
+var AdminLogMQProduction *AdminLogMQ
 
-var _ rabbitmq.AMQP = &adminLogMQ{}
+var _ rabbitmq.AMQP = &AdminLogMQ{}
 
 func init() {
 	var err error
-	if config.AMQP().Open {
-		AdminLogMQ, err = NewAdminLogMQ()
+	if config.AMQP().Open() {
+		AdminLogMQProduction, err = NewAdminLogMQ()
 		if err != nil {
 			panic(err)
 		}
@@ -54,16 +54,23 @@ func init() {
 }
 
 // NewAdminLogMQ 消息队列日志
-func NewAdminLogMQ() (mq *adminLogMQ, err error) {
-	mq = new(adminLogMQ)
+func NewAdminLogMQ() (mq *AdminLogMQ, err error) {
+	mq = new(AdminLogMQ)
 	mq.RabbitMQ, err = rabbitmq.NewRabbitMQ("admin_log_mq", "", "")
+
 	return
 }
 
-func (a *adminLogMQ) Publish(msg amqp.Publishing) error {
+// Publish 推送消息
+func (a *AdminLogMQ) Publish(msg amqp.Publishing) error {
+	if a == nil {
+		return errors.New("空")
+	}
+
 	if a.Channel == nil {
 		return errors.New("channel 不存在")
 	}
+
 	err := a.Channel.Publish(
 		a.Exchange,  // exchange
 		a.QueueName, // routing key
@@ -75,14 +82,21 @@ func (a *adminLogMQ) Publish(msg amqp.Publishing) error {
 		fmt.Println("channel 不存在", err)
 		return err
 	}
+
 	return nil
 }
 
-func (a *adminLogMQ) Consume() error {
+// Consume 消费
+func (a *AdminLogMQ) Consume() error {
+	if a == nil {
+		return errors.New("空")
+	}
+
 	if a.Channel == nil {
 		return errors.New("空")
 	}
-	_, err := a.Channel.QueueDeclare(
+
+	var _, err = a.Channel.QueueDeclare(
 		a.QueueName, // name
 		true,        // durable
 		false,       // delete when usused
@@ -90,6 +104,7 @@ func (a *adminLogMQ) Consume() error {
 		false,       // no-wait
 		nil,         // arguments
 	)
+
 	if err != nil {
 		return err
 	}
@@ -113,9 +128,11 @@ func (a *adminLogMQ) Consume() error {
 	}
 
 	forever := make(chan bool)
+
 	go func() {
 		for d := range msg {
 			var l AdminLog
+
 			err := json.Unmarshal(d.Body, &l)
 			if err != nil {
 				go app.Log(logger.AdminMode).Error(err, string(debug.Stack()))
@@ -124,15 +141,18 @@ func (a *adminLogMQ) Consume() error {
 					l.Body, l.LatencyTime, l.AdminID, l.Method, l.ClientIP,
 					l.UserName, l.UserAgent, l.URI, l.Path,
 				)
+
 				err = d.Ack(false)
 				if err != nil {
 					go app.Log(logger.AdminMode).Error(err, string(debug.Stack()))
 				}
 			}
+
 			time.Sleep(1 * time.Second)
 		}
 	}()
 	<-forever
+
 	return nil
 }
 
@@ -160,18 +180,20 @@ func LogStore(
 	}[reqMethod]
 	menuCache := caches.NewAdminOperationLog(func() ([]byte, error) {
 		// 缓存菜单
-		m, err := service.AdminMenuService.FindByPath(reqMethod, path, []string{"title"})
+		m, err := services.AdminMenuService.FindByPath(reqMethod, path, []string{"title"})
 		if err != nil {
 			return nil, err
 		}
 		return []byte(m.Title), nil
 	})
+
 	str, err := menuCache.Get(reqMethod, path)
 	if err != nil {
 		log.Module = ""
 	} else {
 		log.Module = string(str)
 	}
+
 	log.Input = string(body)
 
 	if err = log.Dao().Create(log); err != nil {

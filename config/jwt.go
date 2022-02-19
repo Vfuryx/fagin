@@ -2,18 +2,31 @@ package config
 
 import (
 	"fagin/pkg/conf"
+	"sync/atomic"
 )
 
+var jwtConfig atomic.Value
+
+func JWT() *JWTConfig {
+	if c, ok := jwtConfig.Load().(*JWTConfig); ok {
+		return c
+	}
+
+	return &JWTConfig{}
+}
+
+func jwtConfigInit() {
+	c := &JWTConfig{
+		secret: conf.GetString("jwt.secret", ""),
+	}
+
+	jwtConfig.Store(c)
+}
+
 type JWTConfig struct {
-	Secret string
+	secret string
 }
 
-var jwtConfig = new(JWTConfig)
-
-func JWT() JWTConfig {
-	return *jwtConfig
-}
-
-func (jwt *JWTConfig) init() {
-	jwt.Secret = conf.GetString("jwt.secret", "")
+func (jwt *JWTConfig) Secret() string {
+	return jwt.secret
 }

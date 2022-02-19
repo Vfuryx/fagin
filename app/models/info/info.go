@@ -1,8 +1,9 @@
 package info
 
 import (
-	"gorm.io/gorm"
 	"time"
+
+	"gorm.io/gorm"
 )
 
 // Info 用户详情模型
@@ -11,14 +12,14 @@ type Info struct {
 	CreatedAt time.Time
 	UpdatedAt time.Time
 	DeletedAt gorm.DeletedAt `gorm:"index"`
-	UserId    uint           `gorm:"index;not null;default:0;comment:'用户id'"`
+	UserID    uint           `gorm:"index;not null;default:0;comment:'用户id'"`
 	Email     string         `gorm:"type:varchar(100);not null;default:'';comment:'邮箱地址';"`
 }
 
-// InfoSerializer 输出格式
-type InfoSerializer struct {
+// Serializer 输出格式
+type Serializer struct {
 	ID        uint           `json:"id"`
-	UserId    uint           `json:"user_id"`
+	UserID    uint           `json:"user_id"`
 	Email     string         `json:"email"`
 	CreatedAt time.Time      `json:"created_at"`
 	UpdatedAt time.Time      `json:"update_at"`
@@ -26,13 +27,13 @@ type InfoSerializer struct {
 }
 
 // Serializer 序列化接口
-func (this *Info) Serializer() InfoSerializer {
-	return InfoSerializer{
-		ID:        this.ID,
-		UserId:    this.UserId,
-		Email:     this.Email,
-		CreatedAt: this.CreatedAt,
-		UpdatedAt: this.UpdatedAt,
-		DeletedAt: this.DeletedAt,
+func (i *Info) Serializer() Serializer {
+	return Serializer{
+		ID:        i.ID,
+		UserID:    i.UserID,
+		Email:     i.Email,
+		CreatedAt: i.CreatedAt,
+		UpdatedAt: i.UpdatedAt,
+		DeletedAt: i.DeletedAt,
 	}
 }

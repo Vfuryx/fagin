@@ -2,20 +2,33 @@ package config
 
 import (
 	"fagin/pkg/conf"
+	"sync/atomic"
 )
+
+var cdnConfig atomic.Value
+
+// CDN CDN配置
+func CDN() *CDNConfig {
+	if c, ok := cdnConfig.Load().(*CDNConfig); ok {
+		return c
+	}
+
+	return &CDNConfig{}
+}
+
+func cndConfigInit() {
+	c := &CDNConfig{
+		url: conf.GetString("cdn.host", ""),
+	}
+
+	cdnConfig.Store(c)
+}
 
 // CDNConfig 配置
 type CDNConfig struct {
-	URL string // 链接
+	url string // 链接
 }
 
-var cdnConfig = new(CDNConfig)
-
-// CDN CDN配置
-func CDN() CDNConfig {
-	return *cdnConfig
-}
-
-func (cdn *CDNConfig) init() {
-	cdn.URL = conf.GetString("cdn.host", "")
+func (c *CDNConfig) URL() string {
+	return c.url
 }

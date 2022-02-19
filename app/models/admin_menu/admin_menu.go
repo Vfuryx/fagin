@@ -1,8 +1,9 @@
 package admin_menu
 
 import (
-	"gorm.io/gorm"
 	"time"
+
+	"gorm.io/gorm"
 )
 
 // AdminMenu 后台菜单

@@ -4,6 +4,8 @@ import (
 	"fagin/pkg/request"
 	"fagin/utils"
 	"fmt"
+	"path"
+
 	"github.com/spf13/cobra"
 )
 
@@ -13,11 +15,11 @@ var RequestCmd = &cobra.Command{
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("request called")
-		if len(args) <= 0 {
+		if len(args) == 0 {
 			fmt.Println("create request err")
 			return
 		}
-		path, name := utils.GetPathAndUnderscore(args[0])
-		request.CreateRequestTemplate(path, name)
+		p := utils.PathUnderscore(args[0])
+		request.CreateRequestTemplate(p, path.Base(p))
 	},
 }

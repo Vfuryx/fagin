@@ -2,11 +2,12 @@ package middleware
 
 import (
 	"fagin/pkg/logger"
-	"github.com/gin-gonic/gin"
 	"net/http/httputil"
 	"runtime/debug"
 	"strings"
 	"time"
+
+	"github.com/gin-gonic/gin"
 )
 
 // RecoveryLog 恢复日志
@@ -29,9 +30,10 @@ func RecoveryLog() gin.HandlerFunc {
 func writeLog(httpRequest []byte, r interface{}, s []byte) {
 	prefix := "Authorization:"
 	lines := strings.Split(string(httpRequest), "\r\n")
-	for idx, header := range lines {
-		if strings.HasPrefix(header, prefix) {
-			lines[idx] = header[:len(prefix)] + " *"
+
+	for idx := range lines {
+		if strings.HasPrefix(lines[idx], prefix) {
+			lines[idx] = lines[idx][:len(prefix)] + " *"
 			break
 		}
 	}

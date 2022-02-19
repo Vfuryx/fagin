@@ -3,25 +3,27 @@ package request
 import "github.com/gin-gonic/gin"
 
 // 获取 uint 类型的 id
-type uriUintIdRequest struct {
-	Id uint `uri:"id" binding:"required,min=1"`
+type uriUintIDRequest struct {
+	ID uint `uri:"id" binding:"required,min=1"`
 }
 
-// ShouldBindUriUintID 绑定 uri uintID
-func ShouldBindUriUintID(ctx *gin.Context) (uint, error) {
-	var uri uriUintIdRequest
+// ShouldBindURIUintID 绑定 uri uintID
+func ShouldBindURIUintID(ctx *gin.Context) (uint, error) {
+	var uri uriUintIDRequest
 	err := ctx.ShouldBindUri(&uri)
-	return uri.Id, err
+
+	return uri.ID, err
 }
 
 // 获取 uint64 类型的 id
 type uriUint64IdRequest struct {
-	Id uint64 `uri:"id" binding:"required,min=1"`
+	ID uint64 `uri:"id" binding:"required,min=1"`
 }
 
-// ShouldBindUriUint64ID 绑定 uri uint64ID
-func ShouldBindUriUint64ID(ctx *gin.Context) (uint64, error) {
+// ShouldBindURIUint64ID 绑定 uri uint64ID
+func ShouldBindURIUint64ID(ctx *gin.Context) (uint64, error) {
 	var uri uriUint64IdRequest
 	err := ctx.ShouldBindUri(&uri)
-	return uri.Id, err
+
+	return uri.ID, err
 }

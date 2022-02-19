@@ -4,9 +4,12 @@ import (
 	errNo "fagin/app/errno"
 	"fagin/pkg/errno"
 	"fagin/pkg/logger"
-	"github.com/gin-gonic/gin"
 	"net/http"
+
+	"github.com/gin-gonic/gin"
 )
+
+const DefCap = 20
 
 type Response interface {
 	Serialize() []map[string]interface{}
@@ -35,38 +38,39 @@ func (c Collect) Collection() []map[string]interface{} {
 	return c.Handle()
 }
 
-type response struct {
+type Model struct {
 	Code    int         `json:"code"`
 	Message string      `json:"message"`
 	Result  interface{} `json:"result,omitempty"`
 	Errors  interface{} `json:"errors,omitempty"`
 }
 
-func JsonOK(ctx *gin.Context, result interface{}) *response {
-	return Json(ctx, errNo.OK, result, nil, http.StatusOK)
+func JSONSuccess(ctx *gin.Context, result interface{}) *Model {
+	return JSON(ctx, errNo.OK, result, nil, http.StatusOK)
 }
 
-func JsonErr(ctx *gin.Context, err error, errors interface{}) *response {
-	return Json(ctx, err, nil, errors, http.StatusOK)
+func JSONErr(ctx *gin.Context, err error, errors interface{}) *Model {
+	return JSON(ctx, err, nil, errors, http.StatusOK)
 }
 
-func JsonWithStatus(ctx *gin.Context, statusCode int, err error, result interface{}, errors interface{}) *response {
-	return Json(ctx, err, result, errors, statusCode)
+func JSONWithStatus(ctx *gin.Context, statusCode int, err error, result, errors interface{}) *Model {
+	return JSON(ctx, err, result, errors, statusCode)
 }
 
-func Json(ctx *gin.Context, err error, result interface{}, errors interface{}, statusCode int) *response {
+func JSON(ctx *gin.Context, err error, result, errors interface{}, statusCode int) *Model {
 	code, msg := errno.Decode(err)
-	res := response{
+	res := Model{
 		Code:    code,
 		Message: msg,
 		Result:  result,
 		Errors:  errors,
 	}
 	ctx.JSON(statusCode, res)
+
 	return &res
 }
 
-func (res *response) Log(model string, args ...interface{}) {
-	args = append([]interface{}{"响应信息", res.Message}, args...)
+func (res *Model) Log(model string, args ...interface{}) {
+	args = append([]interface{}{"响应信息: ", res.Message}, args...)
 	go logger.Channel(model).Info(args...)
 }

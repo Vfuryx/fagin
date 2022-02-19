@@ -1,8 +1,9 @@
 package company_introduction
 
 import (
-	"gorm.io/gorm"
 	"time"
+
+	"gorm.io/gorm"
 )
 
 // CompanyIntroduction 公司介绍表

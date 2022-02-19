@@ -20,6 +20,7 @@ func (l *Limiter) GetToken() bool {
 		return false
 	}
 	l.Token <- struct{}{}
+
 	return true
 }
 
@@ -29,14 +30,16 @@ func (l *Limiter) ReleaseToken() {
 
 func LimitMiddleware(max int, fun gin.HandlerFunc) gin.HandlerFunc {
 	l := NewLimiter(max)
+
 	return func(ctx *gin.Context) {
 		if ok := l.GetToken(); !ok {
 			fun(ctx)
 			ctx.Abort()
+
 			return
 		}
+
 		ctx.Next()
 		l.ReleaseToken()
-		return
 	}
 }

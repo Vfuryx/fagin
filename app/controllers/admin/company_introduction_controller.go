@@ -3,8 +3,9 @@ package admin
 import (
 	"fagin/app/errno"
 	adminRequest "fagin/app/requests/admin"
-	"fagin/app/service"
+	"fagin/app/services"
 	"fagin/config"
+
 	"github.com/gin-gonic/gin"
 )
 
@@ -18,26 +19,26 @@ func (ctr *companyIntroductionController) ShowCompanyIntroduction(ctx *gin.Conte
 	column := []string{
 		"id", "name", "image", "content", "status",
 	}
-	ci, err := service.CompanyIntroduction.ShowCompanyIntroduction(1, column)
+
+	ci, err := services.CompanyIntroduction.ShowCompanyIntroduction(1, column)
 	if err != nil {
-		ctr.ResponseJsonErrLog(ctx, errno.CtxShowErr, err)
+		ctr.ResponseJSONErrLog(ctx, errno.CtxShowErr, err)
 		return
 	}
 
-	ctr.ResponseJsonOK(ctx, gin.H{
+	ctr.ResponseJSONOK(ctx, gin.H{
 		"id":      ci.ID,
 		"name":    ci.Name,
 		"image":   ci.Image,
 		"content": ci.Content,
 		"status":  ci.Status,
 	})
-	return
 }
 
 func (ctr *companyIntroductionController) UpdateCompanyIntroduction(ctx *gin.Context) {
 	var r = adminRequest.NewUpdateCompanyIntroduction()
 	if data, ok := r.Validate(ctx); !ok {
-		ctr.ResponseJsonErr(ctx, errno.ReqErr, data)
+		ctr.ResponseJSONErr(ctx, errno.ReqErr, data)
 		return
 	}
 
@@ -48,30 +49,30 @@ func (ctr *companyIntroductionController) UpdateCompanyIntroduction(ctx *gin.Con
 		"status":  *r.Status,
 	}
 
-	err := service.CompanyIntroduction.UpdateCompanyIntroduction(1, data)
+	err := services.CompanyIntroduction.UpdateCompanyIntroduction(1, data)
 	if err != nil {
-		ctr.ResponseJsonErrLog(ctx, errno.CtxUpdateErr, err)
+		ctr.ResponseJSONErrLog(ctx, errno.CtxUpdateErr, err)
 		return
 	}
 
-	ctr.ResponseJsonOK(ctx, nil)
-	return
+	ctr.ResponseJSONOK(ctx, nil)
 }
 
 // Upload 上传
 func (ctr *companyIntroductionController) Upload(ctx *gin.Context) {
 	var r = adminRequest.NewUploadCompanyImage()
 	if data, ok := r.Validate(ctx); !ok {
-		ctr.ResponseJsonErr(ctx, errno.ReqErr, data)
+		ctr.ResponseJSONErr(ctx, errno.ReqErr, data)
 		return
 	}
 
-	upload := service.NewUploadService(config.App().PublicPath)
+	upload := services.NewUploadService(config.App().PublicPath())
+
 	path, err := upload.UploadFile("/web/company/", r.File)
 	if err != nil {
-		ctr.ResponseJsonErrLog(ctx, errno.ReqUploadFileErr, err)
+		ctr.ResponseJSONErrLog(ctx, errno.ReqUploadFileErr, err)
 		return
 	}
 
-	ctr.ResponseJsonOK(ctx, gin.H{"path": "/public/" + path})
+	ctr.ResponseJSONOK(ctx, gin.H{"path": "/public/" + path})
 }

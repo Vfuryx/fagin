@@ -1,10 +1,10 @@
-package admin_request
+package request
 
 import (
 	"fagin/pkg/request"
 )
 
-type createAdminUser struct {
+type CreateAdminUser struct {
 	Email    string `form:"email" json:"email" binding:"required,max=64"`
 	Username string `form:"username" json:"username" binding:"required,max=64"`
 	Password string `form:"password" json:"password" binding:"required,min=6"`
@@ -14,22 +14,24 @@ type createAdminUser struct {
 	Roles    []uint `form:"roles" json:"roles" binding:"required,dive,required"`
 	Remark   string `form:"remark" json:"remark" binding:"max=255"`
 	Status   *uint8 `form:"status" json:"status" binding:"required,oneof=0 1"`
+	HomePath string `form:"home_path" json:"home_path" binding:"required,max=255"`
 
 	request.Validation `binding:"-"`
 }
 
 // NewCreateAdminUser 实例化
-func NewCreateAdminUser() *createAdminUser {
-	r := new(createAdminUser)
+func NewCreateAdminUser() *CreateAdminUser {
+	r := new(CreateAdminUser)
 	r.SetRequest(r)
+
 	return r
 }
 
-func (*createAdminUser) Message() map[string]string {
+func (*CreateAdminUser) Message() map[string]string {
 	return map[string]string{}
 }
 
-func (*createAdminUser) Attributes() map[string]string {
+func (*CreateAdminUser) Attributes() map[string]string {
 	return map[string]string{
 		"NickName": "昵称",
 		"Phone":    "电话",

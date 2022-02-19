@@ -2,12 +2,13 @@ package db
 
 import (
 	"errors"
+
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 )
 
 type DAO interface {
-	FindById(id uint, columns []string) error
+	FindByID(id uint, columns []string) error
 	Create(data interface{}) error
 	Update(id uint, data map[string]interface{}) error
 	Destroy(id uint) error
@@ -35,6 +36,7 @@ func (d *Dao) Find(model interface{}) error {
 	if d.DB == nil {
 		return ORM().Find(model).Error
 	}
+
 	return d.DB.Find(model).Error
 }
 
@@ -42,10 +44,11 @@ func (d *Dao) First(model interface{}) error {
 	if d.DB == nil {
 		return ORM().First(model).Error
 	}
+
 	return d.DB.First(model).Error
 }
 
-func (d *Dao) FindById(id uint, columns []string) error {
+func (d *Dao) FindByID(id uint, columns []string) error {
 	return ORM().Select(columns).Where("id = ?", id).First(d.GetModel()).Error
 }
 
@@ -54,10 +57,11 @@ func (d *Dao) Create(data interface{}) error {
 }
 
 func (d *Dao) Update(id uint, data map[string]interface{}) error {
-	err := d.FindById(id, []string{"id"})
+	err := d.FindByID(id, []string{"id"})
 	if err != nil {
 		return err
 	}
+
 	return ORM().Model(d.GetModel()).Where("id = ?", id).Updates(data).Error
 }
 
@@ -68,19 +72,19 @@ func (d *Dao) Destroy(id uint) error {
 func (d *Dao) With(db *gorm.DB, with map[string]interface{}) *gorm.DB {
 	for index, value := range with {
 		if value != nil {
-			switch value.(type) {
+			switch value := value.(type) {
 			case gin.H:
-				for k, v := range value.(gin.H) {
+				for k, v := range value {
 					db = db.Preload(index, k, v)
 				}
 			case func(db *gorm.DB) *gorm.DB:
 				db = db.Preload(index, value)
 			}
-
 		} else {
 			db = db.Preload(index)
 		}
 	}
+
 	return db
 }
 
@@ -97,12 +101,10 @@ func (d *Dao) Exists() bool {
 		}{}).
 		Error
 
-	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return false
-		}
-		return true
+	if err != nil && errors.Is(err, gorm.ErrRecordNotFound) {
+		return false
 	}
+
 	return true
 }
 
@@ -111,5 +113,6 @@ func (d *Dao) Paginate(model interface{}, p *Paginator) error {
 	if d.DB == nil {
 		d.DB = ORM()
 	}
+
 	return p.Paginate(d.DB, model)
 }

@@ -1,0 +1,32 @@
+<template>
+  <BasicModal v-bind="$attrs" @register="registerModal" :title="getTitle" @ok="handleSubmit">
+    <Description @register="registerDescription" />
+  </BasicModal>
+</template>
+
+<script lang="ts" setup name="{{ pascalCase name }}DetailModal">
+  import { ref } from 'vue';
+  import { BasicModal, useModalInner } from '/@/components/Modal';
+  import Description from '/@/components/Description/src/Description.vue';
+  import { useDescription } from '/@/components/Description';
+
+  import { detailSchema } from './{{ camelCase name }}.data';
+
+  import { get{{ pascalCase name }}Detail } from '/@/api/{{ camelCase path }}/{{ camelCase name }}';
+
+  const getTitle = '详情';
+
+  const detail = ref({});
+  const [registerModal, { setModalProps }] = useModalInner(async (data) => {
+    setModalProps({ confirmLoading: false });
+    detail.value = await get{{ pascalCase name }}Detail(data.record.id);
+    console.log(detail.value);
+  });
+
+  const [registerDescription] = useDescription({
+    title: '',
+    column: 1,
+    data: detail,
+    schema: detailSchema,
+  });
+</script>

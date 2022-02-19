@@ -3,14 +3,17 @@ package no_route_test
 import (
 	"fagin/pkg/router/no_router"
 	"fmt"
-	"github.com/gin-gonic/gin"
+	"os"
 	"testing"
+
+	"github.com/gin-gonic/gin"
 )
 
 var rootNode = no_router.NewNode()
 
 func TestMain(m *testing.M) {
 	var err error
+
 	err = rootNode.SetPathAndFunc("/", func(ctx *gin.Context) {
 		fmt.Println("/")
 	})
@@ -40,6 +43,8 @@ func TestMain(m *testing.M) {
 	}
 
 	m.Run()
+
+	os.Exit(1)
 }
 
 func TestNode(t *testing.T) {
@@ -47,6 +52,7 @@ func TestNode(t *testing.T) {
 	if f == nil {
 		t.Fatal("失败")
 	}
+
 	f(nil)
 }
 

@@ -2,9 +2,10 @@ package api
 
 import (
 	"fagin/app/errno"
-	"fagin/app/service"
-	"github.com/gin-gonic/gin"
+	"fagin/app/services"
 	"net/http"
+
+	"github.com/gin-gonic/gin"
 )
 
 type authController struct {
@@ -32,23 +33,23 @@ func (ctr *authController) Login(ctx *gin.Context) {
 	var r LoginRequest
 
 	if err := ctx.ShouldBind(&r); err != nil {
-		ctr.ResponseJsonErr(ctx, errno.ReqErr, nil)
+		ctr.ResponseJSONErr(ctx, errno.ReqErr, nil)
 		return
 	}
 
-	user, err := service.Auth.Login(r.Email, r.Password)
+	user, err := services.Auth.Login(r.Email, r.Password)
 	if err != nil {
-		ctr.ResponseJsonErrLog(ctx, err, err)
+		ctr.ResponseJSONErrLog(ctx, err, err)
 		return
 	}
 
-	token, err := service.Token.Sign(user, "")
+	token, err := services.Token.Sign(user, "")
 	if err != nil {
-		ctr.ResponseJsonErrLog(ctx, errno.CtxTokenInvalidErr, err)
+		ctr.ResponseJSONErrLog(ctx, errno.CtxTokenInvalidErr, err)
 		return
 	}
 
-	ctr.ResponseJsonOK(ctx, gin.H{
+	ctr.ResponseJSONOK(ctx, gin.H{
 		"token": token,
 	})
 }
@@ -58,16 +59,4 @@ func (ctr *authController) Logout(ctx *gin.Context) {
 }
 
 func (ctr *authController) CreateUser(ctx *gin.Context) {
-	//user := ctx.DefaultPostForm("name", "1")
-	//avatar := ctx.DefaultPostForm("avatar", "1")
-	//age := ctx.DefaultPostForm("age", "1")
-	//int,_ := strconv.Atoi(age)
-
-	//userModel := User.User{
-	//	Name: user,
-	//	Avatar: avatar,
-	//	Age: uint8(int),
-	//}
-
-	//User.Create(&userModel)
 }

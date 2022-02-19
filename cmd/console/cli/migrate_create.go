@@ -3,6 +3,7 @@ package cli
 import (
 	"fagin/pkg/migrate"
 	"fmt"
+
 	"github.com/spf13/cobra"
 )
 

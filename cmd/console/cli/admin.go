@@ -21,8 +21,9 @@ import (
 	"fagin/pkg/casbins"
 	"fagin/pkg/db"
 	"fmt"
-	"github.com/spf13/cobra"
 	"strconv"
+
+	"github.com/spf13/cobra"
 )
 
 // AdminCmd represents the admin command
@@ -76,6 +77,6 @@ var AdminCmd = &cobra.Command{
 			return
 		}
 
-		//db.ORM().Close()
+		// db.ORM().Close()
 	},
 }

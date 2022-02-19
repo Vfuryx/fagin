@@ -5,58 +5,112 @@ import (
 	"fagin/resources"
 	"fagin/resources/static"
 	t "html/template"
+	"sync/atomic"
 	"time"
 )
 
-// TemplateConfig 模版配置
-type TemplateConfig struct {
-	Public       string // 设置公开静态资源
-	PublicRouter string // 设置公开静态资源路由地址
-	Static       string // 设置静态资源
-	StaticRouter string // 设置静态资源路由地址
+var templateConfig atomic.Value
 
-	DelimitersL     string    // 模版定界符左
-	DelimitersR     string    // 模版定界符右
-	FuncMap         t.FuncMap // 模版函数
-	StaticEmbed     embed.FS  // 静态资源（只读）
-	TemplatesEmbed  embed.FS  // 模版静态资源（只读）
-	TemplatePattern string    // 模版路径
+func Template() *TemplateConfig {
+	if c, ok := templateConfig.Load().(*TemplateConfig); ok {
+		return c
+	}
+
+	return &TemplateConfig{}
 }
 
-var templateConfig = new(TemplateConfig)
+func templateConfigInit() {
+	c := &TemplateConfig{
+		public:       App().PublicPath(),
+		publicRouter: "/public",
+		static:       App().StaticPath(),
+		staticRouter: "/static",
 
-func Template() TemplateConfig {
-	return *templateConfig
-}
+		delimitersL:     "[[",
+		delimitersR:     "]]",
+		funcMap:         FuncMap(),
+		staticEmbed:     static.Static,
+		templatesEmbed:  resources.Templates,
+		templatePattern: "views/**/*",
+	}
 
-func (template *TemplateConfig) init() {
-	template.Public = App().PublicPath
-	template.PublicRouter = "/public"
-	template.Static = App().StaticPath
-	template.StaticRouter = "/static"
-	template.StaticEmbed = static.Static
-
-	template.DelimitersL = "[["
-	template.DelimitersR = "]]"
-	template.FuncMap = FuncMap()
-	template.TemplatesEmbed = resources.Templates
-	template.TemplatePattern = "views/**/*"
+	templateConfig.Store(c)
 }
 
 func FuncMap() t.FuncMap {
 	return t.FuncMap{
 		"WebAsset": WebAsset,
-		"HtmlSafe": HtmlSafe,
+		"HtmlSafe": HTMLSafe,
 	}
 }
 
 func WebAsset(path string) string {
-	if App().Env == "local" {
+	if App().Env() == "local" {
 		return path
 	}
-	return cdnConfig.URL + path + "?t=" + time.Now().Format("200612154")
+
+	return CDN().URL() + path + "?t=" + time.Now().Format("200612154")
 }
 
-func HtmlSafe(html string) t.HTML {
-	return t.HTML(html)
+func HTMLSafe(html interface{}) t.HTML {
+	if v, ok := html.(t.HTML); ok {
+		return v
+	}
+
+	return ""
+}
+
+// TemplateConfig 模版配置
+type TemplateConfig struct {
+	public       string // 设置公开静态资源
+	publicRouter string // 设置公开静态资源路由地址
+	static       string // 设置静态资源
+	staticRouter string // 设置静态资源路由地址
+
+	delimitersL     string    // 模版定界符左
+	delimitersR     string    // 模版定界符右
+	funcMap         t.FuncMap // 模版函数
+	staticEmbed     embed.FS  // 静态资源（只读）
+	templatesEmbed  embed.FS  // 模版静态资源（只读）
+	templatePattern string    // 模版路径
+}
+
+func (tpl *TemplateConfig) Public() string {
+	return tpl.public
+}
+
+func (tpl *TemplateConfig) PublicRouter() string {
+	return tpl.publicRouter
+}
+
+func (tpl *TemplateConfig) Static() string {
+	return tpl.static
+}
+
+func (tpl *TemplateConfig) StaticRouter() string {
+	return tpl.staticRouter
+}
+
+func (tpl *TemplateConfig) DelimitersL() string {
+	return tpl.delimitersL
+}
+
+func (tpl *TemplateConfig) DelimitersR() string {
+	return tpl.delimitersR
+}
+
+func (tpl *TemplateConfig) FuncMap() t.FuncMap {
+	return tpl.funcMap
+}
+
+func (tpl *TemplateConfig) StaticEmbed() embed.FS {
+	return tpl.staticEmbed
+}
+
+func (tpl *TemplateConfig) TemplatesEmbed() embed.FS {
+	return tpl.templatesEmbed
+}
+
+func (tpl *TemplateConfig) TemplatePattern() string {
+	return tpl.templatePattern
 }

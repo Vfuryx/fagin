@@ -5,14 +5,15 @@ import (
 	"fagin/app/caches"
 	"fagin/app/errno"
 	"fagin/app/models/admin_user"
-	"fagin/app/service"
+	"fagin/app/services"
 	"fagin/pkg/auths"
 	"fagin/pkg/casbins"
 	"fagin/pkg/response"
-	"github.com/gin-gonic/gin"
+	"fagin/utils"
 	"net/http"
-	"strconv"
 	"strings"
+
+	"github.com/gin-gonic/gin"
 )
 
 type adminAuth struct{}
@@ -23,10 +24,11 @@ var AdminAuth adminAuth
 // IsLogin 验证后台管理员是否登录
 func (*adminAuth) IsLogin() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		c, err := service.AdminAuth.ParseRequest(ctx)
+		c, err := services.AdminAuth.ParseRequest(ctx)
 		if err != nil {
-			response.JsonWithStatus(ctx, http.StatusUnauthorized, err, nil, nil)
+			response.JSONWithStatus(ctx, http.StatusUnauthorized, err, nil, nil)
 			ctx.Abort()
+
 			return
 		}
 
@@ -42,16 +44,18 @@ func (*adminAuth) AuthCheckRole() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		userID := auths.GetAdminID(c)
 
-		roles, err := casbins.Casbin.GetRolesForUser(strconv.FormatUint(uint64(userID), 10))
+		roles, err := casbins.Casbin.GetRolesForUser(utils.Uint64ToStr(uint64(userID)))
 		if err != nil {
-			response.JsonErr(c, errno.MidAuthCheckRoleErr, nil)
+			response.JSONErr(c, errno.MidAuthCheckRoleErr, nil)
 			c.Abort()
+
 			return
 		}
 
 		isAdmin := false
-		for _, r := range roles {
-			if r == "admin" {
+
+		for i := range roles {
+			if roles[i] == "admin" {
 				isAdmin = true
 			}
 		}
@@ -63,12 +67,11 @@ func (*adminAuth) AuthCheckRole() gin.HandlerFunc {
 			if ok && err == nil {
 				c.Next()
 			} else {
-				response.JsonErr(c, errno.MidAuthCheckRoleErr, nil)
+				response.JSONErr(c, errno.MidAuthCheckRoleErr, nil)
 				c.Abort()
 				return
 			}
 		}
-
 	}
 }
 
@@ -82,7 +85,7 @@ func (*adminAuth) CheckRoleCache() gin.HandlerFunc {
 			return
 		}
 
-		strUID := strconv.FormatUint(uint64(auths.GetAdminID(c)), 10)
+		strUID := utils.Uint64ToStr(uint64(auths.GetAdminID(c)))
 
 		roleCache := caches.NewAdminCasbin(func() ([]byte, error) {
 			// 缓存用户的角色
@@ -92,29 +95,34 @@ func (*adminAuth) CheckRoleCache() gin.HandlerFunc {
 			}
 			return json.Marshal(roles)
 		})
+
 		str, err := roleCache.Get(strUID)
 		if err != nil {
-			response.JsonErr(c, errno.MidAuthCheckRoleErr, nil)
+			response.JSONErr(c, errno.MidAuthCheckRoleErr, nil)
 			c.Abort()
+
 			return
 		}
 
 		var roles []string
+
 		err = json.Unmarshal(str, &roles)
 		if err != nil {
-			response.JsonErr(c, errno.MidAuthCheckRoleErr, nil)
+			response.JSONErr(c, errno.MidAuthCheckRoleErr, nil)
 			c.Abort()
+
 			return
 		}
 
 		isAdmin := false
-		for _, r := range roles {
-			if r == "admin" {
+
+		for i := range roles {
+			if roles[i] == "admin" {
 				isAdmin = true
 			}
 		}
 
-		//是超级管理员
+		// 是超级管理员
 		if isAdmin {
 			c.Next()
 		} else {
@@ -134,7 +142,7 @@ func (*adminAuth) CheckRoleCache() gin.HandlerFunc {
 			if string(str) == "1" && err == nil {
 				c.Next()
 			} else {
-				response.JsonErr(c, errno.MidAuthCheckRoleErr, nil)
+				response.JSONErr(c, errno.MidAuthCheckRoleErr, nil)
 				c.Abort()
 				return
 			}

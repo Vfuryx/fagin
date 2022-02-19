@@ -1,25 +1,27 @@
-package web_request
+package request
 
 import (
 	"fagin/pkg/request"
 )
 
-type categoryList struct {
-	Cate               string `uri:"cate" binding:"required,max=32"`
+type CategoryList struct {
+	Cate string `uri:"cate" binding:"required,max=32"`
+
 	request.Validation `binding:"-"`
 }
 
-func NewCategoryList() *categoryList {
-	r := new(categoryList)
+func NewCategoryList() *CategoryList {
+	r := new(CategoryList)
 	r.SetRequest(r)
+
 	return r
 }
 
-func (*categoryList) Message() map[string]string {
+func (*CategoryList) Message() map[string]string {
 	return map[string]string{}
 }
 
-func (*categoryList) Attributes() map[string]string {
+func (*CategoryList) Attributes() map[string]string {
 	return map[string]string{
 		"Cate": "名称",
 	}

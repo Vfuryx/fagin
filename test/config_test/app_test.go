@@ -8,12 +8,20 @@ import (
 	"testing"
 )
 
+func TestMain(m *testing.M) {
+	// 初始化配置
+	config.Init()
+
+	m.Run()
+	os.Exit(1)
+}
+
 // 强行根据 go.mod 来获取 name ，同时可以作为引入的路径
 // 找到能直接获取 mod 名称的方法要替换这个方法
 func getAppName() string {
 	var err error
 
-	file, err := os.Open(config.App().RootPath + "/go.mod")
+	file, err := os.Open(config.App().RootPath() + "/go.mod")
 	if err != nil {
 		panic(err)
 	}
@@ -34,8 +42,10 @@ func getAppName() string {
 }
 
 func TestName(t *testing.T) {
-	if config.App().GetName() != getAppName() {
+	app := config.App()
+	if app.GetName() != getAppName() {
 		t.Fatal("获取项目名出错")
 	}
-	t.Log("项目名称：", config.App().GetName())
+
+	t.Log("项目名称：", app.GetName())
 }

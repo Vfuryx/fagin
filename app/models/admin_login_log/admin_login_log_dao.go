@@ -20,6 +20,7 @@ var _ db.DAO = &Dao{}
 func (m *AdminLoginLog) Dao() *Dao {
 	dao := &Dao{}
 	dao.Dao.SetModel(m)
+
 	return dao
 }
 
@@ -27,14 +28,16 @@ func (m *AdminLoginLog) Dao() *Dao {
 func NewDao() *Dao {
 	dao := &Dao{}
 	dao.Dao.SetModel(New())
+
 	return dao
 }
 
 // All 所有
-func (d *Dao) All(columns []string) (*[]AdminLoginLog, error) {
-	var model []AdminLoginLog
+func (d *Dao) All(columns []string) ([]*AdminLoginLog, error) {
+	var model []*AdminLoginLog
 	err := db.ORM().Select(columns).Find(&model).Error
-	return &model, err
+
+	return model, err
 }
 
 // Query 查询
@@ -45,6 +48,7 @@ func (d *Dao) Query(params map[string]interface{}, columns []string, with map[st
 		v  interface{}
 		ok bool
 	)
+
 	if v, ok = params["id"]; ok {
 		model = model.Where("id = ?", v)
 	}
@@ -66,6 +70,7 @@ func (d *Dao) Query(params map[string]interface{}, columns []string, with map[st
 	}
 
 	d.DB = d.With(model, with)
+
 	return d
 }
 

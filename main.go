@@ -1,7 +1,7 @@
 package main
 
 import (
-	"fagin/pkg/server"
+	"fagin/bootstrap"
 )
 
 // @title server
@@ -9,5 +9,5 @@ import (
 // @description fagin服务.
 // @termsOfService https://github.com/Vfuryx/fagin
 func main() {
-	server.Run()
+	bootstrap.Run()
 }

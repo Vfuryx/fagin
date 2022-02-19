@@ -1,8 +1,9 @@
 package admin_login_log
 
 import (
-	"gorm.io/gorm"
 	"time"
+
+	"gorm.io/gorm"
 )
 
 type AdminLoginLog struct {

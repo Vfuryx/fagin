@@ -22,6 +22,7 @@ func (code AdminMenuType) String() string {
 	case AdminMenuTypePermission:
 		return "权限"
 	}
+
 	return ""
 }
 

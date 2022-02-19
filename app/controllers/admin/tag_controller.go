@@ -5,7 +5,7 @@ import (
 	"fagin/app/models/tag"
 	admin_request "fagin/app/requests/admin"
 	response "fagin/app/responses/admin"
-	"fagin/app/service"
+	"fagin/app/services"
 	"fagin/pkg/db"
 	"fagin/pkg/request"
 
@@ -20,56 +20,56 @@ var TagController tagController
 
 // Index 列表
 func (ctr *tagController) Index(ctx *gin.Context) {
-	paginator := db.NewPaginatorWithCtx(ctx, 1, 15)
+	paginator := db.NewPaginatorWithCtx(ctx, 1, DefaultLimit)
 
 	params := gin.H{
 		"orderBy": "id asc",
 	}
 	columns := []string{"id", "name", "status"}
 	with := gin.H{}
-	result, err := service.Tag.Index(params, columns, with, paginator)
+
+	result, err := services.Tag.Index(params, columns, with, paginator)
 	if err != nil {
-		ctr.ResponseJsonErrLog(ctx, errno.CtxListErr, err)
+		ctr.ResponseJSONErrLog(ctx, errno.CtxListErr, err)
 		return
 	}
 
-	data := response.TagList(result...).Collection()
+	data := response.NewTagList(result...).Collection()
 
-	ctr.ResponseJsonOK(ctx, gin.H{
+	ctr.ResponseJSONOK(ctx, gin.H{
 		"tags":      data,
 		"paginator": paginator,
 	})
-	return
 }
 
 // Show 展示
 func (ctr *tagController) Show(ctx *gin.Context) {
-	id, err := request.ShouldBindUriUintID(ctx)
+	id, err := request.ShouldBindURIUintID(ctx)
 	if err != nil {
-		ctr.ResponseJsonErr(ctx, errno.ReqErr, nil)
+		ctr.ResponseJSONErr(ctx, errno.ReqErr, nil)
 		return
 	}
 
 	columns := []string{"id", "name", "status"}
-	data, err := service.Tag.Show(id, columns)
+
+	data, err := services.Tag.Show(id, columns)
 	if err != nil {
-		ctr.ResponseJsonErrLog(ctx, errno.CtxShowErr, err)
+		ctr.ResponseJSONErrLog(ctx, errno.CtxShowErr, err)
 		return
 	}
 
-	ctr.ResponseJsonOK(ctx, gin.H{
+	ctr.ResponseJSONOK(ctx, gin.H{
 		"id":     data.ID,
 		"name":   data.Name,
 		"status": data.Status,
 	})
-	return
 }
 
 // Store 创建
 func (ctr *tagController) Store(ctx *gin.Context) {
 	var r = admin_request.NewCreateTag()
 	if data, ok := r.Validate(ctx); !ok {
-		ctr.ResponseJsonErr(ctx, errno.ReqErr, data)
+		ctr.ResponseJSONErr(ctx, errno.ReqErr, data)
 		return
 	}
 
@@ -78,59 +78,58 @@ func (ctr *tagController) Store(ctx *gin.Context) {
 		Status: *r.Status,
 	}
 
-	err := service.Tag.Create(&c)
+	err := services.Tag.Create(&c)
 	if err != nil {
-		ctr.ResponseJsonErrLog(ctx, errno.CtxStoreErr, err)
+		ctr.ResponseJSONErrLog(ctx, errno.CtxStoreErr, err)
 		return
 	}
 
-	ctr.ResponseJsonOK(ctx, nil)
-	return
+	ctr.ResponseJSONOK(ctx, nil)
 }
 
 // Update 更新
 func (ctr *tagController) Update(ctx *gin.Context) {
-	id, err := request.ShouldBindUriUintID(ctx)
+	id, err := request.ShouldBindURIUintID(ctx)
 	if err != nil {
-		ctr.ResponseJsonErr(ctx, errno.ReqErr, nil)
+		ctr.ResponseJSONErr(ctx, errno.ReqErr, nil)
 		return
 	}
 
 	var r = admin_request.NewCreateTag()
 	if data, ok := r.Validate(ctx); !ok {
-		ctr.ResponseJsonErr(ctx, errno.ReqErr, data)
+		ctr.ResponseJSONErr(ctx, errno.ReqErr, data)
 		return
 	}
+
 	data := map[string]interface{}{
 		"name":   r.Name,
 		"status": *r.Status,
 	}
-	err = service.Tag.Update(id, data)
+
+	err = services.Tag.Update(id, data)
 	if err != nil {
-		ctr.ResponseJsonErrLog(ctx, errno.CtxUpdateErr, err)
+		ctr.ResponseJSONErrLog(ctx, errno.CtxUpdateErr, err)
 		return
 	}
 
-	ctr.ResponseJsonOK(ctx, nil)
-	return
+	ctr.ResponseJSONOK(ctx, nil)
 }
 
 // Del 删除
 func (ctr *tagController) Del(ctx *gin.Context) {
-	id, err := request.ShouldBindUriUintID(ctx)
+	id, err := request.ShouldBindURIUintID(ctx)
 	if err != nil {
-		ctr.ResponseJsonErr(ctx, errno.ReqErr, nil)
+		ctr.ResponseJSONErr(ctx, errno.ReqErr, nil)
 		return
 	}
 
-	err = service.Tag.Delete(id)
+	err = services.Tag.Delete(id)
 	if err != nil {
-		ctr.ResponseJsonErrLog(ctx, errno.CtxDeleteErr, err)
+		ctr.ResponseJSONErrLog(ctx, errno.CtxDeleteErr, err)
 		return
 	}
 
-	ctr.ResponseJsonOK(ctx, nil)
-	return
+	ctr.ResponseJSONOK(ctx, nil)
 }
 
 // Deletes 批量删除
@@ -138,21 +137,22 @@ func (ctr *tagController) Deletes(ctx *gin.Context) {
 	type R struct {
 		IDs []uint `form:"ids" json:"ids" binding:"required"`
 	}
+
 	var ids R
+
 	err := ctx.ShouldBind(&ids)
 	if err != nil {
-		ctr.ResponseJsonErr(ctx, errno.ReqErr, nil)
+		ctr.ResponseJSONErr(ctx, errno.ReqErr, nil)
 		return
 	}
 
-	err = service.Tag.Deletes(ids.IDs)
+	err = services.Tag.Deletes(ids.IDs)
 	if err != nil {
-		ctr.ResponseJsonErrLog(ctx, errno.CtxDeleteErr, err)
+		ctr.ResponseJSONErrLog(ctx, errno.CtxDeleteErr, err)
 		return
 	}
 
-	ctr.ResponseJsonOK(ctx, nil)
-	return
+	ctr.ResponseJSONOK(ctx, nil)
 }
 
 // All 所有
@@ -163,16 +163,16 @@ func (ctr *tagController) All(ctx *gin.Context) {
 	}
 	columns := []string{"id", "name", "status"}
 	with := gin.H{}
-	result, err := service.Tag.All(params, columns, with)
+
+	result, err := services.Tag.All(params, columns, with)
 	if err != nil {
-		ctr.ResponseJsonErrLog(ctx, errno.CtxListErr, err)
+		ctr.ResponseJSONErrLog(ctx, errno.CtxListErr, err)
 		return
 	}
 
-	data := response.TagList(result...).Collection()
+	data := response.NewTagList(result...).Collection()
 
-	ctr.ResponseJsonOK(ctx, gin.H{
+	ctr.ResponseJSONOK(ctx, gin.H{
 		"tags": data,
 	})
-	return
 }

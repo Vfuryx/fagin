@@ -11,17 +11,18 @@ import (
 
 // CreateModelTemplate 创建模版
 func CreateModelTemplate(path, name string) {
-	modelPath := config.App().AppPath + "/models/" + path + "/" + name + ".go"
-	daoPath := config.App().AppPath + "/models/" + path + "/" + name + "_dao.go"
+	modelPath := config.App().AppPath() + "/models/" + path + "/" + name + ".go"
+	daoPath := config.App().AppPath() + "/models/" + path + "/" + name + "_dao.go"
 	sl := strings.Split(modelPath, "/")
 	packageName := sl[len(sl)-2]
 	dirPath := strings.Join(sl[:len(sl)-1], "/")
 
-	//os.Stat获取文件信息
+	// os.Stat获取文件信息
 	if _, err := os.Stat(modelPath); err == nil {
 		panic("文件已存在")
 	}
-	//os.Stat获取文件信息
+
+	// os.Stat获取文件信息
 	if _, err := os.Stat(daoPath); err == nil {
 		panic("文件已存在")
 	}
@@ -56,6 +57,7 @@ type %s struct {
 	UpdatedAt	time.Time
 }
 `
+
 	const DaoTemp = `package %[1]s
 
 import (
@@ -78,6 +80,7 @@ var _ db.DAO = &Dao{}
 func (m *%[2]s) Dao() *Dao {
 	dao := &Dao{}
 	dao.Dao.SetModel(m)
+
 	return dao
 }
 
@@ -85,14 +88,16 @@ func (m *%[2]s) Dao() *Dao {
 func NewDao() *Dao {
 	dao := &Dao{}
 	dao.Dao.SetModel(New())
+
 	return dao
 }
 
 // All 所有数据
-func (d *Dao) All(columns []string) (*[]%[2]s, error) {
-	var model []%[2]s
+func (d *Dao) All(columns []string) ([]*%[2]s, error) {
+	var model []*%[2]s
 	err := db.ORM().Select(columns).Find(&model).Error
-	return &model, err
+
+	return model, err
 }
 
 // Query 通用查询
@@ -103,6 +108,7 @@ func (d *Dao) Query(params map[string]interface{}, columns []string, with map[st
 		v  interface{}
 		ok bool
 	)
+
 	if v, ok = params["id"]; ok {
 		model = model.Where("id = ?", v)
 	}
@@ -112,6 +118,7 @@ func (d *Dao) Query(params map[string]interface{}, columns []string, with map[st
 	}
 
 	d.DB = d.With(model, with)
+
 	return d
 }
 
@@ -120,11 +127,14 @@ func (d *Dao) Deletes(ids []uint) error {
 	return db.ORM().Where("id in (?)", ids).Delete(d.GetModel()).Error
 }
 `
-	content := fmt.Sprintf(ModelTemp, packageName, utils.Camel(name))
+
+	var content = fmt.Sprintf(ModelTemp, packageName, utils.Camel(name))
+
 	if _, err = modelFile.WriteString(content); err != nil {
 		panic(err)
 	}
-	content = fmt.Sprintf(DaoTemp, packageName, utils.Camel(name), config.App().Name)
+
+	content = fmt.Sprintf(DaoTemp, packageName, utils.Camel(name), config.App().Name())
 	if _, err = daoFile.WriteString(content); err != nil {
 		panic(err)
 	}

@@ -1,4 +1,4 @@
-package admin_responses
+package responses
 
 import (
 	"fagin/app"
@@ -7,31 +7,33 @@ import (
 )
 
 type videoList struct {
-	Ms []video_info.VideoInfo
+	ms []*video_info.VideoInfo
+
 	response.Collect
 }
 
-var _ response.Response = &videoList{}
-
-func VideoList(models ...video_info.VideoInfo) *videoList {
-	res := videoList{Ms: models}
+func NewVideoList(models ...*video_info.VideoInfo) response.Response {
+	res := videoList{ms: models}
 	res.SetCollect(&res)
+
 	return &res
 }
 
 func (res *videoList) Serialize() []map[string]interface{} {
-	sm := make([]map[string]interface{}, 0, 20)
-	for _, model := range res.Ms {
+	sm := make([]map[string]interface{}, 0, response.DefCap)
+
+	for i := range res.ms {
 		m := map[string]interface{}{
-			"id":          model.ID,
-			"title":       model.Title,
-			"status":      model.Status,
-			"path":        model.Path,
-			"description": model.Description,
-			"duration":    model.Duration,
-			"created_at":  app.TimeToStr(model.CreatedAt),
+			"id":          res.ms[i].ID,
+			"title":       res.ms[i].Title,
+			"status":      res.ms[i].Status,
+			"path":        res.ms[i].Path,
+			"description": res.ms[i].Description,
+			"duration":    res.ms[i].Duration,
+			"created_at":  app.TimeToStr(res.ms[i].CreatedAt),
 		}
 		sm = append(sm, m)
 	}
+
 	return sm
 }

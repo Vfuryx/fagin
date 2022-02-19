@@ -3,13 +3,12 @@ package admin
 import (
 	"fagin/app/errno"
 	"fagin/app/models/video_info"
-	admin_request "fagin/app/requests/admin"
+	adminRequest "fagin/app/requests/admin"
 	adminResponses "fagin/app/responses/admin"
-	"fagin/app/service"
+	"fagin/app/services"
 	"fagin/config"
 	"fagin/pkg/db"
 	"fagin/pkg/request"
-	"fagin/pkg/response"
 	"net/http"
 	"os"
 	"time"
@@ -25,59 +24,60 @@ var VideoController videoController
 
 // VideoList 视频列表
 func (ctr *videoController) VideoList(ctx *gin.Context) {
-	paginator := db.NewPaginatorWithCtx(ctx, 1, 15)
+	paginator := db.NewPaginatorWithCtx(ctx, 1, DefaultLimit)
 
 	params := make(map[string]interface{})
 	columns := []string{"id", "title", "status", "path", "description", "duration", "created_at"}
 
-	videos, err := service.VideoInfo.VideoList(params, columns, nil, paginator)
+	videos, err := services.VideoInfo.VideoList(params, columns, nil, paginator)
 	if err != nil {
-		ctr.ResponseJsonErrLog(ctx, errno.CtxListErr, err)
+		ctr.ResponseJSONErrLog(ctx, errno.CtxListErr, err)
 		return
 	}
 
-	data := adminResponses.VideoList(videos...).Collection()
-	response.JsonOK(ctx, gin.H{
+	data := adminResponses.NewVideoList(videos...).Collection()
+
+	ctr.ResponseJSONOK(ctx, gin.H{
 		"videos":    data,
 		"paginator": paginator,
 	})
-	return
 }
 
 // CreateVideo 创建视频
 func (ctr *videoController) CreateVideo(ctx *gin.Context) {
-	var r = admin_request.NewCreateVideo()
+	var r = adminRequest.NewCreateVideo()
 	if data, ok := r.Validate(ctx); !ok {
-		ctr.ResponseJsonErr(ctx, errno.ReqErr, data)
+		ctr.ResponseJSONErr(ctx, errno.ReqErr, data)
 		return
 	}
+
 	v := video_info.VideoInfo{
 		Title:       r.Title,
 		Path:        r.Path,
 		Description: r.Description,
 		Status:      r.Status,
 	}
-	err := service.VideoInfo.CreateVideo(&v)
+
+	err := services.VideoInfo.CreateVideo(&v)
 	if err != nil {
-		ctr.ResponseJsonErrLog(ctx, errno.CtxStoreErr, err)
+		ctr.ResponseJSONErrLog(ctx, errno.CtxStoreErr, err)
 		return
 	}
 
-	ctr.ResponseJsonOK(ctx, nil)
-	return
+	ctr.ResponseJSONOK(ctx, nil)
 }
 
 // UpdateVideo 更新视频
 func (ctr *videoController) UpdateVideo(ctx *gin.Context) {
-	id, err := request.ShouldBindUriUintID(ctx)
+	id, err := request.ShouldBindURIUintID(ctx)
 	if err != nil {
-		ctr.ResponseJsonErr(ctx, errno.ReqErr, nil)
+		ctr.ResponseJSONErr(ctx, errno.ReqErr, nil)
 		return
 	}
 
-	var r = admin_request.NewUpdateVideo()
+	var r = adminRequest.NewUpdateVideo()
 	if data, ok := r.Validate(ctx); !ok {
-		ctr.ResponseJsonErr(ctx, errno.ReqErr, data)
+		ctr.ResponseJSONErr(ctx, errno.ReqErr, data)
 		return
 	}
 
@@ -88,31 +88,30 @@ func (ctr *videoController) UpdateVideo(ctx *gin.Context) {
 		"status":      *r.Status,
 	}
 
-	err = service.VideoInfo.UpdateVideo(id, data)
+	err = services.VideoInfo.UpdateVideo(id, data)
 	if err != nil {
-		ctr.ResponseJsonErrLog(ctx, errno.CtxUpdateErr, err)
+		ctr.ResponseJSONErrLog(ctx, errno.CtxUpdateErr, err)
 		return
 	}
 
-	ctr.ResponseJsonOK(ctx, nil)
-	return
+	ctr.ResponseJSONOK(ctx, nil)
 }
 
 // DeleteVideo 删除视频
 func (ctr *videoController) DeleteVideo(ctx *gin.Context) {
-	id, err := request.ShouldBindUriUintID(ctx)
+	id, err := request.ShouldBindURIUintID(ctx)
 	if err != nil {
-		ctr.ResponseJsonErr(ctx, errno.ReqErr, nil)
+		ctr.ResponseJSONErr(ctx, errno.ReqErr, nil)
 		return
 	}
 
-	err = service.VideoInfo.DeleteVideo(id)
+	err = services.VideoInfo.DeleteVideo(id)
 	if err != nil {
-		ctr.ResponseJsonErrLog(ctx, errno.CtxDeleteErr, err)
+		ctr.ResponseJSONErrLog(ctx, errno.CtxDeleteErr, err)
 		return
 	}
 
-	ctr.ResponseJsonOK(ctx, nil)
+	ctr.ResponseJSONOK(ctx, nil)
 }
 
 type VideoIDs struct {
@@ -122,63 +121,68 @@ type VideoIDs struct {
 // DeleteVideos 批量删除视频
 func (ctr *videoController) DeleteVideos(ctx *gin.Context) {
 	var ids VideoIDs
+
 	err := ctx.ShouldBind(&ids)
 	if err != nil {
-		ctr.ResponseJsonErr(ctx, errno.ReqErr, nil)
+		ctr.ResponseJSONErr(ctx, errno.ReqErr, nil)
 		return
 	}
 
-	err = service.VideoInfo.DeleteVideos(ids.IDs)
+	err = services.VideoInfo.DeleteVideos(ids.IDs)
 	if err != nil {
-		ctr.ResponseJsonErrLog(ctx, errno.CtxDeleteErr, err)
+		ctr.ResponseJSONErrLog(ctx, errno.CtxDeleteErr, err)
 		return
 	}
 
-	ctr.ResponseJsonOK(ctx, nil)
+	ctr.ResponseJSONOK(ctx, nil)
 }
 
 // UploadVideo 上传视频
 func (ctr *videoController) UploadVideo(ctx *gin.Context) {
-	var r = admin_request.NewUploadVideo()
+	var r = adminRequest.NewUploadVideo()
 	if data, ok := r.Validate(ctx); !ok {
-		ctr.ResponseJsonErr(ctx, errno.ReqErr, data)
+		ctr.ResponseJSONErr(ctx, errno.ReqErr, data)
 		return
 	}
 
-	upload := service.NewUploadService(config.App().PublicPath)
+	upload := services.NewUploadService(config.App().PublicPath())
+
 	path, err := upload.UploadFile("/upload/video/", r.File)
 	if err != nil {
-		ctr.ResponseJsonErrLog(ctx, errno.ReqUploadFileErr, err)
+		ctr.ResponseJSONErrLog(ctx, errno.ReqUploadFileErr, err)
 		return
 	}
 
-	ctr.ResponseJsonOK(ctx, gin.H{"path": "/public/" + path})
+	ctr.ResponseJSONOK(ctx, gin.H{"path": "/public/" + path})
 }
 
 // PlayVideo 播放视频
 func (ctr *videoController) PlayVideo(ctx *gin.Context) {
-	id, err := request.ShouldBindUriUintID(ctx)
+	id, err := request.ShouldBindURIUintID(ctx)
 	if err != nil {
-		ctr.ResponseJsonErr(ctx, errno.ReqErr, nil)
+		ctr.ResponseJSONErr(ctx, errno.ReqErr, nil)
 		return
 	}
 
 	params := map[string]interface{}{"id": id}
 	columns := []string{"id", "path"}
+
 	var v video_info.VideoInfo
-	err = service.VideoInfo.Query(params, columns, nil).Find(&v)
+
+	err = services.VideoInfo.Query(params, columns, nil).Find(&v)
 	if err != nil {
-		ctr.ResponseJsonErrLog(ctx, errno.CtxOpenFileErr, err)
+		ctr.ResponseJSONErrLog(ctx, errno.CtxOpenFileErr, err)
 		return
 	}
 
-	path := config.App().StoragePath + v.Path
+	path := config.App().StoragePath() + v.Path
+
 	file, err := os.Open(path)
 	if err != nil {
-		ctr.ResponseJsonErrLog(ctx, errno.CtxOpenFileErr, err)
+		ctr.ResponseJSONErrLog(ctx, errno.CtxOpenFileErr, err)
 		return
 	}
+
 	http.ServeContent(ctx.Writer, ctx.Request, "", time.Now(), file)
 	_ = file.Close()
-	return
 }

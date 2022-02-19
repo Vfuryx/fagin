@@ -1,30 +1,32 @@
-package api_request
+package request
 
 import (
 	"fagin/pkg/request"
 )
 
-type updateUserRequest struct {
+type UpdateUserRequest struct {
 	// 为啥要 * 号呢，防止零值覆盖，现在是空为 nil
-	Password           *string `form:"password" json:"password" binding:""`
-	Status             *uint8  `form:"status" json:"status" binding:"min=0,max=1"`
+	Password *string `form:"password" json:"password" binding:""`
+	Status   *uint8  `form:"status" json:"status" binding:"min=0,max=1"`
+
 	request.Validation `binding:"-"`
 }
 
-func NewUpdateUserRequest() *updateUserRequest {
-	r := new(updateUserRequest)
+func NewUpdateUserRequest() *UpdateUserRequest {
+	r := new(UpdateUserRequest)
 	r.SetRequest(r)
+
 	return r
 }
 
-func (*updateUserRequest) Message() map[string]string {
+func (*UpdateUserRequest) Message() map[string]string {
 	return map[string]string{
-		//"Status.min": ":attribute参数错误",
-		//"Status.max": ":attribute参数错误",
+		// "Status.min": ":attribute参数错误",
+		// "Status.max": ":attribute参数错误",
 	}
 }
 
-func (*updateUserRequest) Attributes() map[string]string {
+func (*UpdateUserRequest) Attributes() map[string]string {
 	return map[string]string{
 		"Password": "密码",
 		"Status":   "状态",

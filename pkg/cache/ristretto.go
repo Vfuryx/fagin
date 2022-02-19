@@ -3,15 +3,16 @@ package cache
 import (
 	"fagin/config"
 	"fagin/utils"
-	"github.com/dgraph-io/ristretto"
 	"time"
+
+	"github.com/dgraph-io/ristretto"
 )
 
-type ristrettoCache struct {
+type RistrettoCache struct {
 	Cache *ristretto.Cache
 }
 
-var _ cache = &ristrettoCache{}
+var _ cache = &RistrettoCache{}
 
 // RistrettoConfig 配置
 type RistrettoConfig struct {
@@ -28,48 +29,57 @@ func init() {
 }
 
 // NewRistrettoCache 实例化
-func NewRistrettoCache(config RistrettoConfig) (*ristrettoCache, error) {
+func NewRistrettoCache(conf RistrettoConfig) (*RistrettoCache, error) {
 	c, err := ristretto.NewCache(&ristretto.Config{
 		// num of keys to track frequency, usually 10*MaxCost
-		NumCounters: config.NumCounters,
+		NumCounters: conf.NumCounters,
 		// cache size(max num of items)
-		MaxCost: config.MaxCost,
+		MaxCost: conf.MaxCost,
 		// number of keys per Get buffer
-		BufferItems: config.BufferItems,
+		BufferItems: conf.BufferItems,
 		// !important: always set true if not limiting memory
 		IgnoreInternalCost: true,
 	})
 	if err != nil {
 		return nil, err
 	}
-	return &ristrettoCache{Cache: c}, nil
+
+	return &RistrettoCache{Cache: c}, nil
 }
 
 func newRistrettoCache() (cache, error) {
-	var ok bool
-	var err error
-	var c map[string]string
-	var numCounters, maxCost, bufferItems string
-	var n, m, b int64
+	var (
+		ok                                bool
+		err                               error
+		c                                 map[string]string
+		numCounters, maxCost, bufferItems string
+		n, m, b                           int64
+	)
 
-	if c, ok = config.Cache().Stores[DriverRistrettoCache]; !ok {
+	if c, ok = config.Cache().Stores()[DriverRistrettoCache]; !ok {
 		return nil, ErrConfig
 	}
+
 	if numCounters, ok = c["num_counters"]; !ok {
 		return nil, ErrConfig
 	}
+
 	if maxCost, ok = c["max_cost"]; !ok {
 		return nil, ErrConfig
 	}
+
 	if bufferItems, ok = c["buffer_items"]; !ok {
 		return nil, ErrConfig
 	}
+
 	if n, err = utils.StrToInt64(numCounters); err != nil {
 		return nil, err
 	}
+
 	if m, err = utils.StrToInt64(maxCost); err != nil {
 		return nil, err
 	}
+
 	if b, err = utils.StrToInt64(bufferItems); err != nil {
 		return nil, err
 	}
@@ -81,34 +91,37 @@ func newRistrettoCache() (cache, error) {
 	})
 }
 
-func (r *ristrettoCache) Get(key string) ([]byte, error) {
+func (r *RistrettoCache) Get(key string) ([]byte, error) {
 	data, ok := r.Cache.Get(key)
 	if !ok {
 		return nil, ErrCache
 	}
+
 	if b, ok := data.([]byte); ok {
 		return b, nil
 	}
+
 	return nil, ErrCache
 }
 
-func (r *ristrettoCache) Exists(key string) (bool, error) {
+func (r *RistrettoCache) Exists(key string) (bool, error) {
 	_, ok := r.Cache.GetTTL(key)
 	return ok, nil
 }
 
-func (r *ristrettoCache) Set(key string, value []byte, expiration time.Duration) (string, error) {
+func (r *RistrettoCache) Set(key string, value []byte, expiration time.Duration) (string, error) {
 	r.Cache.SetWithTTL(key, value, 1, expiration)
 	r.Cache.Wait()
+
 	return "ok", nil
 }
 
-func (r *ristrettoCache) Remove(key string) (int64, error) {
+func (r *RistrettoCache) Remove(key string) (int64, error) {
 	r.Cache.Del(key)
 	return 1, nil
 }
 
-func (r *ristrettoCache) Close() error {
+func (r *RistrettoCache) Close() error {
 	r.Cache.Close()
 	return nil
 }

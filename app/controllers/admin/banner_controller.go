@@ -5,7 +5,7 @@ import (
 	"fagin/app/models/banner"
 	admin_request "fagin/app/requests/admin"
 	response "fagin/app/responses/admin"
-	"fagin/app/service"
+	"fagin/app/services"
 	"fagin/config"
 	"fagin/pkg/db"
 	"fagin/pkg/request"
@@ -20,43 +20,43 @@ type bannerController struct {
 var BannerController bannerController
 
 func (ctr *bannerController) Index(ctx *gin.Context) {
-	paginator := db.NewPaginatorWithCtx(ctx, 1, 15)
+	paginator := db.NewPaginatorWithCtx(ctx, 1, DefaultLimit)
 
 	params := gin.H{
 		"orderBy": "sort desc, id asc",
 	}
 	columns := []string{"id", "title", "banner", "path", "sort", "status"}
 
-	banners, err := service.Banner.Index(params, columns, nil, paginator)
+	banners, err := services.Banner.Index(params, columns, nil, paginator)
 	if err != nil {
-		ctr.ResponseJsonErrLog(ctx, errno.CtxListErr, err)
+		ctr.ResponseJSONErrLog(ctx, errno.CtxListErr, err)
 		return
 	}
 
-	data := response.BannerList(banners...).Collection()
+	data := response.NewBannerList(banners...).Collection()
 
-	ctr.ResponseJsonOK(ctx, gin.H{
+	ctr.ResponseJSONOK(ctx, gin.H{
 		"banners":   data,
 		"paginator": paginator,
 	})
-	return
 }
 
 func (ctr *bannerController) Show(ctx *gin.Context) {
-	id, err := request.ShouldBindUriUintID(ctx)
+	id, err := request.ShouldBindURIUintID(ctx)
 	if err != nil {
-		ctr.ResponseJsonErr(ctx, errno.ReqErr, nil)
+		ctr.ResponseJSONErr(ctx, errno.ReqErr, nil)
 		return
 	}
 
 	columns := []string{"id", "title", "banner", "path", "sort", "status"}
-	b, err := service.Banner.Show(id, columns)
+
+	b, err := services.Banner.Show(id, columns)
 	if err != nil {
-		ctr.ResponseJsonErrLog(ctx, errno.CtxShowErr, err)
+		ctr.ResponseJSONErrLog(ctx, errno.CtxShowErr, err)
 		return
 	}
 
-	ctr.ResponseJsonOK(ctx, gin.H{
+	ctr.ResponseJSONOK(ctx, gin.H{
 		"id":     b.ID,
 		"title":  b.Title,
 		"banner": b.Banner,
@@ -64,13 +64,12 @@ func (ctr *bannerController) Show(ctx *gin.Context) {
 		"sort":   b.Sort,
 		"status": b.Status,
 	})
-	return
 }
 
 func (ctr *bannerController) Store(ctx *gin.Context) {
 	var r = admin_request.NewCreateBanner()
 	if data, ok := r.Validate(ctx); !ok {
-		ctr.ResponseJsonErr(ctx, errno.ReqErr, data)
+		ctr.ResponseJSONErr(ctx, errno.ReqErr, data)
 		return
 	}
 
@@ -82,28 +81,28 @@ func (ctr *bannerController) Store(ctx *gin.Context) {
 		Status: *r.Status,
 	}
 
-	err := service.Banner.Create(&b)
+	err := services.Banner.Create(&b)
 	if err != nil {
-		ctr.ResponseJsonErrLog(ctx, errno.CtxStoreErr, err)
+		ctr.ResponseJSONErrLog(ctx, errno.CtxStoreErr, err)
 		return
 	}
 
-	ctr.ResponseJsonOK(ctx, nil)
-	return
+	ctr.ResponseJSONOK(ctx, nil)
 }
 
 func (ctr *bannerController) Update(ctx *gin.Context) {
-	id, err := request.ShouldBindUriUintID(ctx)
+	id, err := request.ShouldBindURIUintID(ctx)
 	if err != nil {
-		ctr.ResponseJsonErr(ctx, errno.ReqErr, nil)
+		ctr.ResponseJSONErr(ctx, errno.ReqErr, nil)
 		return
 	}
 
 	var r = admin_request.NewUpdateBanner()
 	if data, ok := r.Validate(ctx); !ok {
-		ctr.ResponseJsonErr(ctx, errno.ReqErr, data)
+		ctr.ResponseJSONErr(ctx, errno.ReqErr, data)
 		return
 	}
+
 	data := map[string]interface{}{
 		"Title":  r.Title,
 		"Banner": r.Banner,
@@ -111,50 +110,49 @@ func (ctr *bannerController) Update(ctx *gin.Context) {
 		"Sort":   r.Sort,
 		"Status": *r.Status,
 	}
-	err = service.Banner.Update(id, data)
+
+	err = services.Banner.Update(id, data)
 	if err != nil {
-		ctr.ResponseJsonErrLog(ctx, errno.CtxUpdateErr, err)
+		ctr.ResponseJSONErrLog(ctx, errno.CtxUpdateErr, err)
 		return
 	}
 
-	ctr.ResponseJsonOK(ctx, nil)
-	return
+	ctr.ResponseJSONOK(ctx, nil)
 }
 
 // Upload 上传视频
 func (ctr *bannerController) Upload(ctx *gin.Context) {
 	var r = admin_request.NewUploadBanner()
 	if data, ok := r.Validate(ctx); !ok {
-		ctr.ResponseJsonErr(ctx, errno.ReqErr, data)
+		ctr.ResponseJSONErr(ctx, errno.ReqErr, data)
 		return
 	}
 
-	upload := service.NewUploadService(config.App().PublicPath)
+	upload := services.NewUploadService(config.App().PublicPath())
+
 	path, err := upload.UploadFile("/web/banner/", r.File)
 	if err != nil {
-		ctr.ResponseJsonErrLog(ctx, errno.ReqUploadFileErr, err)
+		ctr.ResponseJSONErrLog(ctx, errno.ReqUploadFileErr, err)
 		return
 	}
 
-	ctr.ResponseJsonOK(ctx, gin.H{"path": "/public/" + path})
-	return
+	ctr.ResponseJSONOK(ctx, gin.H{"path": "/public/" + path})
 }
 
 func (ctr *bannerController) Del(ctx *gin.Context) {
-	id, err := request.ShouldBindUriUintID(ctx)
+	id, err := request.ShouldBindURIUintID(ctx)
 	if err != nil {
-		ctr.ResponseJsonErr(ctx, errno.ReqErr, nil)
+		ctr.ResponseJSONErr(ctx, errno.ReqErr, nil)
 		return
 	}
 
-	err = service.Banner.Delete(id)
+	err = services.Banner.Delete(id)
 	if err != nil {
-		ctr.ResponseJsonErrLog(ctx, errno.CtxDeleteErr, err)
+		ctr.ResponseJSONErrLog(ctx, errno.CtxDeleteErr, err)
 		return
 	}
 
-	ctr.ResponseJsonOK(ctx, nil)
-	return
+	ctr.ResponseJSONOK(ctx, nil)
 }
 
 type BannerIDs struct {
@@ -164,17 +162,18 @@ type BannerIDs struct {
 // DeleteBanners 批量删除轮播图
 func (ctr *bannerController) DeleteBanners(ctx *gin.Context) {
 	var ids BannerIDs
+
 	err := ctx.ShouldBind(&ids)
 	if err != nil {
-		ctr.ResponseJsonErr(ctx, errno.ReqErr, nil)
+		ctr.ResponseJSONErr(ctx, errno.ReqErr, nil)
 		return
 	}
 
-	err = service.Banner.DeleteBanners(ids.IDs)
+	err = services.Banner.DeleteBanners(ids.IDs)
 	if err != nil {
-		ctr.ResponseJsonErrLog(ctx, errno.CtxDeleteErr, err)
+		ctr.ResponseJSONErrLog(ctx, errno.CtxDeleteErr, err)
 		return
 	}
 
-	ctr.ResponseJsonOK(ctx, nil)
+	ctr.ResponseJSONOK(ctx, nil)
 }

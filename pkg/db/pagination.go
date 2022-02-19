@@ -1,10 +1,11 @@
 package db
 
 import (
-	"github.com/gin-gonic/gin"
-	"gorm.io/gorm"
 	"math"
 	"strconv"
+
+	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 )
 
 // Paginator 分页管理器
@@ -21,10 +22,12 @@ type Paginator struct {
 func NewPaginatorWithCtx(ctx *gin.Context, defaultPage, defaultLimit int) *Paginator {
 	page := ctx.DefaultQuery("page", strconv.Itoa(defaultPage))
 	limit := ctx.DefaultQuery("pageSize", strconv.Itoa(defaultLimit))
+
 	currentPage, err := strconv.Atoi(page)
 	if err != nil {
 		currentPage = defaultPage
 	}
+
 	pageSize, err := strconv.Atoi(limit)
 	if err != nil {
 		pageSize = defaultLimit
@@ -45,21 +48,28 @@ func NewPaginator(currentPage, pageSize int) *Paginator {
 }
 
 // Paginate 分页
-func (p *Paginator) Paginate(query *gorm.DB, model interface{}) (err error) {
-	var count int64
+func (p *Paginator) Paginate(query *gorm.DB, model interface{}) error {
+	var (
+		count int64
+	)
+
 	if query == nil {
 		query = ORM()
 	}
-	if err = query.Model(model).Select([]string{}).Count(&count).Error; err != nil {
+
+	if err := query.Model(model).Select([]string{}).Count(&count).Error; err != nil {
 		return err
 	}
+
 	query = query.Limit(p.PageSize).Offset(getPageOffset(p.CurrentPage, p.PageSize))
-	if err = query.Find(model).Error; err != nil {
+
+	if err := query.Find(model).Error; err != nil {
 		return err
 	}
 
 	p.TotalCount = count
 	p.TotalPage = int(math.Ceil(float64(count) / float64(p.PageSize)))
+
 	return nil
 }
 
@@ -68,5 +78,6 @@ func getPageOffset(currentPage, pageSize int) int {
 	if currentPage > 0 {
 		result = (currentPage - 1) * pageSize
 	}
+
 	return result
 }

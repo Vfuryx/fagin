@@ -55,7 +55,7 @@ const (
 	SerTokenInvalidErr            Errno = 401003
 	SerTokenExpiredErr            Errno = 401004
 	SerTokenGuardErr              Errno = 401005
-	SerPasswordIncorrectErr       Errno = 401006
+	SerAccountOrPasswordErr       Errno = 401006
 	SerMenuSubExistErr            Errno = 401007
 	SerMenuRelationExistErr       Errno = 401008
 	SerRoleRelationExistErr       Errno = 401009
@@ -75,106 +75,67 @@ const (
 	CacheIsNilErr   Errno = 700002
 )
 
+const defErr = "未知错误"
+
+var errorMap = map[Errno]string{
+	OK:                "OK",
+	InternalServerErr: "Internal server exception",
+	NotFoundErr:       "404",
+
+	SysErr: "系统错误",
+
+	ReqErr:                   "请求参数错误",
+	ReqUploadFileErr:         "上传文件错误",
+	ReqUploadSizeExceededErr: "超出上传文件预定最大值",
+	ReqRequestTimeoutErr:     "请求超时",
+	ReqMenuNotFoundErr:       "菜单不存在",
+	ReqStructureNotFoundErr:  "构造不存在",
+
+	MidErr:                 "中间件错误",
+	MidAuthCheckRoleErr:    "对不起，您没有该接口访问权限，请联系管理员",
+	MidPermissionDeniedErr: "无权限",
+
+	CtxErr:              "控制器错误",
+	CtxListErr:          "获取数据失败",
+	CtxShowErr:          "获取详情失败",
+	CtxStoreErr:         "新增数据失败",
+	CtxUpdateErr:        "更新数据失败",
+	CtxDeleteErr:        "删除数据失败",
+	CtxUserNotFoundErr:  "用户不存在",
+	CtxUserExistErr:     "用户已存在",
+	CtxGetCaptchaErr:    "获取验证码失败",
+	CtxVerifyCaptchaErr: "验证码错误",
+	CtxTokenInvalidErr:  "授权失败",
+	CtxRoleKeyExistErr:  "角色关键字已存在",
+	CtxOpenFileErr:      "打开文件失败",
+
+	SerErr:                        "服务错误",
+	SerTokenErr:                   "令牌错误",
+	SerTokenNotFoundErr:           "令牌不存在",
+	SerTokenInvalidErr:            "令牌无效",
+	SerTokenExpiredErr:            "令牌过期",
+	SerTokenGuardErr:              "令牌跨界",
+	SerAccountOrPasswordErr:       "账号或密码错误",
+	SerMenuRelationExistErr:       "菜单存在关联",
+	SerMenuSubExistErr:            "菜单存在下级",
+	SerRoleRelationExistErr:       "角色存在关联",
+	SerPermissionRelationExistErr: "权限存在关联",
+	SerMenuPathsUnsafeErr:         "菜单层级路径非法定义",
+
+	DaoErr:                "DAO错误",
+	DaoMenuPathsUnsafeErr: "菜单层级路径非法定义",
+
+	ModErr: "模型错误",
+
+	CacheErr:        "缓存错误",
+	CacheIsCloseErr: "缓存服务未开启",
+	CacheIsNilErr:   "缓存不存在",
+}
+
 func (e Errno) Error() string {
-	switch e {
-	case OK:
-		return "OK"
-	case InternalServerErr:
-		return "Internal server exception"
-	case NotFoundErr:
-		return "404"
-
-	case SysErr:
-		return "系统错误"
-
-	case ReqErr:
-		return "请求参数错误"
-	case ReqUploadFileErr:
-		return "上传文件错误"
-	case ReqUploadSizeExceededErr:
-		return "超出上传文件预定最大值"
-	case ReqRequestTimeoutErr:
-		return "请求超时"
-	case ReqMenuNotFoundErr:
-		return "菜单不存在"
-	case ReqStructureNotFoundErr:
-		return "构造不存在"
-
-	case MidErr:
-		return "中间件错误"
-	case MidAuthCheckRoleErr:
-		return "对不起，您没有该接口访问权限，请联系管理员"
-	case MidPermissionDeniedErr:
-		return "无权限"
-
-	case CtxErr:
-		return "控制器错误"
-	case CtxListErr:
-		return "获取数据失败"
-	case CtxShowErr:
-		return "获取详情失败"
-	case CtxStoreErr:
-		return "新增数据失败"
-	case CtxUpdateErr:
-		return "更新数据失败"
-	case CtxDeleteErr:
-		return "删除数据失败"
-	case CtxUserNotFoundErr:
-		return "找不到用户"
-	case CtxUserExistErr:
-		return "用户已存在"
-	case CtxGetCaptchaErr:
-		return "获取验证码失败"
-	case CtxVerifyCaptchaErr:
-		return "验证码错误"
-	case CtxTokenInvalidErr:
-		return "授权失败"
-	case CtxRoleKeyExistErr:
-		return "角色关键字已存在"
-	case CtxOpenFileErr:
-		return "打开文件失败"
-
-	case SerErr:
-		return "服务错误"
-	case SerTokenErr:
-		return "令牌错误"
-	case SerTokenNotFoundErr:
-		return "令牌不存在"
-	case SerTokenInvalidErr:
-		return "令牌无效"
-	case SerTokenExpiredErr:
-		return "令牌过期"
-	case SerTokenGuardErr:
-		return "令牌跨界"
-	case SerPasswordIncorrectErr:
-		return "密码不正确"
-	case SerMenuRelationExistErr:
-		return "菜单存在关联"
-	case SerMenuSubExistErr:
-		return "菜单存在下级"
-	case SerRoleRelationExistErr:
-		return "角色存在关联"
-	case SerPermissionRelationExistErr:
-		return "权限存在关联"
-	case SerMenuPathsUnsafeErr:
-		return "菜单层级路径非法定义"
-
-	case DaoErr:
-		return "DAO错误"
-	case DaoMenuPathsUnsafeErr:
-		return "菜单层级路径非法定义"
-
-	case ModErr:
-		return "模型错误"
-
-	case CacheErr:
-		return "缓存错误"
-	case CacheIsCloseErr:
-		return "缓存服务未开启"
-	case CacheIsNilErr:
-		return "缓存不存在"
-
-	default:
-		return "未知错误"
+	if msg, ok := errorMap[e]; ok {
+		return msg
 	}
+
+	return defErr
 }

@@ -4,13 +4,14 @@ import (
 	"fagin/app/enums"
 	"fagin/app/errno"
 	"fagin/app/models/user"
-	"fagin/app/requests/api"
+	api_request "fagin/app/requests/api"
 	apiResponses "fagin/app/responses/api"
-	"fagin/app/service"
+	"fagin/app/services"
 	"fagin/pkg/db"
 	"fagin/pkg/request"
+	"fagin/utils"
+
 	"github.com/gin-gonic/gin"
-	"strconv"
 )
 
 type userController struct {
@@ -28,7 +29,7 @@ func (ctr *userController) Register(ctx *gin.Context) {
 	var v = api_request.NewAddUserRequest()
 
 	if msg, ok := v.Validate(ctx); !ok {
-		ctr.ResponseJsonErr(ctx, errno.ReqErr, msg)
+		ctr.ResponseJSONErr(ctx, errno.ReqErr, msg)
 		return
 	}
 
@@ -37,20 +38,21 @@ func (ctr *userController) Register(ctx *gin.Context) {
 		Password: v.Password,
 		Status:   enums.StatusActive.Get(),
 	}
-	err := service.User.AddUser(&u).Error
+
+	err := services.User.AddUser(&u).Error
 	if err != nil {
-		ctr.ResponseJsonErrLog(ctx, errno.CtxStoreErr, err)
+		ctr.ResponseJSONErrLog(ctx, errno.CtxStoreErr, err)
 		return
 	}
 
-	ctr.ResponseJsonOK(ctx, gin.H{
+	ctr.ResponseJSONOK(ctx, gin.H{
 		"user": u,
 	})
 }
 
 func (ctr *userController) UserList(ctx *gin.Context) {
 	// 分页管理器
-	p := db.NewPaginatorWithCtx(ctx, 1, 15)
+	p := db.NewPaginatorWithCtx(ctx, 1, DefaultLimit)
 
 	// 查询条件
 	params := map[string]interface{}{
@@ -58,13 +60,16 @@ func (ctr *userController) UserList(ctx *gin.Context) {
 	}
 	// 查询字段
 	columns := []string{"id", "username", "status"}
-	users, err := service.User.UserList(params, columns, nil, p)
+
+	users, err := services.User.UserList(params, columns, nil, p)
 	if err != nil {
-		ctr.ResponseJsonErrLog(ctx, errno.CtxListErr, err)
+		ctr.ResponseJSONErrLog(ctx, errno.CtxListErr, err)
 		return
 	}
-	urs := apiResponses.UserResponse(users...).Collection()
-	ctr.ResponseJsonOK(ctx, gin.H{
+
+	urs := apiResponses.NewUserResponse(users...).Collection()
+
+	ctr.ResponseJSONOK(ctx, gin.H{
 		"users":     urs,
 		"paginator": p,
 	})
@@ -73,33 +78,35 @@ func (ctr *userController) UserList(ctx *gin.Context) {
 func (ctr *userController) ShowUser(ctx *gin.Context) {
 	i := ctx.Param("id")
 
-	id, err := strconv.ParseUint(i, 10, 64)
+	id, err := utils.StrToInt64(i)
 	if err != nil || id <= 0 {
-		ctr.ResponseJsonErr(ctx, errno.ReqErr, nil)
+		ctr.ResponseJSONErr(ctx, errno.ReqErr, nil)
 		return
 	}
 
 	columns := []string{"id", "username", "status"}
-	u, err := service.User.ShowUser(uint(id), columns)
+
+	u, err := services.User.ShowUser(uint(id), columns)
 	if err != nil || u.Status == enums.StatusDisable.Get() {
-		ctr.ResponseJsonErrLog(ctx, errno.CtxShowErr, err)
+		ctr.ResponseJSONErrLog(ctx, errno.CtxShowErr, err)
 		return
 	}
-	ru := apiResponses.UserResponse(*u).Item()
-	ctr.ResponseJsonOK(ctx, ru)
+
+	ru := apiResponses.NewUserResponse(u).Item()
+	ctr.ResponseJSONOK(ctx, ru)
 }
 
 func (ctr *userController) UpdateUser(ctx *gin.Context) {
-	id, err := request.ShouldBindUriUintID(ctx)
+	id, err := request.ShouldBindURIUintID(ctx)
 	if err != nil {
-		ctr.ResponseJsonErr(ctx, errno.ReqErr, nil)
+		ctr.ResponseJSONErr(ctx, errno.ReqErr, nil)
 		return
 	}
 
 	var r = api_request.NewUpdateUserRequest()
 
 	if msg, ok := r.Validate(ctx); !ok {
-		ctr.ResponseJsonErr(ctx, errno.ReqErr, msg)
+		ctr.ResponseJSONErr(ctx, errno.ReqErr, msg)
 		return
 	}
 
@@ -107,31 +114,32 @@ func (ctr *userController) UpdateUser(ctx *gin.Context) {
 	if r.Status != nil {
 		data["status"] = *r.Status
 	}
+
 	if r.Password != nil {
 		data["password"] = *r.Password
 	}
 
-	err = service.User.UpdateUser(id, data)
+	err = services.User.UpdateUser(id, data)
 	if err != nil {
-		ctr.ResponseJsonErrLog(ctx, errno.CtxUpdateErr, err)
+		ctr.ResponseJSONErrLog(ctx, errno.CtxUpdateErr, err)
 		return
 	}
 
-	ctr.ResponseJsonOK(ctx, nil)
+	ctr.ResponseJSONOK(ctx, nil)
 }
 
 func (ctr *userController) DestroyUser(ctx *gin.Context) {
-	id, err := request.ShouldBindUriUintID(ctx)
+	id, err := request.ShouldBindURIUintID(ctx)
 	if err != nil {
-		ctr.ResponseJsonErr(ctx, errno.ReqErr, nil)
+		ctr.ResponseJSONErr(ctx, errno.ReqErr, nil)
 		return
 	}
 
-	err = service.User.DestroyUser(id)
+	err = services.User.DestroyUser(id)
 	if err != nil {
-		ctr.ResponseJsonErrLog(ctx, errno.CtxDeleteErr, err)
+		ctr.ResponseJSONErrLog(ctx, errno.CtxDeleteErr, err)
 		return
 	}
 
-	ctr.ResponseJsonOK(ctx, nil)
+	ctr.ResponseJSONOK(ctx, nil)
 }

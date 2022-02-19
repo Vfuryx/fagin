@@ -1,8 +1,9 @@
 package author
 
 import (
-	"gorm.io/gorm"
 	"time"
+
+	"gorm.io/gorm"
 )
 
 type Author struct {

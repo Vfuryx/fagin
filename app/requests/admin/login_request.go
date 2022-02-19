@@ -1,10 +1,10 @@
-package admin_request
+package request
 
 import (
 	"fagin/pkg/request"
 )
 
-type loginRequest struct {
+type LoginRequest struct {
 	Name     string `form:"username" json:"username" binding:"required"`
 	Password string `form:"password" json:"password" binding:"required"`
 	ID       string `form:"id" json:"id" binding:"required"`
@@ -13,16 +13,17 @@ type loginRequest struct {
 	request.Validation `binding:"-"`
 }
 
-func NewLoginRequest() *loginRequest {
-	r := new(loginRequest)
+func NewLoginRequest() *LoginRequest {
+	r := new(LoginRequest)
 	r.SetRequest(r)
+
 	return r
 }
-func (*loginRequest) Message() map[string]string {
+func (*LoginRequest) Message() map[string]string {
 	return map[string]string{}
 }
 
-func (*loginRequest) Attributes() map[string]string {
+func (*LoginRequest) Attributes() map[string]string {
 	return map[string]string{
 		"Name":     "用户名",
 		"Password": "密码",

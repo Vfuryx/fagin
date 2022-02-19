@@ -5,7 +5,7 @@ import (
 	"fagin/app/errno"
 	adminRequest "fagin/app/requests/admin"
 	response "fagin/app/responses/admin"
-	"fagin/app/service"
+	"fagin/app/services"
 	"fagin/pkg/db"
 	"fagin/pkg/request"
 
@@ -20,11 +20,11 @@ type operationLogController struct {
 var OperationLogController operationLogController
 
 func (ctr *operationLogController) Index(ctx *gin.Context) {
-	paginator := db.NewPaginatorWithCtx(ctx, 1, 15)
+	paginator := db.NewPaginatorWithCtx(ctx, 1, DefaultLimit)
 
 	r := adminRequest.NewAdminOperationLogList()
 	if data, ok := r.Validate(ctx); !ok {
-		ctr.ResponseJsonErr(ctx, errno.ReqErr, data)
+		ctr.ResponseJSONErr(ctx, errno.ReqErr, data)
 		return
 	}
 
@@ -34,33 +34,37 @@ func (ctr *operationLogController) Index(ctx *gin.Context) {
 	if r.Path != "" {
 		params["like_path"] = "%" + r.Path + "%"
 	}
+
 	if r.Method != "" && r.Method != "ALL" {
 		params["method"] = r.Method
 	}
-	if len(r.Time) >= 2 {
+
+	const count = 2
+	if len(r.Time) >= count {
 		params["start_time"] = r.Time[0]
 		params["end_time"] = r.Time[1]
 	}
 
 	columns := []string{"id", "user", "method", "path", "ip", "operation", "created_at", "module"}
 
-	logs, err := service.AdminOperationLog.List(params, columns, nil, paginator)
+	logs, err := services.AdminOperationLog.List(params, columns, nil, paginator)
 	if err != nil {
-		ctr.ResponseJsonErrLog(ctx, errno.InternalServerErr, err)
+		ctr.ResponseJSONErrLog(ctx, errno.InternalServerErr, err)
 		return
 	}
 
-	data := response.OperationLog(logs...).Collection()
-	ctr.ResponseJsonOK(ctx, gin.H{
+	data := response.NewOperationLog(logs...).Collection()
+
+	ctr.ResponseJSONOK(ctx, gin.H{
 		"items": data,
 		"total": paginator.TotalCount,
 	})
 }
 
 func (ctr *operationLogController) Show(ctx *gin.Context) {
-	id, err := request.ShouldBindUriUintID(ctx)
+	id, err := request.ShouldBindURIUintID(ctx)
 	if err != nil {
-		ctr.ResponseJsonErr(ctx, errno.ReqErr, nil)
+		ctr.ResponseJSONErr(ctx, errno.ReqErr, nil)
 		return
 	}
 
@@ -68,12 +72,14 @@ func (ctr *operationLogController) Show(ctx *gin.Context) {
 		"id", "user", "method", "path", "ip", "operation", "input", "module",
 		"created_at", "user_agent", "latency_time", "location",
 	}
-	l, err := service.AdminOperationLog.ShowLog(id, columns)
+
+	l, err := services.AdminOperationLog.ShowLog(id, columns)
 	if err != nil {
-		ctr.ResponseJsonErrLog(ctx, errno.CtxShowErr, err)
+		ctr.ResponseJSONErrLog(ctx, errno.CtxShowErr, err)
 		return
 	}
-	ctr.ResponseJsonOK(ctx, gin.H{
+
+	ctr.ResponseJSONOK(ctx, gin.H{
 		"id":           l.ID,
 		"user":         l.User,
 		"method":       l.Method,
@@ -87,5 +93,4 @@ func (ctr *operationLogController) Show(ctx *gin.Context) {
 		"latency_time": l.LatencyTime,
 		"location":     l.Location,
 	})
-	return
 }

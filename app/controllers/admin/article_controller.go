@@ -6,7 +6,7 @@ import (
 	"fagin/app/models/tag"
 	adminRequest "fagin/app/requests/admin"
 	response "fagin/app/responses/admin"
-	"fagin/app/service"
+	"fagin/app/services"
 	"fagin/pkg/db"
 	"fagin/pkg/request"
 
@@ -22,7 +22,7 @@ type articleController struct {
 var ArticleController articleController
 
 func (ctr *articleController) Index(ctx *gin.Context) {
-	paginator := db.NewPaginatorWithCtx(ctx, 1, 15)
+	paginator := db.NewPaginatorWithCtx(ctx, 1, DefaultLimit)
 
 	params := gin.H{
 		"orderBy": "post_at desc, id asc",
@@ -35,35 +35,38 @@ func (ctr *articleController) Index(ctx *gin.Context) {
 			return db.Where("status = ?", 1)
 		},
 	}
-	articles, err := service.Article.Index(params, columns, with, paginator)
+
+	articles, err := services.Article.Index(params, columns, with, paginator)
 	if err != nil {
-		ctr.ResponseJsonErrLog(ctx, errno.CtxListErr, err)
+		ctr.ResponseJSONErrLog(ctx, errno.CtxListErr, err)
 		return
 	}
 
-	data := response.ArticleList(articles...).Collection()
+	data := response.NewArticleList(articles...).Collection()
 
-	ctr.ResponseJsonOK(ctx, gin.H{
+	ctr.ResponseJSONOK(ctx, gin.H{
 		"articles":  data,
 		"paginator": paginator,
 	})
-	return
 }
 
 func (ctr *articleController) Show(ctx *gin.Context) {
-	id, err := request.ShouldBindUriUintID(ctx)
+	id, err := request.ShouldBindURIUintID(ctx)
 	if err != nil {
-		ctr.ResponseJsonErr(ctx, errno.ReqErr, nil)
+		ctr.ResponseJSONErr(ctx, errno.ReqErr, nil)
 		return
 	}
 
 	columns := []string{"id", "title", "author_id", "category_id", "post_at", "status", "content", "summary"}
-	data, err := service.Article.Show(id, columns)
+
+	data, err := services.Article.Show(id, columns)
 	if err != nil {
-		ctr.ResponseJsonErrLog(ctx, errno.CtxShowErr, err)
+		ctr.ResponseJSONErrLog(ctx, errno.CtxShowErr, err)
 		return
 	}
-	tags := make([]map[string]interface{}, 0, 20)
+
+	tags := make([]map[string]interface{}, 0)
+
 	for _, t := range data.Tags {
 		m := map[string]interface{}{
 			"id":   t.ID,
@@ -71,7 +74,8 @@ func (ctr *articleController) Show(ctx *gin.Context) {
 		}
 		tags = append(tags, m)
 	}
-	ctr.ResponseJsonOK(ctx, gin.H{
+
+	ctr.ResponseJSONOK(ctx, gin.H{
 		"id":          data.ID,
 		"title":       data.Title,
 		"content":     data.Content,
@@ -84,33 +88,33 @@ func (ctr *articleController) Show(ctx *gin.Context) {
 		"category":    data.Category.Name,
 		"tags":        tags,
 	})
-	return
 }
 
 func (ctr *articleController) Store(ctx *gin.Context) {
 	var r = adminRequest.NewCreateArticle()
 	if data, ok := r.Validate(ctx); !ok {
-		ctr.ResponseJsonErr(ctx, errno.ReqErr, data)
+		ctr.ResponseJSONErr(ctx, errno.ReqErr, data)
 		return
 	}
 
 	// 判断作者是否存在
-	if !service.Author.Exists(r.AuthorID) {
-		ctr.ResponseJsonErr(ctx, errno.CtxStoreErr, nil)
+	if !services.Author.Exists(r.AuthorID) {
+		ctr.ResponseJSONErr(ctx, errno.CtxStoreErr, nil)
 		return
 	}
 
 	// 判断分类是否存在
-	if !service.Category.Exists(r.CategoryID) {
-		ctr.ResponseJsonErr(ctx, errno.CtxStoreErr, nil)
+	if !services.Category.Exists(r.CategoryID) {
+		ctr.ResponseJSONErr(ctx, errno.CtxStoreErr, nil)
 		return
 	}
 
 	// 获取标签
 	var tags []tag.Tag
+
 	err := tag.NewDao().Query(gin.H{"in_id": r.Tags, "status": 1}, []string{"id"}, nil).Find(&tags)
 	if err != nil {
-		ctr.ResponseJsonErrLog(ctx, errno.CtxStoreErr, err)
+		ctr.ResponseJSONErrLog(ctx, errno.CtxStoreErr, err)
 		return
 	}
 
@@ -125,46 +129,46 @@ func (ctr *articleController) Store(ctx *gin.Context) {
 		Tags:       tags,
 	}
 
-	err = service.Article.Create(&b)
+	err = services.Article.Create(&b)
 	if err != nil {
-		ctr.ResponseJsonErrLog(ctx, errno.CtxStoreErr, err)
+		ctr.ResponseJSONErrLog(ctx, errno.CtxStoreErr, err)
 		return
 	}
 
-	ctr.ResponseJsonOK(ctx, nil)
-	return
+	ctr.ResponseJSONOK(ctx, nil)
 }
 
 func (ctr *articleController) Update(ctx *gin.Context) {
-	id, err := request.ShouldBindUriUintID(ctx)
+	id, err := request.ShouldBindURIUintID(ctx)
 	if err != nil {
-		ctr.ResponseJsonErr(ctx, errno.ReqErr, nil)
+		ctr.ResponseJSONErr(ctx, errno.ReqErr, nil)
 		return
 	}
 
 	var r = adminRequest.NewCreateArticle()
 	if data, ok := r.Validate(ctx); !ok {
-		ctr.ResponseJsonErr(ctx, errno.ReqErr, data)
+		ctr.ResponseJSONErr(ctx, errno.ReqErr, data)
 		return
 	}
 
 	// 判断作者是否存在
-	if !service.Author.Exists(r.AuthorID) {
-		ctr.ResponseJsonErr(ctx, errno.CtxStoreErr, nil)
+	if !services.Author.Exists(r.AuthorID) {
+		ctr.ResponseJSONErr(ctx, errno.CtxStoreErr, nil)
 		return
 	}
 
 	// 判断分类是否存在
-	if !service.Category.Exists(r.CategoryID) {
-		ctr.ResponseJsonErr(ctx, errno.CtxStoreErr, nil)
+	if !services.Category.Exists(r.CategoryID) {
+		ctr.ResponseJSONErr(ctx, errno.CtxStoreErr, nil)
 		return
 	}
 
 	// 获取标签
 	var tags []tag.Tag
+
 	err = tag.NewDao().Query(gin.H{"in_id": r.Tags, "status": 1}, []string{"*"}, nil).Find(&tags)
 	if err != nil {
-		ctr.ResponseJsonErrLog(ctx, errno.CtxUpdateErr, err)
+		ctr.ResponseJSONErrLog(ctx, errno.CtxUpdateErr, err)
 		return
 	}
 
@@ -178,50 +182,50 @@ func (ctr *articleController) Update(ctx *gin.Context) {
 		"PostAt":     r.PostAt,
 		"Tags":       tags,
 	}
-	err = service.Article.Update(id, data)
+
+	err = services.Article.Update(id, data)
 	if err != nil {
-		ctr.ResponseJsonErrLog(ctx, errno.CtxUpdateErr, err)
+		ctr.ResponseJSONErrLog(ctx, errno.CtxUpdateErr, err)
 		return
 	}
 
-	ctr.ResponseJsonOK(ctx, nil)
-	return
+	ctr.ResponseJSONOK(ctx, nil)
 }
 
 func (ctr *articleController) Del(ctx *gin.Context) {
-	id, err := request.ShouldBindUriUintID(ctx)
+	id, err := request.ShouldBindURIUintID(ctx)
 	if err != nil {
-		ctr.ResponseJsonErr(ctx, errno.ReqErr, nil)
+		ctr.ResponseJSONErr(ctx, errno.ReqErr, nil)
 		return
 	}
 
-	err = service.Article.Delete(id)
+	err = services.Article.Delete(id)
 	if err != nil {
-		ctr.ResponseJsonErrLog(ctx, errno.CtxDeleteErr, err)
+		ctr.ResponseJSONErrLog(ctx, errno.CtxDeleteErr, err)
 		return
 	}
 
-	ctr.ResponseJsonOK(ctx, nil)
-	return
+	ctr.ResponseJSONOK(ctx, nil)
 }
 
 func (ctr *articleController) Deletes(ctx *gin.Context) {
 	type R struct {
 		IDs []uint `form:"ids" json:"ids" binding:"required"`
 	}
+
 	var ids R
+
 	err := ctx.ShouldBind(&ids)
 	if err != nil {
-		ctr.ResponseJsonErr(ctx, errno.ReqErr, nil)
+		ctr.ResponseJSONErr(ctx, errno.ReqErr, nil)
 		return
 	}
 
-	err = service.Article.Deletes(ids.IDs)
+	err = services.Article.Deletes(ids.IDs)
 	if err != nil {
-		ctr.ResponseJsonErrLog(ctx, errno.CtxDeleteErr, err)
+		ctr.ResponseJSONErrLog(ctx, errno.CtxDeleteErr, err)
 		return
 	}
 
-	ctr.ResponseJsonOK(ctx, nil)
-	return
+	ctr.ResponseJSONOK(ctx, nil)
 }

@@ -10,14 +10,14 @@ import (
 )
 
 func CreateRequestTemplate(path, name string) {
-	filePath := config.App().AppPath + "/requests/" + path + ".go"
+	filePath := config.App().AppPath() + "/requests/" + path + ".go"
 	sl := strings.Split(filePath, "/")
 	packageName := sl[len(sl)-2]
 	name = utils.Camel(name)
 	structName := strings.ToLower(string(name[0])) + name[1:]
 	dirPath := strings.Join(sl[:len(sl)-1], "/")
 
-	//os.Stat获取文件信息
+	// os.Stat获取文件信息
 	if _, err := os.Stat(filePath); err == nil {
 		panic("文件已存在")
 	}
@@ -33,7 +33,7 @@ func CreateRequestTemplate(path, name string) {
 		panic(err)
 	}
 
-	const temp = `package %s_request
+	const temp = `package request
 
 import (
 	"%[3]s/pkg/request"
@@ -63,7 +63,8 @@ func (*%[2]s) Attributes() map[string]string {
 //	return request.Validated(r, ctx)
 //}
 `
-	content := fmt.Sprintf(temp, packageName, structName, config.App().Name, name)
+
+	var content = fmt.Sprintf(temp, packageName, structName, config.App().Name(), name)
 
 	if _, err = file.WriteString(content); err != nil {
 		panic(err)

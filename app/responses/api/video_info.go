@@ -6,51 +6,55 @@ import (
 )
 
 type videoInfoList struct {
-	Ms []video_info.VideoInfo
+	ms []*video_info.VideoInfo
+
 	response.Collect
 }
 
-var _ response.Response = &videoInfoList{}
-
-func VideoInfoList(models ...video_info.VideoInfo) *videoInfoList {
-	res := videoInfoList{Ms: models}
+func NewVideoInfoList(models ...*video_info.VideoInfo) response.Response {
+	res := videoInfoList{ms: models}
 	res.SetCollect(&res)
+
 	return &res
 }
 
 func (res *videoInfoList) Serialize() []map[string]interface{} {
-	sm := make([]map[string]interface{}, 0, 20)
-	for _, model := range res.Ms {
+	sm := make([]map[string]interface{}, 0, response.DefCap)
+
+	for i := range res.ms {
 		m := map[string]interface{}{
-			"id":    model.ID,
-			"title": model.Title,
+			"id":    res.ms[i].ID,
+			"title": res.ms[i].Title,
 		}
 		sm = append(sm, m)
 	}
+
 	return sm
 }
 
-type videoInfoShow struct {
-	Ms []video_info.VideoInfo
+type VideoInfoShow struct {
+	ms []*video_info.VideoInfo
+
 	response.Collect
 }
 
-var _ response.Response = &videoInfoShow{}
-
-func VideoInfoShow(models ...video_info.VideoInfo) *videoInfoShow {
-	res := videoInfoShow{Ms: models}
+func NewVideoInfoShow(models ...*video_info.VideoInfo) response.Response {
+	res := VideoInfoShow{ms: models}
 	res.SetCollect(&res)
+
 	return &res
 }
 
-func (res *videoInfoShow) Serialize() []map[string]interface{} {
-	sm := make([]map[string]interface{}, 0, 20)
-	for _, model := range res.Ms {
+func (res *VideoInfoShow) Serialize() []map[string]interface{} {
+	sm := make([]map[string]interface{}, 0, response.DefCap)
+
+	for i := range res.ms {
 		m := map[string]interface{}{
-			"id":    model.ID,
-			"title": model.Title,
+			"id":    res.ms[i].ID,
+			"title": res.ms[i].Title,
 		}
 		sm = append(sm, m)
 	}
+
 	return sm
 }

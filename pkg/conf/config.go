@@ -3,10 +3,11 @@ package conf
 import (
 	"fagin/pkg/paths"
 	"fmt"
-	"github.com/spf13/viper"
 	"os"
 	"path"
 	"path/filepath"
+
+	"github.com/spf13/viper"
 )
 
 var RootPath string
@@ -17,7 +18,6 @@ func init() {
 
 // 读取 config
 func configLoad() {
-	// 获取项目根目录
 	// app目录
 	appPath, err := filepath.Abs(filepath.Dir(os.Args[0]))
 	if err != nil {
@@ -35,15 +35,20 @@ func configLoad() {
 		path.Clean(workPath + "/../.."),
 		appPath,
 	}
-	var filename = ".config"
-	var configType = "yml"
-	var l, i = len(pathFiles) - 1, 0
+
+	var (
+		filename   = ".config"
+		configType = "yml"
+		l          = len(pathFiles) - 1
+		i          int
+	)
 
 	for i, workPath = range pathFiles {
-		appConfigPath := filepath.Join(workPath, "/", filename+"."+configType)
+		appConfigPath := filepath.Join(workPath, filename+"."+configType)
 		if paths.FileExists(appConfigPath) {
 			break
 		}
+
 		if i == l {
 			fmt.Printf("ERROR：配置文件 .config.yml 读取失败\n %v", err)
 		}
@@ -52,7 +57,7 @@ func configLoad() {
 	// 设置项目根目录
 	RootPath = workPath
 
-	//viper.AutomaticEnv()
+	// viper.AutomaticEnv()
 	viper.SetConfigName(filename)
 	viper.AddConfigPath(workPath)
 	viper.SetConfigType(configType)
@@ -64,11 +69,12 @@ func configLoad() {
 }
 
 // GetString 获取 string 类型并返回
-func GetString(name string, def string) string {
+func GetString(name, def string) string {
 	v := viper.GetString(name)
 	if v == "" {
 		return def
 	}
+
 	return v
 }
 
@@ -83,6 +89,7 @@ func GetInt(name string, def int) int {
 	if v == 0 {
 		return def
 	}
+
 	return v
 }
 
@@ -92,6 +99,7 @@ func GetInt64(name string, def int64) int64 {
 	if v == 0 {
 		return def
 	}
+
 	return v
 }
 
@@ -101,6 +109,7 @@ func GetFloat64(name string, def float64) float64 {
 	if v == 0 {
 		return def
 	}
+
 	return v
 }
 
@@ -109,6 +118,7 @@ func GetStringMapStringSlice(key string, def map[string][]string) map[string][]s
 	if len(v) == 0 {
 		return def
 	}
+
 	return v
 }
 
@@ -117,6 +127,7 @@ func GetStringMap(key string, def map[string]interface{}) map[string]interface{}
 	if len(v) == 0 {
 		return def
 	}
+
 	return v
 }
 
@@ -125,6 +136,7 @@ func GetStringSlice(key string, def []string) []string {
 	if len(v) == 0 {
 		return def
 	}
+
 	return v
 }
 
@@ -134,6 +146,7 @@ func Get(key string, def interface{}) interface{} {
 	if v == nil {
 		return def
 	}
+
 	return v
 }
 

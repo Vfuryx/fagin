@@ -2,6 +2,7 @@ package user
 
 import (
 	"fagin/pkg/db"
+	"os"
 	"testing"
 )
 
@@ -10,6 +11,7 @@ func TestMain(m *testing.M) {
 	db.ORM().Exec("truncate users")
 	m.Run()
 	db.Close()
+	os.Exit(1)
 }
 
 func TestUserDaoFlow(t *testing.T) {
@@ -24,10 +26,12 @@ func TestUserDaoFlow(t *testing.T) {
 
 func TestFindById(t *testing.T) {
 	user := New()
-	err := user.Dao().FindById(1, []string{"*"})
+
+	err := user.Dao().FindByID(1, []string{"*"})
 	if err != nil {
 		t.Fatal(err)
 	}
+
 	t.Log(user)
 }
 
@@ -36,6 +40,7 @@ func TestAll(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+
 	t.Log(users)
 }
 
@@ -50,6 +55,7 @@ func TestStore(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+
 	t.Log(user)
 }
 
@@ -67,38 +73,42 @@ func TestDestroy(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+
 	var user User
-	err = user.Dao().FindById(1, []string{"*"})
+
+	err = user.Dao().FindByID(1, []string{"*"})
 	if err == nil {
 		t.Fatal(err)
 	}
+
 	t.Log(user)
 }
 
 func TestQuery(t *testing.T) {
 	var users []User
+
 	params := map[string]interface{}{
-		//"id": 2,
-		//"user_name": "ade",
 		"status": 1,
 	}
 	columns := []string{"*"}
+
 	err := NewDao().Query(params, columns, nil).Find(&users)
 	if err != nil {
 		t.Fatal(err)
 	}
+
 	t.Log(users)
 }
 
 func TestPaginator(t *testing.T) {
 	var users []User
+
 	params := map[string]interface{}{
-		//"id": 2,
-		//"user_name": "ade",
 		"status": 1,
 	}
 	columns := []string{"*"}
 	p := db.NewPaginator(1, 2)
+
 	err := NewDao().Query(params, columns, nil).Paginate(&users, p)
 	if err != nil {
 		t.Fatal(err)

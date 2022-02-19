@@ -5,7 +5,7 @@ import (
 	"fagin/app/models/category"
 	adminRequest "fagin/app/requests/admin"
 	response "fagin/app/responses/admin"
-	"fagin/app/service"
+	"fagin/app/services"
 	"fagin/pkg/db"
 	"fagin/pkg/request"
 
@@ -19,55 +19,54 @@ type categoryController struct {
 var CategoryController categoryController
 
 func (ctr *categoryController) Index(ctx *gin.Context) {
-	paginator := db.NewPaginatorWithCtx(ctx, 1, 15)
+	paginator := db.NewPaginatorWithCtx(ctx, 1, DefaultLimit)
 
 	params := gin.H{
 		"orderBy": "sort desc, id asc",
 	}
 	columns := []string{"id", "name", "sort", "status"}
 
-	categories, err := service.Category.Index(params, columns, nil, paginator)
+	categories, err := services.Category.Index(params, columns, nil, paginator)
 	if err != nil {
-		ctr.ResponseJsonErrLog(ctx, errno.CtxListErr, err)
+		ctr.ResponseJSONErrLog(ctx, errno.CtxListErr, err)
 		return
 	}
 
-	data := response.CategoryList(categories...).Collection()
+	data := response.NewCategoryList(categories...).Collection()
 
-	ctr.ResponseJsonOK(ctx, gin.H{
+	ctr.ResponseJSONOK(ctx, gin.H{
 		"categories": data,
 		"paginator":  paginator,
 	})
-	return
 }
 
 func (ctr *categoryController) Show(ctx *gin.Context) {
-	id, err := request.ShouldBindUriUintID(ctx)
+	id, err := request.ShouldBindURIUintID(ctx)
 	if err != nil {
-		ctr.ResponseJsonErr(ctx, errno.ReqErr, nil)
+		ctr.ResponseJSONErr(ctx, errno.ReqErr, nil)
 		return
 	}
 
 	columns := []string{"id", "name", "sort", "status"}
-	b, err := service.Category.Show(id, columns)
+
+	b, err := services.Category.Show(id, columns)
 	if err != nil {
-		ctr.ResponseJsonErrLog(ctx, errno.CtxShowErr, err)
+		ctr.ResponseJSONErrLog(ctx, errno.CtxShowErr, err)
 		return
 	}
 
-	ctr.ResponseJsonOK(ctx, gin.H{
+	ctr.ResponseJSONOK(ctx, gin.H{
 		"id":     b.ID,
 		"name":   b.Name,
 		"sort":   b.Sort,
 		"status": b.Status,
 	})
-	return
 }
 
 func (ctr *categoryController) Store(ctx *gin.Context) {
 	var r = adminRequest.NewCreateCategory()
 	if data, ok := r.Validate(ctx); !ok {
-		ctr.ResponseJsonErr(ctx, errno.ReqErr, data)
+		ctr.ResponseJSONErr(ctx, errno.ReqErr, data)
 		return
 	}
 
@@ -77,58 +76,57 @@ func (ctr *categoryController) Store(ctx *gin.Context) {
 		Status: *r.Status,
 	}
 
-	err := service.Category.Create(&c)
+	err := services.Category.Create(&c)
 	if err != nil {
-		ctr.ResponseJsonErrLog(ctx, errno.CtxStoreErr, err)
+		ctr.ResponseJSONErrLog(ctx, errno.CtxStoreErr, err)
 		return
 	}
 
-	ctr.ResponseJsonOK(ctx, nil)
-	return
+	ctr.ResponseJSONOK(ctx, nil)
 }
 
 func (ctr *categoryController) Update(ctx *gin.Context) {
-	id, err := request.ShouldBindUriUintID(ctx)
+	id, err := request.ShouldBindURIUintID(ctx)
 	if err != nil {
-		ctr.ResponseJsonErr(ctx, errno.ReqErr, nil)
+		ctr.ResponseJSONErr(ctx, errno.ReqErr, nil)
 		return
 	}
 
 	var r = adminRequest.NewCreateCategory()
 	if data, ok := r.Validate(ctx); !ok {
-		ctr.ResponseJsonErr(ctx, errno.ReqErr, data)
+		ctr.ResponseJSONErr(ctx, errno.ReqErr, data)
 		return
 	}
+
 	data := map[string]interface{}{
 		"Name":   r.Name,
 		"Sort":   r.Sort,
 		"Status": *r.Status,
 	}
-	err = service.Category.Update(id, data)
+
+	err = services.Category.Update(id, data)
 	if err != nil {
-		ctr.ResponseJsonErrLog(ctx, errno.CtxUpdateErr, err)
+		ctr.ResponseJSONErrLog(ctx, errno.CtxUpdateErr, err)
 		return
 	}
 
-	ctr.ResponseJsonOK(ctx, nil)
-	return
+	ctr.ResponseJSONOK(ctx, nil)
 }
 
 func (ctr *categoryController) Del(ctx *gin.Context) {
-	id, err := request.ShouldBindUriUintID(ctx)
+	id, err := request.ShouldBindURIUintID(ctx)
 	if err != nil {
-		ctr.ResponseJsonErr(ctx, errno.ReqErr, nil)
+		ctr.ResponseJSONErr(ctx, errno.ReqErr, nil)
 		return
 	}
 
-	err = service.Category.Delete(id)
+	err = services.Category.Delete(id)
 	if err != nil {
-		ctr.ResponseJsonErrLog(ctx, errno.CtxDeleteErr, err)
+		ctr.ResponseJSONErrLog(ctx, errno.CtxDeleteErr, err)
 		return
 	}
 
-	ctr.ResponseJsonOK(ctx, nil)
-	return
+	ctr.ResponseJSONOK(ctx, nil)
 }
 
 type CategoryIDs struct {
@@ -137,20 +135,20 @@ type CategoryIDs struct {
 
 func (ctr *categoryController) Deletes(ctx *gin.Context) {
 	var ids CategoryIDs
+
 	err := ctx.ShouldBind(&ids)
 	if err != nil {
-		ctr.ResponseJsonErr(ctx, errno.ReqErr, nil)
+		ctr.ResponseJSONErr(ctx, errno.ReqErr, nil)
 		return
 	}
 
-	err = service.Category.Deletes(ids.IDs)
+	err = services.Category.Deletes(ids.IDs)
 	if err != nil {
-		ctr.ResponseJsonErrLog(ctx, errno.CtxDeleteErr, err)
+		ctr.ResponseJSONErrLog(ctx, errno.CtxDeleteErr, err)
 		return
 	}
 
-	ctr.ResponseJsonOK(ctx, nil)
-	return
+	ctr.ResponseJSONOK(ctx, nil)
 }
 
 func (ctr *categoryController) All(ctx *gin.Context) {
@@ -160,16 +158,15 @@ func (ctr *categoryController) All(ctx *gin.Context) {
 	}
 	columns := []string{"id", "name", "sort", "status"}
 
-	categories, err := service.Category.All(params, columns, nil)
+	categories, err := services.Category.All(params, columns, nil)
 	if err != nil {
-		ctr.ResponseJsonErrLog(ctx, errno.CtxListErr, err)
+		ctr.ResponseJSONErrLog(ctx, errno.CtxListErr, err)
 		return
 	}
 
-	data := response.CategoryList(categories...).Collection()
+	data := response.NewCategoryList(categories...).Collection()
 
-	ctr.ResponseJsonOK(ctx, gin.H{
+	ctr.ResponseJSONOK(ctx, gin.H{
 		"categories": data,
 	})
-	return
 }

@@ -4,6 +4,8 @@ import (
 	"fagin/pkg/enum"
 	"fagin/utils"
 	"fmt"
+	"path"
+
 	"github.com/spf13/cobra"
 )
 
@@ -13,11 +15,11 @@ var EnumCmd = &cobra.Command{
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("enum called")
-		if len(args) <= 0 {
+		if len(args) == 0 {
 			fmt.Println("create enum err")
 			return
 		}
-		path, name := utils.GetPathAndUnderscore(args[0])
-		enum.CreateEnumTemplate(path, name)
+		p := utils.PathUnderscore(args[0])
+		enum.CreateEnumTemplate(p, path.Base(p))
 	},
 }

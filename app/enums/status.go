@@ -22,6 +22,7 @@ func (code Status) String() string {
 	case StatusActive:
 		return "开启"
 	}
+
 	return ""
 }
 

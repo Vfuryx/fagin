@@ -5,9 +5,9 @@ import (
 )
 
 // 验证码类
-//configJsonBody json request body.
-type configJsonBody struct {
-	Id            string
+// configJsonBody json request body.
+type configJSONBody struct {
+	ID            string
 	CaptchaType   string
 	VerifyValue   string
 	DriverAudio   *base64Captcha.DriverAudio
@@ -21,11 +21,14 @@ var store = base64Captcha.DefaultMemStore
 
 // NewCaptcha 生成验证码
 func NewCaptcha() (id, b64s string, err error) {
-	e := configJsonBody{}
-	e.Id = RandString(16)
+	const num = 16
+
+	e := configJSONBody{}
+	e.ID = RandString(num)
 	e.DriverDigit = base64Captcha.DefaultDriverDigit
 	driver := e.DriverDigit
 	captcha := base64Captcha.NewCaptcha(driver, store)
+
 	return captcha.Generate()
 }
 

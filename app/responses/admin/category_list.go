@@ -1,4 +1,4 @@
-package admin_responses
+package responses
 
 import (
 	"fagin/app/models/category"
@@ -6,28 +6,30 @@ import (
 )
 
 type categoryList struct {
-	Ms []category.Category
+	ms []*category.Category
+
 	response.Collect
 }
 
-var _ response.Response = &categoryList{}
-
-func CategoryList(models ...category.Category) *categoryList {
-	res := categoryList{Ms: models}
+func NewCategoryList(models ...*category.Category) response.Response {
+	res := categoryList{ms: models}
 	res.SetCollect(&res)
+
 	return &res
 }
 
 func (res *categoryList) Serialize() []map[string]interface{} {
-	sm := make([]map[string]interface{}, 0, 20)
-	for _, model := range res.Ms {
+	sm := make([]map[string]interface{}, 0, response.DefCap)
+
+	for i := range res.ms {
 		m := map[string]interface{}{
-			"id":     model.ID,
-			"name":   model.Name,
-			"sort":   model.Sort,
-			"status": model.Status,
+			"id":     res.ms[i].ID,
+			"name":   res.ms[i].Name,
+			"sort":   res.ms[i].Sort,
+			"status": res.ms[i].Status,
 		}
 		sm = append(sm, m)
 	}
+
 	return sm
 }

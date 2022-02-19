@@ -2,8 +2,9 @@ package admin
 
 import (
 	"fagin/resources/static"
-	"github.com/gin-gonic/gin"
 	"net/http"
+
+	"github.com/gin-gonic/gin"
 )
 
 type indexController struct{}

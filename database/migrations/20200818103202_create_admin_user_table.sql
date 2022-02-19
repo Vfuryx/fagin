@@ -15,6 +15,7 @@ CREATE TABLE `admin_users`
     `password`      varchar(127)        NOT NULL DEFAULT '' COMMENT '密码',
     `avatar`        varchar(255)        NOT NULL DEFAULT '' COMMENT '头像',
     `remark`        varchar(255)        NOT NULL DEFAULT '' COMMENT '备注',
+    `home_path`     varchar(255)        NOT NULL DEFAULT '' COMMENT '默认首页路径',
     `sex`           tinyint(4) unsigned NOT NULL DEFAULT '0' COMMENT '性别: 0:未知 1:男 2:女',
     `login_at`      bigint(19) unsigned NOT NULL DEFAULT '0' COMMENT '总后台登录时间',
     `last_login_at` bigint(19) unsigned NOT NULL DEFAULT '0' COMMENT '总后台上次登录时间',
@@ -27,10 +28,10 @@ CREATE TABLE `admin_users`
   COLLATE = utf8mb4_unicode_ci COMMENT ='后台用户表';
 
 INSERT INTO `admin_users` (`id`, `created_at`, `updated_at`, `deleted_at`, `status`, `username`, `nick_name`,
-                                   `phone`, `email`, `password`, `avatar`, `remark`, `sex`, `login_at`, `last_login_at`,
-                                   `check_in_at`)
+                           `phone`, `email`, `password`, `avatar`, `remark`, `home_path`, `sex`, `login_at`, `last_login_at`,
+                           `check_in_at`)
 VALUES (1, '2021-10-01 01:01:01', '2021-10-01 01:01:01', NULL, 1, 'admin', 'admin', '1380013800', 'admin@admin.com',
-        '$2a$10$v1Ji2oMpTD1sserUCuEfmeEUKQi4FKMonWah1fa4.xJhkxvPRvuN2', 'http://qiniu.furyx.cn/photo.jpg', '', 0,
+        '$2a$10$v1Ji2oMpTD1sserUCuEfmeEUKQi4FKMonWah1fa4.xJhkxvPRvuN2', '', '', '', 0,
         1633228500, 0, 1633228500);
 -- +migrate Down
 DROP TABLE `admin_users`;

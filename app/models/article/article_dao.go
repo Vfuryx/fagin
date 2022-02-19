@@ -21,6 +21,7 @@ var _ db.DAO = &Dao{}
 func (m *Article) Dao() *Dao {
 	dao := &Dao{}
 	dao.Dao.SetModel(m)
+
 	return dao
 }
 
@@ -28,14 +29,16 @@ func (m *Article) Dao() *Dao {
 func NewDao() *Dao {
 	dao := &Dao{}
 	dao.Dao.SetModel(New())
+
 	return dao
 }
 
 // All New 实例
-func (d *Dao) All(columns []string) (*[]Article, error) {
-	var model []Article
+func (d *Dao) All(columns []string) ([]*Article, error) {
+	var model []*Article
 	err := db.ORM().Select(columns).Find(&model).Error
-	return &model, err
+
+	return model, err
 }
 
 // Query New 实例
@@ -46,6 +49,7 @@ func (d *Dao) Query(params map[string]interface{}, columns []string, with map[st
 		v  interface{}
 		ok bool
 	)
+
 	if v, ok = params["id"]; ok {
 		model = model.Where("id = ?", v)
 	}
@@ -67,6 +71,7 @@ func (d *Dao) Query(params map[string]interface{}, columns []string, with map[st
 	}
 
 	d.DB = d.With(model, with)
+
 	return d
 }
 
@@ -78,17 +83,19 @@ func (d *Dao) Deletes(ids []uint) error {
 
 // Update New 实例
 func (d *Dao) Update(id uint, data map[string]interface{}) error {
-	err := d.FindById(id, []string{"id"})
+	err := d.FindByID(id, []string{"id"})
 	if err != nil {
 		return err
 	}
+
 	if v, ok := data["Tags"]; ok {
-		// 有点复杂后期修改
 		// 清空
 		_ = db.ORM().Model(&Article{ID: id}).Association("Tags").Clear()
 		// 插入
 		_ = db.ORM().Model(&Article{ID: id}).Association("Tags").Append(v.([]tag.Tag))
+
 		delete(data, "Tags")
 	}
+
 	return db.ORM().Model(d.GetModel()).Where("id = ?", id).Updates(data).Error
 }

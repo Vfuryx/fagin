@@ -12,11 +12,13 @@ func Init() {
 		go app.Log().Error(err, string(debug.Stack()))
 		panic(err)
 	}
+
 	go func() {
-		defer rabbitmq.Destroy()
 		err = rabbitmq.Consume()
 		if err != nil {
 			go app.Log().Error(err, string(debug.Stack()))
 		}
+
+		_ = rabbitmq.Destroy()
 	}()
 }

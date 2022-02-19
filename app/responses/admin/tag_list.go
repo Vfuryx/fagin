@@ -1,4 +1,4 @@
-package admin_responses
+package responses
 
 import (
 	"fagin/app/models/tag"
@@ -6,27 +6,29 @@ import (
 )
 
 type tagList struct {
-	Ms []tag.Tag
+	ms []*tag.Tag
+
 	response.Collect
 }
 
-var _ response.Response = &tagList{}
-
-func TagList(models ...tag.Tag) *tagList {
-	res := tagList{Ms: models}
+func NewTagList(models ...*tag.Tag) response.Response {
+	res := tagList{ms: models}
 	res.SetCollect(&res)
+
 	return &res
 }
 
 func (res *tagList) Serialize() []map[string]interface{} {
-	sm := make([]map[string]interface{}, 0, 20)
-	for _, model := range res.Ms {
+	sm := make([]map[string]interface{}, 0, response.DefCap)
+
+	for i := range res.ms {
 		m := map[string]interface{}{
-			"id":     model.ID,
-			"name":   model.Name,
-			"status": model.Status,
+			"id":     res.ms[i].ID,
+			"name":   res.ms[i].Name,
+			"status": res.ms[i].Status,
 		}
 		sm = append(sm, m)
 	}
+
 	return sm
 }

@@ -17,19 +17,22 @@ var _ db.DAO = &Dao{}
 func (m *Banner) Dao() *Dao {
 	dao := &Dao{}
 	dao.Dao.SetModel(m)
+
 	return dao
 }
 
 func NewDao() *Dao {
 	dao := &Dao{}
 	dao.Dao.SetModel(New())
+
 	return dao
 }
 
-func (d *Dao) All(columns []string) (*[]Banner, error) {
-	var model []Banner
+func (d *Dao) All(columns []string) ([]*Banner, error) {
+	var model []*Banner
 	err := db.ORM().Select(columns).Find(&model).Error
-	return &model, err
+
+	return model, err
 }
 
 func (d *Dao) Query(params map[string]interface{}, columns []string, with map[string]interface{}) db.DAO {
@@ -39,6 +42,7 @@ func (d *Dao) Query(params map[string]interface{}, columns []string, with map[st
 		v  interface{}
 		ok bool
 	)
+
 	if v, ok = params["id"]; ok {
 		model = model.Where("id = ?", v)
 	}
@@ -48,6 +52,7 @@ func (d *Dao) Query(params map[string]interface{}, columns []string, with map[st
 	}
 
 	d.DB = d.With(model, with)
+
 	return d
 }
 
