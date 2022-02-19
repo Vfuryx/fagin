@@ -1,4 +1,4 @@
-package admin_responses
+package responses
 
 import (
 	"fagin/app"
@@ -8,42 +8,46 @@ import (
 )
 
 type adminRoleList struct {
-	Ms []admin_role.AdminRole
+	ms []*admin_role.AdminRole
+
 	response.Collect
 }
 
-var _ response.Response = &adminRoleList{}
-
-func AdminRoleList(models ...admin_role.AdminRole) *adminRoleList {
-	res := adminRoleList{Ms: models}
+func NewAdminRoleList(models ...*admin_role.AdminRole) response.Response {
+	res := adminRoleList{ms: models}
 	res.SetCollect(&res)
+
 	return &res
 }
 
 func (r *adminRoleList) Serialize() []map[string]interface{} {
-	sm := make([]map[string]interface{}, 0, 20)
-	for _, model := range r.Ms {
-		ids := r.getMenuIDs(model.Menus)
+	sm := make([]map[string]interface{}, 0, response.DefCap)
+
+	for i := range r.ms {
+		ids := r.getMenuIDs(r.ms[i].Menus)
 		m := map[string]interface{}{
-			"id":         model.ID,
-			"type":       model.Type,
-			"name":       model.Name,
-			"key":        model.Key,
-			"remark":     model.Remark,
-			"sort":       model.Sort,
-			"status":     model.Status,
-			"created_at": app.TimeToStr(model.CreatedAt),
+			"id":         r.ms[i].ID,
+			"type":       r.ms[i].Type,
+			"name":       r.ms[i].Name,
+			"key":        r.ms[i].Key,
+			"remark":     r.ms[i].Remark,
+			"sort":       r.ms[i].Sort,
+			"status":     r.ms[i].Status,
+			"created_at": app.TimeToStr(r.ms[i].CreatedAt),
 			"menu_ids":   ids,
 		}
 		sm = append(sm, m)
 	}
+
 	return sm
 }
 
-func (r adminRoleList) getMenuIDs(menus []admin_menu.AdminMenu) []uint {
-	ids := make([]uint, 0, 20)
-	for _, menu := range menus {
-		ids = append(ids, menu.ID)
+func (r adminRoleList) getMenuIDs(menus []*admin_menu.AdminMenu) []uint {
+	ids := make([]uint, 0)
+
+	for i := range menus {
+		ids = append(ids, menus[i].ID)
 	}
+
 	return ids
 }

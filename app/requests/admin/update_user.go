@@ -1,10 +1,10 @@
-package admin_request
+package request
 
 import (
 	"fagin/pkg/request"
 )
 
-type updateUser struct {
+type UpdateUser struct {
 	NickName string `form:"nick_name" json:"nick_name" binding:"required,max=64"`
 	Phone    string `form:"phone" json:"phone" binding:"required,max=64"`
 	Email    string `form:"email" json:"email" binding:"required,max=64"`
@@ -17,17 +17,18 @@ type updateUser struct {
 	request.Validation `binding:"-"`
 }
 
-func NewUpdateUser() *updateUser {
-	r := new(updateUser)
+func NewUpdateUser() *UpdateUser {
+	r := new(UpdateUser)
 	r.SetRequest(r)
+
 	return r
 }
 
-func (*updateUser) Message() map[string]string {
+func (*UpdateUser) Message() map[string]string {
 	return map[string]string{}
 }
 
-func (*updateUser) Attributes() map[string]string {
+func (*UpdateUser) Attributes() map[string]string {
 	return map[string]string{
 		"NickName": "昵称",
 		"Phone":    "电话",

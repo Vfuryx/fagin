@@ -1,0 +1,79 @@
+<template>
+  <BasicDrawer
+    v-bind="$attrs"
+    @register="registerDrawer"
+    showFooter
+    :title="getTitle"
+    width="50%"
+    @ok="handleSubmit"
+  >
+    <BasicForm @register="registerForm" />
+  </BasicDrawer>
+</template>
+<script lang="ts" setup name="{{ pascalCase name }}Drawer">
+  import { ref, computed, unref } from 'vue';
+  import { BasicDrawer, useDrawerInner } from '/@/components/Drawer';
+  import { BasicForm, useForm } from '/@/components/Form/index';
+  import { formSchema } from './{{ camelCase name }}.data';
+
+  import {
+    create{{ pascalCase name }},
+    get{{ pascalCase name }}Detail,
+    update{{ pascalCase name }},
+  } from '/@/api/{{ camelCase path }}/{{ camelCase name }}';
+
+  const emit = defineEmits(['success', 'register']);
+
+  const isUpdate = ref(true);
+  const rowId = ref(0);
+
+  const [registerForm, { resetFields, setFieldsValue, validate }] = useForm({
+    labelWidth: 100,
+    schemas: formSchema,
+    showActionButtonGroup: false,
+    baseColProps: { lg: 12, md: 24 },
+  });
+
+  const [registerDrawer, { setDrawerProps, closeDrawer, changeLoading }] = useDrawerInner(async (data) => {
+    changeLoading(true);
+    await resetFields();
+    setDrawerProps({ confirmLoading: true });
+
+    isUpdate.value = !!data?.isUpdate;
+
+    if (unref(isUpdate)) {
+      rowId.value = data.record.id;
+      const detail = await get{{ pascalCase name }}Detail(rowId.value);
+      await setFieldsValue({
+        ...detail,
+      });
+    }
+
+    changeLoading(false);
+    setDrawerProps({ confirmLoading: false });
+  });
+
+  const getTitle = computed(() => (!unref(isUpdate) ? '新增 ' : '编辑'));
+
+  async function handleSubmit() {
+    try {
+      const values = await validate();
+      setDrawerProps({ confirmLoading: true });
+
+      // TODO custom api
+      if (!unref(isUpdate)) {
+        await create{{ pascalCase name }}(values);
+        console.log('新增');
+      } else {
+        await update{{ pascalCase name }}(rowId.value, values);
+        console.log('编辑');
+      }
+
+      console.log(values);
+      closeDrawer();
+      emit('success');
+    } finally {
+      setDrawerProps({ confirmLoading: false });
+    }
+  }
+</script>

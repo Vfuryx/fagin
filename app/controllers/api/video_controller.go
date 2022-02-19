@@ -4,13 +4,14 @@ import (
 	"fagin/app/enums"
 	"fagin/app/errno"
 	"fagin/app/models/video_info"
-	"fagin/app/service"
+	"fagin/app/services"
 	"fagin/config"
 	"fagin/pkg/request"
-	"github.com/gin-gonic/gin"
 	"net/http"
 	"os"
 	"time"
+
+	"github.com/gin-gonic/gin"
 )
 
 type videoController struct {
@@ -29,9 +30,9 @@ var VideoController videoController
 // @Success 200 {object} response.Response "成功返回视频溜 <br/> 失败返回 {"code": 10005,"message": "打开文件失败"}"
 // @Router /api/video/play/{id} [get]
 func (ctr *videoController) PlayVideo(ctx *gin.Context) {
-	id, err := request.ShouldBindUriUintID(ctx)
+	id, err := request.ShouldBindURIUintID(ctx)
 	if err != nil {
-		ctr.ResponseJsonErr(ctx, errno.ReqErr, nil)
+		ctr.ResponseJSONErr(ctx, errno.ReqErr, nil)
 		return
 	}
 
@@ -40,20 +41,24 @@ func (ctr *videoController) PlayVideo(ctx *gin.Context) {
 		"status": enums.StatusActive.Get(),
 	}
 	columns := []string{"id", "path"}
+
 	var v video_info.VideoInfo
-	err = service.VideoInfo.Query(params, columns, nil).Find(&v)
+
+	err = services.VideoInfo.Query(params, columns, nil).Find(&v)
 	if err != nil {
-		ctr.ResponseJsonErrLog(ctx, errno.CtxOpenFileErr, err)
+		ctr.ResponseJSONErrLog(ctx, errno.CtxOpenFileErr, err)
 		return
 	}
 
-	path := config.App().StoragePath + v.Path
+	path := config.App().StoragePath() + v.Path
+
 	file, err := os.Open(path)
 	if err != nil {
-		ctr.ResponseJsonErrLog(ctx, errno.CtxOpenFileErr, err)
+		ctr.ResponseJSONErrLog(ctx, errno.CtxOpenFileErr, err)
 		return
 	}
+
 	http.ServeContent(ctx.Writer, ctx.Request, "", time.Now(), file)
+
 	_ = file.Close()
-	return
 }

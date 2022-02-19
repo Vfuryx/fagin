@@ -1,4 +1,4 @@
-package admin_responses
+package responses
 
 import (
 	"fagin/app/models/author"
@@ -6,27 +6,29 @@ import (
 )
 
 type authorList struct {
-	Ms []author.Author
+	ms []*author.Author
+
 	response.Collect
 }
 
-var _ response.Response = &authorList{}
-
-func AuthorList(models ...author.Author) *authorList {
-	res := authorList{Ms: models}
+func NewAuthorList(models ...*author.Author) response.Response {
+	res := authorList{ms: models}
 	res.SetCollect(&res)
+
 	return &res
 }
 
 func (res *authorList) Serialize() []map[string]interface{} {
-	sm := make([]map[string]interface{}, 0, 20)
-	for _, model := range res.Ms {
+	sm := make([]map[string]interface{}, 0, response.DefCap)
+
+	for i := range res.ms {
 		m := map[string]interface{}{
-			"id":     model.ID,
-			"name":   model.Name,
-			"status": model.Status,
+			"id":     res.ms[i].ID,
+			"name":   res.ms[i].Name,
+			"status": res.ms[i].Status,
 		}
 		sm = append(sm, m)
 	}
+
 	return sm
 }

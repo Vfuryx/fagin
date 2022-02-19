@@ -46,22 +46,26 @@ func Close() {
 
 // cacheEngine 获取缓存
 func cacheEngine() (cache, error) {
-	if !config.Cache().Open {
+	if !config.Cache().Open() {
 		return nil, ErrNotOpen
 	}
+
 	if engine == nil {
-		fn, ok := engineMap[config.Cache().DefDriver]
+		fn, ok := engineMap[config.Cache().DefDriver()]
 		if !ok {
 			return nil, errors.New("err")
 		}
+
 		var err error
 
 		engine, err = fn()
 		if err != nil {
 			engine = nil // 重置为 nil
 		}
+
 		return engine, err
 	}
+
 	return engine, nil
 }
 
@@ -72,7 +76,7 @@ type Cache struct {
 }
 
 func (sc *Cache) SetKeyFormat(format string) {
-	sc.format = config.Cache().Prefix + format
+	sc.format = config.Cache().Prefix() + format
 }
 
 func (sc *Cache) SetLifeTime(t time.Duration) {
@@ -98,6 +102,7 @@ func (sc *Cache) Exists(value ...interface{}) (bool, error) {
 	if err != nil {
 		return false, err
 	}
+
 	return c.Exists(sc.Key(value...))
 }
 
@@ -107,6 +112,7 @@ func (sc *Cache) Remove(value ...interface{}) (int64, error) {
 	if err != nil {
 		return 0, err
 	}
+
 	return c.Remove(sc.Key(value...))
 }
 
@@ -123,6 +129,7 @@ func (sc *Cache) Get(value ...interface{}) (data []byte, err error) {
 				return data, nil
 			}
 		}
+
 		return nil, err
 	}
 
@@ -134,15 +141,17 @@ func (sc *Cache) Get(value ...interface{}) (data []byte, err error) {
 		return nil, err
 	} else if ok { // 存在
 		if data, err = c.Get(key); err == nil {
-			return data, err
+			return data, nil
 		}
 	}
 
 	lock.Lock()
 	defer lock.Unlock()
+
 	if data, err = c.Get(key); err == nil {
-		return data, err
+		return data, nil
 	}
+
 	num++
 	fmt.Println(num)
 	// 不存在
@@ -153,6 +162,7 @@ func (sc *Cache) Get(value ...interface{}) (data []byte, err error) {
 	if _, err = c.Set(key, data, sc.Lift()); err != nil {
 		return nil, err
 	}
+
 	return data, nil
 }
 
@@ -161,5 +171,6 @@ func (sc *Cache) Close() error {
 	if err != nil {
 		return err
 	}
+
 	return c.Close()
 }

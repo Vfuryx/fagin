@@ -1,11 +1,11 @@
-package admin_request
+package request
 
 import (
 	"fagin/pkg/request"
 )
 
-type createAdminMenu struct {
-	ParentId      uint   `form:"parent_id" json:"parent_id" binding:""`
+type CreateAdminMenu struct {
+	ParentID      uint   `form:"parent_id" json:"parent_id" binding:""`
 	Type          int    `form:"type" json:"type" binding:"oneof=0 1 2"`
 	Path          string `form:"path" json:"path" binding:"required,max=255"`
 	Name          string `form:"name" json:"name" binding:"max=32"`
@@ -26,16 +26,18 @@ type createAdminMenu struct {
 	request.Validation `binding:"-"`
 }
 
-func NewCreateAdminMenu() *createAdminMenu {
-	r := new(createAdminMenu)
+func NewCreateAdminMenu() *CreateAdminMenu {
+	r := new(CreateAdminMenu)
 	r.SetRequest(r)
+
 	return r
 }
-func (*createAdminMenu) Message() map[string]string {
+
+func (*CreateAdminMenu) Message() map[string]string {
 	return map[string]string{}
 }
 
-func (*createAdminMenu) Attributes() map[string]string {
+func (*CreateAdminMenu) Attributes() map[string]string {
 	return map[string]string{
 		"Type":          "类型",
 		"ParentId":      "父ID",

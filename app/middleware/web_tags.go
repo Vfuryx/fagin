@@ -5,10 +5,11 @@ import (
 	"fagin/app"
 	"fagin/app/caches"
 	"fagin/app/errno"
-	"fagin/app/service"
+	"fagin/app/services"
 	"fagin/pkg/response"
-	"github.com/gin-gonic/gin"
 	"runtime/debug"
+
+	"github.com/gin-gonic/gin"
 )
 
 type webTags struct{}
@@ -24,18 +25,21 @@ func (*webTags) WebTags() gin.HandlerFunc {
 			}
 			columns := []string{"id", "name", "status"}
 			with := gin.H{}
-			data, err := service.Tag.All(params, columns, with)
+			data, err := services.Tag.All(params, columns, with)
 			if err != nil {
 				return nil, err
 			}
 			return json.Marshal(data)
 		})
+
 		str, err := homeTags.Get()
 		if err != nil {
 			go app.Log().Error(err, string(debug.Stack()))
-			response.JsonErr(ctx, errno.CtxShowErr, nil)
+			response.JSONErr(ctx, errno.CtxShowErr, nil)
+
 			return
 		}
+
 		ctx.Set("web_tags", str)
 		ctx.Next()
 	}

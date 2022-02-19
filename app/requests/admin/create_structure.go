@@ -1,29 +1,31 @@
-package admin_request
+package request
 
 import (
 	"fagin/pkg/request"
 )
 
-type createStructure struct {
-	Type               string `form:"type" json:"type" binding:"required,max=16"`
-	Code               string `form:"code" json:"code" binding:"required,max=64"`
-	Name               string `form:"name" json:"name" binding:"required,max=32"`
-	PermissionIDs      []uint `form:"permission_ids" json:"permission_ids" binding:"required,dive,required"`
-	Sort               uint   `form:"sort" json:"sort" binding:""`
+type CreateStructure struct {
+	Type          string `form:"type" json:"type" binding:"required,max=16"`
+	Code          string `form:"code" json:"code" binding:"required,max=64"`
+	Name          string `form:"name" json:"name" binding:"required,max=32"`
+	PermissionIDs []uint `form:"permission_ids" json:"permission_ids" binding:"required,dive,required"`
+	Sort          uint   `form:"sort" json:"sort" binding:""`
+
 	request.Validation `binding:"-"`
 }
 
-func NewCreateStructure() *createStructure {
-	r := new(createStructure)
+func NewCreateStructure() *CreateStructure {
+	r := new(CreateStructure)
 	r.SetRequest(r)
+
 	return r
 }
 
-func (*createStructure) Message() map[string]string {
+func (*CreateStructure) Message() map[string]string {
 	return map[string]string{}
 }
 
-func (*createStructure) Attributes() map[string]string {
+func (*CreateStructure) Attributes() map[string]string {
 	return map[string]string{
 		"Type":          "类型",
 		"Code":          "组件编码",

@@ -4,6 +4,8 @@ import (
 	"fagin/pkg/service"
 	"fagin/utils"
 	"fmt"
+	"path"
+
 	"github.com/spf13/cobra"
 )
 
@@ -16,11 +18,11 @@ go run console/main.go service path
 `,
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("service called")
-		if len(args) <= 0 {
+		if len(args) == 0 {
 			fmt.Println("create service err")
 			return
 		}
-		path, name := utils.GetPathAndUnderscore(args[0])
-		service.CreateServiceTemplate(path, name)
+		p := utils.PathUnderscore(args[0])
+		service.CreateServiceTemplate(p, path.Base(p))
 	},
 }

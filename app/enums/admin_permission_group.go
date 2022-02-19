@@ -24,6 +24,7 @@ func (code AdminPermissionGroup) String() string {
 	case Operation:
 		return "操作日志管理"
 	}
+
 	return ""
 }
 

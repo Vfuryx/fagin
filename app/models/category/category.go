@@ -1,8 +1,9 @@
 package category
 
 import (
-	"gorm.io/gorm"
 	"time"
+
+	"gorm.io/gorm"
 )
 
 type Category struct {

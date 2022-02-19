@@ -2,8 +2,9 @@ package admin_user
 
 import (
 	"fagin/pkg/db"
-	"gorm.io/gorm"
 	"time"
+
+	"gorm.io/gorm"
 )
 
 // New 实例化
@@ -22,6 +23,7 @@ var _ db.DAO = &Dao{}
 func (m *AdminUser) Dao() *Dao {
 	dao := &Dao{}
 	dao.Dao.SetModel(m)
+
 	return dao
 }
 
@@ -29,14 +31,16 @@ func (m *AdminUser) Dao() *Dao {
 func NewDao() *Dao {
 	dao := &Dao{}
 	dao.Dao.SetModel(New())
+
 	return dao
 }
 
 // All 所有数据
-func (d *Dao) All(columns []string) (*[]AdminUser, error) {
-	var model []AdminUser
+func (d *Dao) All(columns []string) ([]*AdminUser, error) {
+	var model []*AdminUser
 	err := db.ORM().Select(columns).Find(&model).Error
-	return &model, err
+
+	return model, err
 }
 
 // Query 通用查询
@@ -47,6 +51,7 @@ func (d *Dao) Query(params map[string]interface{}, columns []string, with map[st
 		v  interface{}
 		ok bool
 	)
+
 	if v, ok = params["id"]; ok {
 		model = model.Where("id = ?", v)
 	}
@@ -64,6 +69,7 @@ func (d *Dao) Query(params map[string]interface{}, columns []string, with map[st
 	}
 
 	d.DB = d.With(model, with)
+
 	return d
 }
 
@@ -81,16 +87,16 @@ func (d *Dao) Login(id uint) {
 }
 
 // SetLoginAt 设置登录时间
-func (d *Dao) SetLoginAt(id uint, time int64) error {
+func (d *Dao) SetLoginAt(id uint, t int64) error {
 	return db.ORM().Model(d.GetModel()).Where("id = ?", id).Updates(map[string]interface{}{
-		"login_at":      time,
+		"login_at":      t,
 		"last_login_at": gorm.Expr("`login_at`"),
 	}).Error
 }
 
 // SetCheckInAt 设置签发时间
-func (d *Dao) SetCheckInAt(id uint, time int64) error {
+func (d *Dao) SetCheckInAt(id uint, t int64) error {
 	return db.ORM().Model(d.GetModel()).Where("id = ?", id).Updates(map[string]interface{}{
-		"check_in_at": time,
+		"check_in_at": t,
 	}).Error
 }

@@ -7,15 +7,16 @@ import (
 	"fagin/pkg/router/no_router"
 	"fagin/pkg/view"
 	"fagin/routes"
+	"html/template"
+	"net/http"
+
 	"github.com/gin-contrib/cors"
 	"github.com/gin-contrib/pprof"
 	"github.com/gin-gonic/gin"
-	"html/template"
-	"net/http"
 )
 
-// New 实例化
-func New() *gin.Engine {
+// Init 初始化化
+func Init() *gin.Engine {
 	e := gin.New()
 
 	// 加载模版
@@ -36,25 +37,25 @@ func New() *gin.Engine {
 	routes.Handle(e)
 
 	// 设置公开静态资源 （上传公开文件）
-	e.Static(config.Template().PublicRouter, config.Template().Public)
+	e.Static(config.Template().PublicRouter(), config.Template().Public())
 
 	// 设置固定静态资源文件
-	e.StaticFS(config.Template().StaticRouter, http.FS(config.Template().StaticEmbed))
+	e.StaticFS(config.Template().StaticRouter(), http.FS(config.Template().StaticEmbed()))
 
 	// 全局实例Session
-	//e.Use(session.Sessions())
+	// e.Use(session.Sessions())
 
 	// 支持跨域
-	if config.DefaultRouter().IsCors {
+	if config.DefaultRouter().IsCors() {
 		conf := cors.DefaultConfig()
-		conf.AllowOrigins = config.DefaultRouter().CorsConf.AllowOrigins
-		conf.AllowHeaders = config.DefaultRouter().CorsConf.AllowHeaders
-		conf.AllowMethods = config.DefaultRouter().CorsConf.AllowMethods
+		conf.AllowOrigins = config.DefaultRouter().CorsConf().AllowOrigins
+		conf.AllowHeaders = config.DefaultRouter().CorsConf().AllowHeaders
+		conf.AllowMethods = config.DefaultRouter().CorsConf().AllowMethods
 		e.Use(cors.New(conf))
 	}
 
 	// 限定表单占用内存
-	//e.MaxMultipartMemory = 32 << 20
+	// e.MaxMultipartMemory = 32 << 20
 
 	// 配置 404 模块
 	e.NoRoute(no_router.NoRouteHandle)
@@ -82,10 +83,11 @@ func setPprof(e *gin.Engine) {
 // 加载模版
 func loadHTMLGlobFS(e *gin.Engine) *template.Template {
 	temp := template.Must(template.New("").
-		Delims(config.Template().DelimitersL, config.Template().DelimitersR).         // 1 设置定界符
-		Funcs(config.Template().FuncMap).                                             // 2 注册模版函数
-		ParseFS(config.Template().TemplatesEmbed, config.Template().TemplatePattern)) // 3 导入模版
+		Delims(config.Template().DelimitersL(), config.Template().DelimitersR()).         // 1 设置定界符
+		Funcs(config.Template().FuncMap()).                                               // 2 注册模版函数
+		ParseFS(config.Template().TemplatesEmbed(), config.Template().TemplatePattern())) // 3 导入模版
 
 	e.SetHTMLTemplate(temp)
+
 	return temp
 }

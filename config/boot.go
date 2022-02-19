@@ -2,23 +2,25 @@ package config
 
 import (
 	"fmt"
+
 	"github.com/fsnotify/fsnotify"
 	"github.com/spf13/viper"
 )
 
 // Init 初始化配置
 func Init() {
-	appConfig.init()
-	logConfig.init()
-	sessionConfig.init()
-	amqpConfig.init()
-	cacheConfig.init()
-	databaseConfig.init()
-	cdnConfig.init()
-	templateConfig.init()
-	defaultRouterConfig.init()
-	adminRouterConfig.init()
-	jwtConfig.init()
+	appConfigInit()
+	databaseConfigInit()
+	templateConfigInit()
+	logConfigInit()
+	sessionConfigInit()
+	amqpConfigInit()
+	cacheConfigInit()
+	cndConfigInit()
+
+	defaultRouterConfigInit()
+	adminRouterConfigInit()
+	jwtConfigInit()
 
 	// 监听
 	watchConfig()

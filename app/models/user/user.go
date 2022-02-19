@@ -2,8 +2,9 @@ package user
 
 import (
 	"fagin/app/models/info"
-	"gorm.io/gorm"
 	"time"
+
+	"gorm.io/gorm"
 )
 
 // User 用户模型
@@ -22,6 +23,6 @@ type User struct {
 }
 
 // 设定表名
-//func (User) TableName() string {
-//	return "users"
-//}
+// func (User) TableName() string {
+// 	return "users"
+// }

@@ -20,6 +20,7 @@ func callReplacer(message, attribute, rule, parameters string) string {
 	if callback, ok := replacers[rule]; ok {
 		message = callback(message, attribute, rule, parameters)
 	}
+
 	return message
 }
 

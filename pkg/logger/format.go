@@ -3,10 +3,11 @@ package logger
 import (
 	"bytes"
 	"fmt"
-	"github.com/sirupsen/logrus"
 	"sort"
 	"strings"
 	"time"
+
+	"github.com/sirupsen/logrus"
 )
 
 // Formatter - logrus formatter, implements logrus.Formatter
@@ -44,11 +45,13 @@ func (f *Formatter) Format(entry *logrus.Entry) ([]byte, error) {
 	}
 
 	b.WriteString(" [")
+
 	if f.ShowFullLevel {
 		b.WriteString(level)
 	} else {
 		b.WriteString(level[:4])
 	}
+
 	b.WriteString("] ")
 
 	if !f.NoColors && f.NoFieldsColors {
@@ -72,6 +75,7 @@ func (f *Formatter) Format(entry *logrus.Entry) ([]byte, error) {
 	} else {
 		b.WriteString(entry.Message)
 	}
+
 	b.WriteByte('\n')
 
 	return b.Bytes(), nil
@@ -95,18 +99,21 @@ func (f *Formatter) writeFields(b *bytes.Buffer, entry *logrus.Entry) {
 func (f *Formatter) writeOrderedFields(b *bytes.Buffer, entry *logrus.Entry) {
 	length := len(entry.Data)
 	foundFieldsMap := map[string]bool{}
+
 	for _, field := range f.FieldsOrder {
 		if _, ok := entry.Data[field]; ok {
 			foundFieldsMap[field] = true
 			length--
+
 			f.writeField(b, entry, field)
 		}
 	}
 
 	if length > 0 {
 		notFoundFields := make([]string, 0, length)
+
 		for field := range entry.Data {
-			if foundFieldsMap[field] == false {
+			if !foundFieldsMap[field] {
 				notFoundFields = append(notFoundFields, field)
 			}
 		}
@@ -135,7 +142,7 @@ const (
 )
 
 func getColorByLevel(level logrus.Level) int {
-	switch level {
+	switch level { //nolint:exhaustive // 判断等级
 	case logrus.DebugLevel:
 		return colorGray
 	case logrus.WarnLevel:

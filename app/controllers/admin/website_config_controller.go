@@ -6,8 +6,9 @@ import (
 	"fagin/app/errno"
 	adminRequest "fagin/app/requests/admin"
 	response "fagin/app/responses/admin"
-	"fagin/app/service"
+	"fagin/app/services"
 	"fagin/config"
+
 	"github.com/gin-gonic/gin"
 )
 
@@ -24,33 +25,35 @@ func (ctr *websiteConfigController) Info(ctx *gin.Context) {
 			"contact_number", "company_address", "email", "icp", "public_security_record",
 			"web_logo", "qr_code",
 		}
-		info, err := service.WebsiteConfigService.ShowInfo(1, column)
+		info, err := services.WebsiteConfigService.ShowInfo(1, column)
 		if err != nil {
 			return nil, err
 		}
-		data := response.WebsiteConfig(*info).Item()
+		data := response.NewWebsiteConfig(info).Item()
 		return json.Marshal(data)
 	})
+
 	str, err := webConfig.Get()
 	if err != nil {
-		ctr.ResponseJsonErrLog(ctx, errno.CtxShowErr, err)
+		ctr.ResponseJSONErrLog(ctx, errno.CtxShowErr, err)
 		return
 	}
 
 	var data gin.H
+
 	err = json.Unmarshal(str, &data)
 	if err != nil {
-		ctr.ResponseJsonErrLog(ctx, errno.CtxShowErr, err)
+		ctr.ResponseJSONErrLog(ctx, errno.CtxShowErr, err)
 		return
 	}
-	ctr.ResponseJsonOK(ctx, data)
-	return
+
+	ctr.ResponseJSONOK(ctx, data)
 }
 
 func (ctr *websiteConfigController) UpdateInfo(ctx *gin.Context) {
 	var r = adminRequest.NewUpdateWebsiteConfig()
 	if data, ok := r.Validate(ctx); !ok {
-		ctr.ResponseJsonErr(ctx, errno.ReqErr, data)
+		ctr.ResponseJSONErr(ctx, errno.ReqErr, data)
 		return
 	}
 
@@ -70,30 +73,30 @@ func (ctr *websiteConfigController) UpdateInfo(ctx *gin.Context) {
 		"qr_code":                r.QRCode,
 	}
 
-	err := service.WebsiteConfigService.UpdateInfo(1, data)
+	err := services.WebsiteConfigService.UpdateInfo(1, data)
 	if err != nil {
-		ctr.ResponseJsonErrLog(ctx, errno.CtxUpdateErr, err)
+		ctr.ResponseJSONErrLog(ctx, errno.CtxUpdateErr, err)
 		return
 	}
 
-	ctr.ResponseJsonOK(ctx, nil)
-	return
+	ctr.ResponseJSONOK(ctx, nil)
 }
 
 // Upload 上传
 func (ctr *websiteConfigController) Upload(ctx *gin.Context) {
 	var r = adminRequest.NewUploadWebsiteConfigPic()
 	if data, ok := r.Validate(ctx); !ok {
-		ctr.ResponseJsonErr(ctx, errno.ReqErr, data)
+		ctr.ResponseJSONErr(ctx, errno.ReqErr, data)
 		return
 	}
 
-	upload := service.NewUploadService(config.App().PublicPath)
+	upload := services.NewUploadService(config.App().PublicPath())
+
 	path, err := upload.UploadFile("/web/website/", r.File)
 	if err != nil {
-		ctr.ResponseJsonErrLog(ctx, errno.ReqUploadFileErr, err)
+		ctr.ResponseJSONErrLog(ctx, errno.ReqUploadFileErr, err)
 		return
 	}
 
-	ctr.ResponseJsonOK(ctx, gin.H{"path": "/public/" + path})
+	ctr.ResponseJSONOK(ctx, gin.H{"path": "/public/" + path})
 }

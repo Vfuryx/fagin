@@ -19,19 +19,22 @@ var _ db.DAO = &Dao{}
 func (u *User) Dao() *Dao {
 	dao := &Dao{}
 	dao.Dao.SetModel(u)
+
 	return dao
 }
 
 func NewDao() *Dao {
 	dao := &Dao{}
 	dao.Dao.SetModel(New())
+
 	return dao
 }
 
-func (d *Dao) All(columns []string) (*[]User, error) {
-	var model []User
+func (d *Dao) All(columns []string) ([]*User, error) {
+	var model []*User
 	err := db.ORM().Select(columns).Find(&model).Error
-	return &model, err
+
+	return model, err
 }
 
 func (d *Dao) Query(params map[string]interface{}, columns []string, with map[string]interface{}) db.DAO {
@@ -41,6 +44,7 @@ func (d *Dao) Query(params map[string]interface{}, columns []string, with map[st
 		v  interface{}
 		ok bool
 	)
+
 	if v, ok = params["id"]; ok {
 		model = model.Where("id = ?", v)
 	}
@@ -58,6 +62,7 @@ func (d *Dao) Query(params map[string]interface{}, columns []string, with map[st
 	}
 
 	d.DB = d.With(model, with)
+
 	return d
 }
 
@@ -67,18 +72,21 @@ func (d *Dao) Create(data interface{}) error {
 	if !ok {
 		return errors.New("数据出错")
 	}
+
 	if u.Password != "" {
 		// 加密密码
 		p, err := app.Encrypt(u.Password)
 		if err != nil {
 			return err
 		}
+
 		u.Password = p
 	}
+
 	return d.Dao.Create(u)
 }
 
-// 更新用户
+// Update 更新用户
 func (d *Dao) Update(id uint, data map[string]interface{}) error {
 	if v, ok := data["password"]; ok && v != "" {
 		// 加密密码
@@ -86,8 +94,10 @@ func (d *Dao) Update(id uint, data map[string]interface{}) error {
 		if err != nil {
 			return err
 		}
+
 		data["password"] = p
 	}
+
 	return d.Dao.Update(id, data)
 }
 
@@ -95,5 +105,6 @@ func (d *Dao) GetUserByEmail(email string) error {
 	params := map[string]interface{}{
 		"email": email,
 	}
+
 	return d.Query(params, []string{"*"}, nil).First(d.GetModel())
 }

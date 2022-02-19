@@ -6,19 +6,23 @@ import (
 	"fagin/app/errno"
 	"fagin/app/middleware" // 中间件
 	"fagin/pkg/router/no_router"
-	"github.com/gin-gonic/gin"
 	"net/http"
 	"time"
+
+	"github.com/gin-gonic/gin"
 )
 
-var apiRoute = func(Api *gin.RouterGroup) {
+const apiMax = 1000
+const apiDuration = 60 * time.Second
+
+var apiRoute routeFunc = func(Api *gin.RouterGroup) {
 	// 404
 	no_router.NoRoute(Api.BasePath(), func(ctx *gin.Context) {
-		app.ResponseJsonWithStatus(ctx, http.StatusNotFound, errno.NotFoundErr, nil, gin.H{"m": "api 404"})
+		app.ResponseJSONWithStatus(ctx, http.StatusNotFound, errno.NotFoundErr, nil, gin.H{"m": "api 404"})
 	})
 
 	// 测试限流中间件
-	Api.Use(middleware.RateLimitMiddleware(1000, 60*time.Second, func(ctx *gin.Context) {
+	Api.Use(middleware.RateLimitMiddleware(apiMax, apiDuration, func(ctx *gin.Context) {
 		ctx.String(http.StatusServiceUnavailable, "服务器繁忙")
 	}))
 
@@ -44,7 +48,7 @@ var apiRoute = func(Api *gin.RouterGroup) {
 			V1.GET("/logout", api.AuthController.Logout)
 			V1.GET("/add", api.AuthController.CreateUser)
 
-			//用户组
+			// 用户组
 			user := V1.Group("/user")
 			{
 				user.GET("/", api.UserController.UserList) // 用户列表

@@ -6,21 +6,22 @@ import (
 )
 
 type userResponse struct {
-	Users []user.User
+	ms []*user.User
+
 	response.Collect
 }
 
-var _ response.Response = &userResponse{}
-
-func UserResponse(users ...user.User) *userResponse {
-	ur := userResponse{Users: users}
+func NewUserResponse(users ...*user.User) response.Response {
+	ur := userResponse{ms: users}
 	ur.Collect.Response = &ur
+
 	return &ur
 }
 
 func (ur *userResponse) Serialize() []map[string]interface{} {
-	sm := make([]map[string]interface{}, 0, 20)
-	for _, u := range ur.Users {
+	sm := make([]map[string]interface{}, 0, response.DefCap)
+
+	for _, u := range ur.ms {
 		m := map[string]interface{}{
 			"id":       u.ID,
 			"username": u.Username,
@@ -28,5 +29,6 @@ func (ur *userResponse) Serialize() []map[string]interface{} {
 		}
 		sm = append(sm, m)
 	}
+
 	return sm
 }

@@ -2,6 +2,7 @@ package auths
 
 import (
 	"fagin/app/models/admin_user"
+
 	"github.com/gin-gonic/gin"
 )
 
@@ -14,9 +15,11 @@ func GetAdminID(ctx *gin.Context) uint {
 func GetAdmin(ctx *gin.Context) (*admin_user.AdminUser, error) {
 	uid := GetAdminID(ctx)
 	admin := admin_user.New()
-	err := admin_user.NewDao().FindById(uid, []string{"*"})
+
+	err := admin_user.NewDao().FindByID(uid, []string{"*"})
 	if err != nil {
 		return nil, err
 	}
+
 	return admin, nil
 }

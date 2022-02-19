@@ -14,10 +14,10 @@ const (
 )
 
 func (code TimeFormat) String() string {
-	switch code {
-	case TimeFormatDef:
+	if code == TimeFormatDef {
 		return "默认"
 	}
+
 	return ""
 }
 

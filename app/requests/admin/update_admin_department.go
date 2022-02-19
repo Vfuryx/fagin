@@ -1,10 +1,10 @@
-package admin_request
+package request
 
 import (
 	"fagin/pkg/request"
 )
 
-type updateAdminDepartment struct {
+type UpdateAdminDepartment struct {
 	ParentID uint   `form:"parent_id" json:"parent_id" binding:"min=0"`
 	Name     string `form:"name" json:"name" binding:"required,max=128"`
 	Remark   string `form:"remark" json:"remark" binding:"max=255"`
@@ -14,17 +14,18 @@ type updateAdminDepartment struct {
 	request.Validation `binding:"-"`
 }
 
-func NewUpdateAdminDepartment() *updateAdminDepartment {
-	r := new(updateAdminDepartment)
+func NewUpdateAdminDepartment() *UpdateAdminDepartment {
+	r := new(UpdateAdminDepartment)
 	r.SetRequest(r)
+
 	return r
 }
 
-func (*updateAdminDepartment) Message() map[string]string {
+func (*UpdateAdminDepartment) Message() map[string]string {
 	return map[string]string{}
 }
 
-func (*updateAdminDepartment) Attributes() map[string]string {
+func (*UpdateAdminDepartment) Attributes() map[string]string {
 	return map[string]string{
 		"ParentID": "父id",
 		"Name":     "部门名称",
@@ -34,6 +35,6 @@ func (*updateAdminDepartment) Attributes() map[string]string {
 	}
 }
 
-//func (r *updateAdminDepartment) Validate(ctx *gin.Context) (map[string]string, bool) {
+// func (r *UpdateAdminDepartment) Validate(ctx *gin.Context) (map[string]string, bool) {
 //	return request.Validated(r, ctx)
 //}

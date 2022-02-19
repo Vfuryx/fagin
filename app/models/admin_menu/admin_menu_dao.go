@@ -3,9 +3,10 @@ package admin_menu
 import (
 	"fagin/app/errno"
 	"fagin/pkg/db"
-	"github.com/gin-gonic/gin"
-	"strconv"
+	"fagin/utils"
 	"strings"
+
+	"github.com/gin-gonic/gin"
 )
 
 // New 实例
@@ -23,6 +24,7 @@ var _ db.DAO = &Dao{}
 func (m *AdminMenu) Dao() *Dao {
 	dao := &Dao{}
 	dao.Dao.SetModel(m)
+
 	return dao
 }
 
@@ -30,17 +32,21 @@ func (m *AdminMenu) Dao() *Dao {
 func NewDao() *Dao {
 	dao := &Dao{}
 	dao.Dao.SetModel(New())
+
 	return dao
 }
 
-func (d *Dao) All(params gin.H, columns []string) (*[]AdminMenu, error) {
-	var model []AdminMenu
+func (d *Dao) All(params gin.H, columns []string) ([]*AdminMenu, error) {
+	var model []*AdminMenu
+
 	m := db.ORM().Select(columns)
 	if v, ok := params["type"]; ok {
 		m = m.Where("type = ?", v)
 	}
+
 	err := m.Find(&model).Error
-	return &model, err
+
+	return model, err
 }
 
 func (d *Dao) Query(params map[string]interface{}, columns []string, with map[string]interface{}) db.DAO {
@@ -50,6 +56,7 @@ func (d *Dao) Query(params map[string]interface{}, columns []string, with map[st
 		v  interface{}
 		ok bool
 	)
+
 	if v, ok = params["id"]; ok {
 		model = model.Where("id = ?", v)
 	}
@@ -95,12 +102,14 @@ func (d *Dao) Query(params map[string]interface{}, columns []string, with map[st
 	}
 
 	d.DB = d.With(model, with)
+
 	return d
 }
 
 func (d *Dao) Update(id uint, data map[string]interface{}) error {
 	var m AdminMenu
 	err := db.ORM().Select([]string{"id", "parent_id", "paths"}).Where("id = ?", id).First(&m).Error
+
 	if err != nil {
 		return err
 	}
@@ -109,19 +118,23 @@ func (d *Dao) Update(id uint, data map[string]interface{}) error {
 		if v != m.ParentID {
 			paths := ""
 			if v.(uint) == 0 {
-				paths = "0-" + strconv.FormatUint(uint64(m.ID), 10)
+				paths = "0-" + utils.Uint64ToStr(uint64(m.ID))
 			} else {
 				var pm AdminMenu
-				err = db.ORM().Select([]string{"id", "parent_id", "paths"}).Where("id = ?", v).First(&pm).Error
-				paths = pm.Paths + "-" + strconv.FormatUint(uint64(m.ID), 10)
+				db.ORM().Select([]string{"id", "parent_id", "paths"}).Where("id = ?", v).First(&pm)
+				paths = pm.Paths + "-" + utils.Uint64ToStr(uint64(m.ID))
 			}
-			var mm []AdminMenu
+
+			var mm []*AdminMenu
+
 			err := db.ORM().Where(`paths like ?`, m.Paths+"%").Find(&mm).Error
 			if err != nil {
 				return err
 			}
+
 			for i := range mm {
-				mm[i].Paths = strings.Replace(mm[i].Paths, m.Paths, paths, -1)
+				mm[i].Paths = strings.ReplaceAll(mm[i].Paths, m.Paths, paths)
+
 				err = db.ORM().Model(&AdminMenu{}).Where("id = ?", mm[i].ID).Updates(mm[i]).Error
 				if err != nil {
 					return err
@@ -135,13 +148,16 @@ func (d *Dao) Update(id uint, data map[string]interface{}) error {
 
 func (d *Dao) Delete(id uint) error {
 	var m AdminMenu
+
 	err := db.ORM().Select([]string{"id", "paths"}).Where("id = ?", id).First(&m).Error
 	if err != nil {
 		return err
 	}
+
 	if m.Paths == "" || m.Paths == "0" || m.Paths == "0-" {
 		return errno.DaoMenuPathsUnsafeErr
 	}
+
 	return db.ORM().Where(`paths like ?`, m.Paths+"%").Delete(&AdminMenu{}).Error
 }
 

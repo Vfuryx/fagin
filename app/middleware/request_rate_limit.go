@@ -1,9 +1,10 @@
 package middleware
 
 import (
-	"github.com/gin-gonic/gin"
 	"sync"
 	"time"
+
+	"github.com/gin-gonic/gin"
 )
 
 // 限流中间件
@@ -23,6 +24,7 @@ func newRequestRateLimit(max int, duration time.Duration) *requestRateLimit {
 	// 间隔清空请求数
 	go func() {
 		tick := time.NewTicker(rrs.Duration)
+
 		for {
 			<-tick.C
 			rrs.Lock()
@@ -30,6 +32,7 @@ func newRequestRateLimit(max int, duration time.Duration) *requestRateLimit {
 			rrs.Unlock()
 		}
 	}()
+
 	return rrs
 }
 
@@ -44,19 +47,24 @@ func (rrs *requestRateLimit) Increase() {
 func (rrs *requestRateLimit) IsAvailable() bool {
 	rrs.Lock()
 	defer rrs.Unlock()
+
 	return rrs.Count <= rrs.MaxCount
 }
 
 // RateLimitMiddleware 限流中间件
 func RateLimitMiddleware(max int, duration time.Duration, fun gin.HandlerFunc) gin.HandlerFunc {
 	rrs := newRequestRateLimit(max, duration)
+
 	return func(ctx *gin.Context) {
 		rrs.Increase()
+
 		if !rrs.IsAvailable() {
 			fun(ctx)
 			ctx.Abort()
+
 			return
 		}
+
 		ctx.Next()
 	}
 }

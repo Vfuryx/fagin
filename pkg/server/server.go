@@ -1,47 +1,107 @@
+//go:build !windows
+// +build !windows
+
 package server
 
 import (
-	"fagin/app/mq"
+	"context"
+	"fagin/app"
 	"fagin/config"
-	"fagin/pkg/cache"
-	"fagin/pkg/casbins"
-	"fagin/pkg/db"
-	"fagin/pkg/logger"
-	"fagin/pkg/request"
 	"fmt"
+	"log"
+	"net"
+	"net/http"
+	"os"
+	"os/signal"
+	"strconv"
+	"syscall"
+	"time"
+
+	"github.com/cloudflare/tableflip"
 )
 
-// Run 运行服务
-func Run() {
-	// 初始化配置
-	config.Init()
-
-	// 初始化日志
-	logger.Init()
-
-	// 初始化 db
-	db.Init()
-	// 关闭orm
-	defer db.Close()
-
-	// 初始化 cache 并且延迟关闭redis
-	cache.Init()
-	defer cache.Close()
-
-	// 初始化 casbins
-	casbins.Init()
-
-	// 初始化翻译器
-	if err := request.InitTrans(config.App().Locale); err != nil {
-		fmt.Printf("init trans failed, err:%v\n", err)
-		return
+func ListenAndServe(handler http.Handler) {
+	upg, err := tableflip.New(tableflip.Options{
+		PIDFile: config.App().RootPath() + "/app.pid",
+	})
+	if err != nil {
+		panic(err)
 	}
 
-	// 初始化MQ
-	if config.AMQP().Open {
-		mq.Init()
+	defer upg.Stop()
+
+	// Do an upgrade on SIGHUP
+	go waitUpgrade(upg)
+
+	// Listen must be called before Ready
+	ln, err := upg.Listen("tcp", ":"+config.App().Port())
+	if err != nil {
+		log.Panicln("Can't listen:", err)
 	}
 
-	// 初始化 web 服务
-	listenAndServe()
+	const base = 32 << 20
+
+	// 设置服务
+	server := &http.Server{
+		Addr:    ":" + config.App().Port(),
+		Handler: handler,
+		//ReadTimeout:    setting.ReadTimeout,
+		//WriteTimeout:   setting.WriteTimeout,
+		MaxHeaderBytes: base,
+	}
+
+	// 开始监听服务
+	go serve(server, ln)
+
+	// 记录 pid
+	err = os.WriteFile(config.App().RootPath()+"/app.pid", []byte(strconv.Itoa(syscall.Getpid())), os.ModePerm)
+	if err != nil {
+		panic(err)
+	}
+
+	if err = upg.Ready(); err != nil {
+		panic(err)
+	}
+
+	// 不是正式环境打印监听端口
+	if ok := app.IsProd(); !ok {
+		fmt.Printf("[GIN-debug] Listening and serving HTTP on %s \n", config.App().Port())
+	}
+
+	log.Printf("Actual pid is %d", syscall.Getpid())
+	log.Printf("ready")
+
+	<-upg.Exit()
+
+	const num = 30
+	// Make sure to set a deadline on exiting the process
+	// after upg.Exit() is closed. No new upgrades can be
+	// performed if the parent doesn't exit.
+	time.AfterFunc(num*time.Second, func() {
+		log.Println("Graceful shutdown timed out")
+		os.Exit(1)
+	})
+
+	// Wait for connections to drain.
+	_ = server.Shutdown(context.Background())
+}
+
+// waitUpgrade Do an upgrade on SIGHUP
+// 等待升级
+func waitUpgrade(upg *tableflip.Upgrader) {
+	sig := make(chan os.Signal, 1)
+	signal.Notify(sig, syscall.SIGHUP)
+
+	for range sig {
+		if err := upg.Upgrade(); err != nil {
+			log.Println("Upgrade failed:", err)
+		}
+	}
+}
+
+// 开始监听服务 (阻塞进程)
+func serve(server *http.Server, ln net.Listener) {
+	if err := server.Serve(ln); err != http.ErrServerClosed {
+		log.Println("HTTP server:", err)
+	}
 }

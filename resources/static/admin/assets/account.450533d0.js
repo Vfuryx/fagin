@@ -1,0 +1,1 @@
+import{ay as e}from"./index.6d3ed4e5.js";var t;(function(o){o.ACCOUNT_INFO="/account/getAccountInfo",o.SESSION_TIMEOUT="/user/sessionTimeout",o.TOKEN_EXPIRED="/user/tokenExpired"})(t||(t={}));const s=()=>e.get({url:t.ACCOUNT_INFO}),r=()=>e.post({url:t.TOKEN_EXPIRED});export{s as a,r as t};

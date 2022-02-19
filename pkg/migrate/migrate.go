@@ -4,16 +4,18 @@ import (
 	"fagin/config"
 	"fagin/pkg/db"
 	"fmt"
-	migrate "github.com/rubenv/sql-migrate"
 	"os"
 	"path"
 	"strings"
 	"text/template"
 	"time"
+
+	migrate "github.com/rubenv/sql-migrate"
 )
 
+// CreateMigration 创建迁移文件
 func CreateMigration(name string) error {
-	dir := config.App().MigrationsPath
+	dir := config.App().MigrationsPath()
 
 	var templateContent = `
 -- +migrate Up
@@ -34,6 +36,7 @@ func CreateMigration(name string) error {
 	if err != nil {
 		return err
 	}
+
 	defer func() { _ = f.Close() }()
 
 	if err := tpl.Execute(f, nil); err != nil {
@@ -41,13 +44,14 @@ func CreateMigration(name string) error {
 	}
 
 	fmt.Printf("Created migration %s", pathName)
+
 	return nil
 }
 
 // Migration 迁移数据库
 func Migration() {
 	migrations := &migrate.FileMigrationSource{
-		Dir: config.App().MigrationsPath,
+		Dir: config.App().MigrationsPath(),
 	}
 
 	database, err := db.ORM().DB()
@@ -66,7 +70,7 @@ func Migration() {
 // Rollback 重置最后一条迁移
 func Rollback() {
 	source := &migrate.FileMigrationSource{
-		Dir: config.App().MigrationsPath,
+		Dir: config.App().MigrationsPath(),
 	}
 
 	database, err := db.ORM().DB()
@@ -85,7 +89,7 @@ func Rollback() {
 // Reset 重置数据库
 func Reset() {
 	migrations := &migrate.FileMigrationSource{
-		Dir: config.App().MigrationsPath,
+		Dir: config.App().MigrationsPath(),
 	}
 
 	database, err := db.ORM().DB()

@@ -10,10 +10,10 @@ install:
 	go mod tidy
 
 web:
-	cd ./resources/assets/vben-admin-thin-next && yarn run dev
+	cd ./resources/assets/vue-vben-admin && pnpm run dev
 
 web\:build:
-	cd ./resources/assets/vben-admin-thin-next && yarn run build
+	cd ./resources/assets/vue-vben-admin && pnpm run build
 
 doc:
 	#需要权限来修改文件
@@ -114,6 +114,20 @@ start:
 stop:
 	sh admin.sh stop ${Name}
 
+# 安装 golangci-lint
+getdeps:
+	mkdir -p ${GOPATH}/bin
+	which golangci-lint 1>/dev/null || (echo "Installing golangci-lint" && go get github.com/golangci/golangci-lint/cmd/golangci-lint@v1.43.0)
+
+# 运行cilint
+lint:
+	echo "Running $@ check"
+	GO111MODULE=on ${GOPATH}/bin/golangci-lint cache clean
+	GO111MODULE=on ${GOPATH}/bin/golangci-lint run --timeout=5m --config ./.golangci.yml
+
+#检查代码
+verifiers: getdeps lint
+
 help:
 	@echo "make                     - 运行服务"
 	@echo "make build               - 打包程序"
@@ -146,3 +160,6 @@ help:
 	@echo "make pipeline            - 流水线"
 	@echo "make start            	- 运行服务"
 	@echo "make stop            	- 关闭服务"
+	@echo "make getdeps            	- 安装 golangci-lint"
+	@echo "make lint            	- 运行 golangci-lint"
+	@echo "make verifiers           - 检查代码"

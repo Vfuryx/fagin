@@ -4,8 +4,9 @@ import (
 	"fagin/app/models/author"
 	"fagin/app/models/category"
 	"fagin/app/models/tag"
-	"gorm.io/gorm"
 	"time"
+
+	"gorm.io/gorm"
 )
 
 type Article struct {

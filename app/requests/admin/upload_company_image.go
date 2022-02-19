@@ -1,37 +1,41 @@
-package admin_request
+package request
 
 import (
 	"fagin/pkg/request"
 	"fmt"
-	"github.com/gin-gonic/gin"
 	"mime/multipart"
+
+	"github.com/gin-gonic/gin"
 )
 
-type uploadCompanyImage struct {
-	File               *multipart.FileHeader `form:"file" binding:"required"`
+type UploadCompanyImage struct {
+	File *multipart.FileHeader `form:"file" binding:"required"`
+
 	request.Validation `binding:"-"`
 }
 
-func NewUploadCompanyImage() *uploadCompanyImage {
-	r := new(uploadCompanyImage)
+func NewUploadCompanyImage() *UploadCompanyImage {
+	r := new(UploadCompanyImage)
 	r.SetRequest(r)
+
 	return r
 }
 
-func (*uploadCompanyImage) Message() map[string]string {
+func (*UploadCompanyImage) Message() map[string]string {
 	return map[string]string{
 		"File.required": "文件不能为空",
 	}
 }
 
-func (*uploadCompanyImage) Attributes() map[string]string {
+func (*UploadCompanyImage) Attributes() map[string]string {
 	return map[string]string{
 		"File": "文件",
 	}
 }
 
-func (r *uploadCompanyImage) Validate(ctx *gin.Context) (map[string]string, bool) {
+func (r *UploadCompanyImage) Validate(ctx *gin.Context) (map[string]string, bool) {
 	const maxFileSize int64 = 20 << 20 // 限定大小 20M
+
 	return request.FileValidate(r, ctx, maxFileSize, func() (map[string]string, bool) {
 		// 判断文件类型
 		fmt.Println(r.File.Header)

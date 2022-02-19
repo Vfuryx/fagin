@@ -7,8 +7,9 @@ import (
 	"fagin/app/models/admin_menu"
 	adminRequest "fagin/app/requests/admin"
 	response "fagin/app/responses/admin"
-	"fagin/app/service"
+	"fagin/app/services"
 	"fagin/pkg/request"
+
 	"github.com/gin-gonic/gin"
 )
 
@@ -22,7 +23,7 @@ var MenuController menuController
 func (ctr *menuController) Index(ctx *gin.Context) {
 	var r = adminRequest.NewAdminMenuList()
 	if data, ok := r.Validate(ctx); !ok {
-		ctr.ResponseJsonErr(ctx, errno.ReqErr, data)
+		ctr.ResponseJSONErr(ctx, errno.ReqErr, data)
 		return
 	}
 
@@ -33,6 +34,7 @@ func (ctr *menuController) Index(ctx *gin.Context) {
 	if r.Title != "" {
 		params["like_title"] = "%" + r.Title + "%"
 	}
+
 	if r.Status != nil {
 		params["status"] = *r.Status
 	}
@@ -42,33 +44,33 @@ func (ctr *menuController) Index(ctx *gin.Context) {
 		"component", "sort", "status", "created_at",
 	}
 
-	menus, err := service.AdminMenuService.Index(params, columns, nil)
+	menus, err := services.AdminMenuService.Index(params, columns, nil)
 	if err != nil {
-		ctr.ResponseJsonErrLog(ctx, errno.CtxListErr, err)
+		ctr.ResponseJSONErrLog(ctx, errno.CtxListErr, err)
 		return
 	}
 
-	data := response.AdminMenusList(menus...).Collection()
+	data := response.NewAdminMenusList(menus...).Collection()
 
-	ctr.ResponseJsonOK(ctx, data)
-	return
+	ctr.ResponseJSONOK(ctx, data)
 }
 
 func (ctr *menuController) Show(ctx *gin.Context) {
-	id, err := request.ShouldBindUriUintID(ctx)
+	id, err := request.ShouldBindURIUintID(ctx)
 	if err != nil {
-		ctr.ResponseJsonErr(ctx, errno.ReqErr, nil)
+		ctr.ResponseJSONErr(ctx, errno.ReqErr, nil)
 		return
 	}
 
 	columns := []string{"*"}
-	m, err := service.AdminMenuService.Show(id, columns)
+
+	m, err := services.AdminMenuService.Show(id, columns)
 	if err != nil {
-		ctr.ResponseJsonErrLog(ctx, errno.CtxShowErr, err)
+		ctr.ResponseJSONErrLog(ctx, errno.CtxShowErr, err)
 		return
 	}
 
-	ctr.ResponseJsonOK(ctx, gin.H{
+	ctr.ResponseJSONOK(ctx, gin.H{
 		"id":             m.ID,
 		"parent_id":      m.ParentID,
 		"paths":          m.Paths,
@@ -90,18 +92,17 @@ func (ctr *menuController) Show(ctx *gin.Context) {
 		"status":         m.Status,
 		"created_at":     app.TimeToStr(m.CreatedAt),
 	})
-	return
 }
 
 func (ctr *menuController) Store(ctx *gin.Context) {
 	var r = adminRequest.NewCreateAdminMenu()
 	if data, ok := r.Validate(ctx); !ok {
-		ctr.ResponseJsonErr(ctx, errno.ReqErr, data)
+		ctr.ResponseJSONErr(ctx, errno.ReqErr, data)
 		return
 	}
 
 	b := admin_menu.AdminMenu{
-		ParentID:      r.ParentId,
+		ParentID:      r.ParentID,
 		Type:          r.Type,
 		Component:     r.Component,
 		Name:          r.Name,
@@ -120,36 +121,35 @@ func (ctr *menuController) Store(ctx *gin.Context) {
 		IsNoCache:     *r.IsNoCache,
 	}
 
-	err := service.AdminMenuService.Create(&b)
+	err := services.AdminMenuService.Create(&b)
 	if err != nil {
-		ctr.ResponseJsonErrLog(ctx, errno.CtxStoreErr, err)
+		ctr.ResponseJSONErrLog(ctx, errno.CtxStoreErr, err)
 		return
 	}
 
-	ctr.ResponseJsonOK(ctx, nil)
-	return
+	ctr.ResponseJSONOK(ctx, nil)
 }
 
 func (ctr *menuController) Update(ctx *gin.Context) {
-	id, err := request.ShouldBindUriUintID(ctx)
+	id, err := request.ShouldBindURIUintID(ctx)
 	if err != nil {
-		ctr.ResponseJsonErr(ctx, errno.ReqErr, nil)
+		ctr.ResponseJSONErr(ctx, errno.ReqErr, nil)
 		return
 	}
 
 	var r = adminRequest.NewUpdateAdminMenu()
 	if data, ok := r.Validate(ctx); !ok {
-		ctr.ResponseJsonErr(ctx, errno.ReqErr, data)
+		ctr.ResponseJSONErr(ctx, errno.ReqErr, data)
 		return
 	}
 
-	if id == r.ParentId {
-		ctr.ResponseJsonErr(ctx, errno.ReqErr, nil)
+	if id == r.ParentID {
+		ctr.ResponseJSONErr(ctx, errno.ReqErr, nil)
 		return
 	}
 
 	data := map[string]interface{}{
-		"parent_id":      r.ParentId,
+		"parent_id":      r.ParentID,
 		"name":           r.Name,
 		"component":      r.Component,
 		"title":          r.Title,
@@ -167,52 +167,56 @@ func (ctr *menuController) Update(ctx *gin.Context) {
 		"is_hide_child":  r.IsHideChild,
 		"is_no_cache":    *r.IsNoCache,
 	}
-	err = service.AdminMenuService.Update(id, data)
+
+	err = services.AdminMenuService.Update(id, data)
 	if err != nil {
-		ctr.ResponseJsonErrLog(ctx, errno.CtxUpdateErr, err)
-		return
-	}
-	err = service.AdminMenuService.RemoveUserMenusCache(id)
-	if err != nil {
-		ctr.ResponseJsonErrLog(ctx, errno.CtxUpdateErr, err)
+		ctr.ResponseJSONErrLog(ctx, errno.CtxUpdateErr, err)
 		return
 	}
 
-	ctr.ResponseJsonOK(ctx, nil)
-	return
+	err = services.AdminMenuService.RemoveUserMenusCache(id)
+	if err != nil {
+		ctr.ResponseJSONErrLog(ctx, errno.CtxUpdateErr, err)
+		return
+	}
+
+	ctr.ResponseJSONOK(ctx, nil)
 }
 
 func (ctr *menuController) Delete(ctx *gin.Context) {
-	id, err := request.ShouldBindUriUintID(ctx)
+	id, err := request.ShouldBindURIUintID(ctx)
 	if err != nil {
-		ctr.ResponseJsonErr(ctx, errno.ReqErr, nil)
+		ctr.ResponseJSONErr(ctx, errno.ReqErr, nil)
 		return
 	}
 
-	err = service.AdminMenuService.Delete(id)
+	err = services.AdminMenuService.Delete(id)
 	if err != nil {
 		if errors.Is(err, errno.SerMenuSubExistErr) {
-			ctr.ResponseJsonErr(ctx, errno.SerMenuSubExistErr, nil)
+			ctr.ResponseJSONErr(ctx, errno.SerMenuSubExistErr, nil)
 			return
 		}
+
 		if errors.Is(err, errno.SerMenuRelationExistErr) {
-			ctr.ResponseJsonErr(ctx, errno.SerMenuRelationExistErr, nil)
+			ctr.ResponseJSONErr(ctx, errno.SerMenuRelationExistErr, nil)
 			return
 		}
-		ctr.ResponseJsonErrLog(ctx, errno.CtxDeleteErr, err)
+
+		ctr.ResponseJSONErrLog(ctx, errno.CtxDeleteErr, err)
+
 		return
 	}
 
-	ctr.ResponseJsonOK(ctx, nil)
-	return
+	ctr.ResponseJSONOK(ctx, nil)
 }
 
 func (ctr *menuController) All(ctx *gin.Context) {
 	var r = adminRequest.NewAdminMenuList()
 	if data, ok := r.Validate(ctx); !ok {
-		ctr.ResponseJsonErr(ctx, errno.ReqErr, data)
+		ctr.ResponseJSONErr(ctx, errno.ReqErr, data)
 		return
 	}
+
 	params := gin.H{
 		"orderBy": "sort desc, id asc",
 	}
@@ -220,14 +224,14 @@ func (ctr *menuController) All(ctx *gin.Context) {
 	columns := []string{
 		"id", "parent_id", "icon", "title",
 	}
-	groups, err := service.AdminMenuService.All(params, columns)
+
+	groups, err := services.AdminMenuService.All(params, columns)
 	if err != nil {
-		ctr.ResponseJsonErrLog(ctx, errno.CtxListErr, err)
+		ctr.ResponseJSONErrLog(ctx, errno.CtxListErr, err)
 		return
 	}
 
-	data := response.AdminMenusAll(*groups...).Collection()
+	data := response.NewAdminMenusAll(groups...).Collection()
 
-	ctr.ResponseJsonOK(ctx, data)
-	return
+	ctr.ResponseJSONOK(ctx, data)
 }

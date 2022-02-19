@@ -4,6 +4,8 @@ import (
 	"fagin/pkg/controller"
 	"fagin/utils"
 	"fmt"
+	"path"
+
 	"github.com/spf13/cobra"
 )
 
@@ -16,11 +18,11 @@ go run console/main.go controller path
 `,
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("controller called")
-		if len(args) <= 0 {
+		if len(args) == 0 {
 			fmt.Println("create controller err")
 			return
 		}
-		path, name := utils.GetPathAndUnderscore(args[0])
-		controller.CreateControllerTemplate(path, name)
+		p := utils.PathUnderscore(args[0])
+		controller.CreateControllerTemplate(p, path.Base(p))
 	},
 }

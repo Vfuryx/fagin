@@ -1,8 +1,9 @@
 package banner
 
 import (
-	"gorm.io/gorm"
 	"time"
+
+	"gorm.io/gorm"
 )
 
 type Banner struct {

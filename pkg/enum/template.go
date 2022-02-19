@@ -9,15 +9,16 @@ import (
 	"strings"
 )
 
+// CreateEnumTemplate 创建枚举模版
 func CreateEnumTemplate(path, name string) {
-	filePath := config.App().AppPath + "/enums/" + path + ".go"
+	filePath := config.App().AppPath() + "/enums/" + path + ".go"
 	sl := strings.Split(filePath, "/")
 	packageName := sl[len(sl)-2]
 	name = utils.Camel(name)
 	structName := strings.ToLower(string(name[0])) + name[1:]
 	dirPath := strings.Join(sl[:len(sl)-1], "/")
 
-	//os.Stat获取文件信息
+	// os.Stat获取文件信息
 	if _, err := os.Stat(filePath); err == nil {
 		panic("文件已存在")
 	}
@@ -67,7 +68,8 @@ func All%[4]s() map[int] string {
 	}
 }
 `
-	content := fmt.Sprintf(temp, packageName, structName, config.App().Name, name)
+
+	content := fmt.Sprintf(temp, packageName, structName, config.App().Name(), name)
 
 	if _, err = file.WriteString(content); err != nil {
 		panic(err)

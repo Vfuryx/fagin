@@ -1,8 +1,9 @@
 package middleware
 
 import (
-	"fagin/app/service"
+	"fagin/app/services"
 	"fagin/pkg/response"
+
 	"github.com/gin-gonic/gin"
 )
 
@@ -13,12 +14,12 @@ var Auth auth
 // IsLogin 验证用户是否登录
 func (*auth) IsLogin() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-
-		c, err := service.Token.ParseRequest(ctx)
+		c, err := services.Token.ParseRequest(ctx)
 
 		if err != nil {
-			response.JsonErr(ctx, err, nil)
+			response.JSONErr(ctx, err, nil)
 			ctx.Abort()
+
 			return
 		}
 
@@ -32,18 +33,18 @@ func (*auth) IsLogin() gin.HandlerFunc {
 func (*auth) AuthCheckRole() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 
-		//role := strconv.Itoa(int(service.Login.ID))
+		// role := strconv.Itoa(int(service.Login.ID))
 		//
-		//roles := service.Casbin.GetRolesForUser(role)
+		// roles := service.Casbin.GetRolesForUser(role)
 		//
-		//ok := service.Casbin.CheckRoles(roles, ctx.Request.URL.Path, ctx.Request.Method)
+		// ok := service.Casbin.CheckRoles(roles, ctx.Request.URL.Path, ctx.Request.Method)
 		//
-		//if ok {
-		//	ctx.Next()
-		//} else {
-		//	app.ResponseJson(ctx, errno.MidPermissionDeniedErr, nil)
-		//	ctx.Abort()
-		//}
-		//return
+		// if ok {
+		// 	ctx.Next()
+		// } else {
+		// 	app.ResponseJson(ctx, errno.MidPermissionDeniedErr, nil)
+		// 	ctx.Abort()
+		// }
+		// return
 	}
 }

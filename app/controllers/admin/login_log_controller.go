@@ -5,9 +5,10 @@ import (
 	"fagin/app/errno"
 	adminRequest "fagin/app/requests/admin"
 	response "fagin/app/responses/admin"
-	"fagin/app/service"
+	"fagin/app/services"
 	"fagin/pkg/db"
 	"fagin/pkg/request"
+
 	"github.com/gin-gonic/gin"
 )
 
@@ -19,11 +20,11 @@ type loginLogController struct {
 var LoginLogController loginLogController
 
 func (ctr *loginLogController) Index(ctx *gin.Context) {
-	paginator := db.NewPaginatorWithCtx(ctx, 1, 15)
+	paginator := db.NewPaginatorWithCtx(ctx, 1, DefaultLimit)
 
 	r := adminRequest.NewAdminLoginLogList()
 	if data, ok := r.Validate(ctx); !ok {
-		ctr.ResponseJsonErr(ctx, errno.ReqErr, data)
+		ctr.ResponseJSONErr(ctx, errno.ReqErr, data)
 		return
 	}
 
@@ -33,40 +34,45 @@ func (ctr *loginLogController) Index(ctx *gin.Context) {
 	if r.LoginName != "" {
 		params["like_login_name"] = "%" + r.LoginName + "%"
 	}
-	if len(r.Time) >= 2 {
+
+	const count = 2
+	if len(r.Time) >= count {
 		params["start_time"] = r.Time[0]
 		params["end_time"] = r.Time[1]
 	}
 
 	columns := []string{"*"}
 
-	logs, err := service.AdminLoginLog.List(params, columns, nil, paginator)
+	logs, err := services.AdminLoginLog.List(params, columns, nil, paginator)
 	if err != nil {
-		ctr.ResponseJsonErrLog(ctx, errno.InternalServerErr, err)
+		ctr.ResponseJSONErrLog(ctx, errno.InternalServerErr, err)
 		return
 	}
 
-	data := response.LoginLog(logs...).Collection()
-	ctr.ResponseJsonOK(ctx, gin.H{
+	data := response.NewLoginLog(logs...).Collection()
+
+	ctr.ResponseJSONOK(ctx, gin.H{
 		"items": data,
 		"total": paginator.TotalCount,
 	})
 }
 
 func (ctr *loginLogController) Show(ctx *gin.Context) {
-	id, err := request.ShouldBindUriUintID(ctx)
+	id, err := request.ShouldBindURIUintID(ctx)
 	if err != nil {
-		ctr.ResponseJsonErr(ctx, errno.ReqErr, nil)
+		ctr.ResponseJSONErr(ctx, errno.ReqErr, nil)
 		return
 	}
 
 	columns := []string{"*"}
-	l, err := service.AdminLoginLog.ShowLog(id, columns)
+
+	l, err := services.AdminLoginLog.ShowLog(id, columns)
 	if err != nil {
-		ctr.ResponseJsonErrLog(ctx, errno.CtxShowErr, err)
+		ctr.ResponseJSONErrLog(ctx, errno.CtxShowErr, err)
 		return
 	}
-	ctr.ResponseJsonOK(ctx, gin.H{
+
+	ctr.ResponseJSONOK(ctx, gin.H{
 		"id":         l.ID,
 		"login_name": l.LoginName,
 		"ip":         l.IP,
@@ -75,5 +81,4 @@ func (ctr *loginLogController) Show(ctx *gin.Context) {
 		"os":         l.OS,
 		"created_at": app.TimeToStr(l.CreatedAt),
 	})
-	return
 }

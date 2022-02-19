@@ -1,10 +1,10 @@
-package admin_request
+package request
 
 import (
 	"fagin/pkg/request"
 )
 
-type adminRoleList struct {
+type AdminRoleList struct {
 	Type   uint8  `form:"type" json:"type" binding:""`
 	Name   string `form:"name" json:"name" binding:"max=128"`
 	Key    string `form:"key" json:"key" binding:"max=32"`
@@ -13,17 +13,18 @@ type adminRoleList struct {
 	request.Validation `binding:"-"`
 }
 
-func NewAdminRoleList() *adminRoleList {
-	r := new(adminRoleList)
+func NewAdminRoleList() *AdminRoleList {
+	r := new(AdminRoleList)
 	r.SetRequest(r)
+
 	return r
 }
 
-func (*adminRoleList) Message() map[string]string {
+func (*AdminRoleList) Message() map[string]string {
 	return map[string]string{}
 }
 
-func (*adminRoleList) Attributes() map[string]string {
+func (*AdminRoleList) Attributes() map[string]string {
 	return map[string]string{
 		"Type":   "类型",
 		"Name":   "角色名称",

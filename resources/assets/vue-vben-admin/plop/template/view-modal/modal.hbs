@@ -1,0 +1,65 @@
+<template>
+  <BasicModal v-bind="$attrs" @register="registerModal" :title="getTitle" @ok="handleSubmit">
+    <BasicForm @register="registerForm" />
+  </BasicModal>
+</template>
+<script lang="ts" setup name="{{ pascalCase name }}Modal">
+  import { ref, computed, unref } from 'vue';
+  import { BasicModal, useModalInner } from '/@/components/Modal';
+  import { BasicForm, useForm } from '/@/components/Form/index';
+  import { formSchema } from './{{ camelCase name }}.data';
+
+  import {
+    create{{ pascalCase name }},
+    get{{ pascalCase name }}Detail,
+    update{{ pascalCase name }},
+  } from '/@/api/{{ camelCase path }}/{{ camelCase name }}';
+
+  const emit = defineEmits(['success', 'register']);
+
+  const isUpdate = ref(true);
+  const rowId = ref(0);
+
+  const [registerForm, { resetFields, setFieldsValue, validate }] = useForm({
+    labelWidth: 100,
+    schemas: formSchema,
+    showActionButtonGroup: false,
+  });
+
+  const [registerModal, { setModalProps, closeModal }] = useModalInner(async (data) => {
+    resetFields();
+    setModalProps({ confirmLoading: false });
+    isUpdate.value = !!data?.isUpdate;
+
+    if (unref(isUpdate)) {
+      rowId.value = data.record.id;
+      const detail = await get{{ pascalCase name }}Detail(data.record.id);
+      setFieldsValue({
+        ...detail,
+      });
+    }
+  });
+
+  const getTitle = computed(() => (!unref(isUpdate) ? '新增 ' : '编辑'));
+
+  async function handleSubmit() {
+    try {
+      const values = await validate();
+      setModalProps({ confirmLoading: true });
+      // TODO custom api
+      if (!unref(isUpdate)) {
+        create{{ pascalCase name }}(values);
+        console.log('新增');
+      } else {
+        update{{ pascalCase name }}(rowId.value, values);
+        console.log('编辑');
+      }
+
+      console.log(values);
+      closeModal();
+      emit('success');
+    } finally {
+      setModalProps({ confirmLoading: false });
+    }
+  }
+</script>

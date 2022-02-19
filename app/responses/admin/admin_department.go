@@ -1,4 +1,4 @@
-package admin_responses
+package responses
 
 import (
 	"fagin/app"
@@ -7,16 +7,15 @@ import (
 )
 
 type adminDepartment struct {
-	ms []admin_department.AdminDepartment
+	ms []*admin_department.AdminDepartment
+
 	response.Collect
 }
 
-var _ response.Response = &adminDepartment{}
-
-// AdminDepartment AdminDepartment
-func AdminDepartment(models ...admin_department.AdminDepartment) *adminDepartment {
+func NewAdminDepartment(models ...*admin_department.AdminDepartment) response.Response {
 	res := adminDepartment{ms: models}
 	res.SetCollect(&res)
+
 	return &res
 }
 
@@ -24,8 +23,9 @@ func (res *adminDepartment) Serialize() []map[string]interface{} {
 	return res.getTree(res.ms, 0)
 }
 
-func (res *adminDepartment) getTree(data []admin_department.AdminDepartment, pid uint) []map[string]interface{} {
-	result := make([]map[string]interface{}, 0, 10)
+func (res *adminDepartment) getTree(data []*admin_department.AdminDepartment, pid uint) []map[string]interface{} {
+	result := make([]map[string]interface{}, 0, response.DefCap)
+
 	for index := range data {
 		if data[index].ParentID == pid {
 			m := map[string]interface{}{
@@ -40,8 +40,10 @@ func (res *adminDepartment) getTree(data []admin_department.AdminDepartment, pid
 			if children := res.getTree(data, data[index].ID); len(children) > 0 {
 				m["children"] = children
 			}
+
 			result = append(result, m)
 		}
 	}
+
 	return result
 }

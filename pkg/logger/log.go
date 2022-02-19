@@ -3,11 +3,15 @@ package logger
 import (
 	"errors"
 	"fagin/config"
+	"io"
 	"os"
+	"sync"
 )
 
 // Logger 日志接口
 type Logger interface {
+	Writer() io.Writer
+
 	Debug(args ...interface{})
 	Info(args ...interface{})
 	Warn(args ...interface{})
@@ -38,7 +42,7 @@ var defaultLog Logger
 
 // Init 初始化
 func Init() {
-	channel, ok := config.Log().Channels[config.Log().Default]
+	channel, ok := config.Log().Channels()[config.Log().Default()]
 
 	// 创建文件夹 可以多层
 	err := os.MkdirAll(channel.Path, os.ModePerm)
@@ -49,12 +53,13 @@ func Init() {
 	if !ok {
 		panic(ErrChannelNotFound)
 	}
+
 	driver, ok := driverMap[channel.Driver]
 	if !ok {
 		panic(ErrDriverNotFound)
 	}
 
-	defaultLog = driver(config.Log().Default)
+	defaultLog = driver(config.Log().Default())
 }
 
 // Log 默认日志
@@ -62,8 +67,18 @@ func Log() Logger {
 	return defaultLog
 }
 
+// 并发获取 channel
+var channelMap sync.Map
+
 // Channel 通道
 func Channel(name string) Logger {
-	channel := config.Log().Channels[name]
-	return driverMap[channel.Driver](name)
+	if l, ok := channelMap.Load(name); ok {
+		return l.(Logger)
+	}
+
+	channel := config.Log().Channels()[name]
+
+	var p, _ = channelMap.LoadOrStore(name, driverMap[channel.Driver](name))
+
+	return p.(Logger)
 }

@@ -1,8 +1,9 @@
 package tag
 
 import (
-	"gorm.io/gorm"
 	"time"
+
+	"gorm.io/gorm"
 )
 
 type Tag struct {

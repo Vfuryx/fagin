@@ -9,13 +9,14 @@ import (
 	"fagin/config"
 	"fagin/pkg/auths"
 	"fagin/pkg/logger"
-	"github.com/gin-gonic/gin"
-	"github.com/streadway/amqp"
 	"io"
 	"net/http"
 	"runtime/debug"
 	"strings"
 	"time"
+
+	"github.com/gin-gonic/gin"
+	amqp "github.com/rabbitmq/amqp091-go"
 )
 
 var excludeMethods = map[string]struct{}{
@@ -38,7 +39,7 @@ func AdminOperationLogToDB() func(*gin.Context) {
 			if !(reqMethod == http.MethodPut && ctx.FullPath() == "/admin/api/accounts/:id/pwd") {
 				// 获取body
 				data, _ = ctx.GetRawData()
-				//恢复body
+				// 恢复body
 				ctx.Request.Body = io.NopCloser(bytes.NewBuffer(data)) // 关键点
 			}
 			// 开始时间
@@ -47,23 +48,24 @@ func AdminOperationLogToDB() func(*gin.Context) {
 			ctx.Next()
 
 			adminOperationLogToDB(ctx, reqMethod, startTime, data)
-		} else {
-			ctx.Next()
+
+			return
 		}
 
+		ctx.Next()
 	}
 }
 
 func adminOperationLogToDB(ctx *gin.Context, reqMethod string, startTime time.Time, body []byte) {
 	// 执行时间
-	latencyTime := time.Now().Sub(startTime)
+	latencyTime := time.Since(startTime)
 
 	// 请求IP
 	clientIP := ctx.ClientIP()
 	// 获取用户ID
 	uid := auths.GetAdminID(ctx)
 
-	if config.AMQP().Open {
+	if config.AMQP().Open() {
 		adminLog := mq.AdminLog{
 			LatencyTime: latencyTime,
 			Body:        body,
@@ -73,7 +75,7 @@ func adminOperationLogToDB(ctx *gin.Context, reqMethod string, startTime time.Ti
 			UserAgent:   ctx.Request.UserAgent(),
 			URI:         ctx.Request.RequestURI,
 			Path:        ctx.FullPath(),
-			AdminID:     uint(uid),
+			AdminID:     uid,
 		}
 		go func(adminLog mq.AdminLog) {
 			b, err := json.Marshal(adminLog)
@@ -82,7 +84,7 @@ func adminOperationLogToDB(ctx *gin.Context, reqMethod string, startTime time.Ti
 				return
 			}
 
-			err = mq.AdminLogMQ.Publish(amqp.Publishing{
+			err = mq.AdminLogMQProduction.Publish(amqp.Publishing{
 				ContentType: "application/json",
 				Body:        b,
 			})
@@ -95,7 +97,7 @@ func adminOperationLogToDB(ctx *gin.Context, reqMethod string, startTime time.Ti
 		go mq.LogStore(
 			body,
 			latencyTime,
-			uint(uid),
+			uid,
 			reqMethod,
 			clientIP,
 			ctx.GetString(admin_user.AdminUserNameKey),
@@ -106,13 +108,13 @@ func adminOperationLogToDB(ctx *gin.Context, reqMethod string, startTime time.Ti
 	}
 }
 
-//// AdminOperationLogSetType 日志记录到文件
-//func AdminOperationLogSetType(logType int) func(*gin.Context) {
-//	return func(ctx *gin.Context) {
-//		if _, ok := excludeMethods[ctx.Request.Method]; ok {
-//			ctx.Next()
-//		} else {
-//			ctx.Set(admin_operation_log.TypeKey, logType)
-//		}
-//	}
-//}
+// // AdminOperationLogSetType 日志记录到文件
+// func AdminOperationLogSetType(logType int) func(*gin.Context) {
+// 	return func(ctx *gin.Context) {
+// 		if _, ok := excludeMethods[ctx.Request.Method]; ok {
+// 			ctx.Next()
+// 		} else {
+// 			ctx.Set(admin_operation_log.TypeKey, logType)
+// 		}
+// 	}
+// }

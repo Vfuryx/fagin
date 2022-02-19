@@ -11,14 +11,14 @@ import (
 
 // CreateServiceTemplate 生成模版
 func CreateServiceTemplate(path, name string) {
-	filePath := config.App().AppPath + "/service/" + path + ".go"
+	filePath := config.App().AppPath() + "/service/" + path + ".go"
 	sl := strings.Split(filePath, "/")
 	dirPath := strings.Join(sl[:len(sl)-1], "/")
 	packageName := sl[len(sl)-2]
 	varName := utils.Camel(name)
 	structName := strings.ToLower(string(varName[0])) + varName[1:]
 
-	//os.Stat获取文件信息
+	// os.Stat获取文件信息
 	if _, err := os.Stat(filePath); err == nil {
 		panic("文件已存在")
 	}
@@ -47,24 +47,28 @@ type %[2]sService struct{}
 
 var %[3]s %[2]sService
 
-func (*%[2]sService) Index(params gin.H, columns []string, with gin.H, p *db.Paginator) (ms []%[4]s.%[3]s, err error) {
+func (*%[2]sService) Index(params gin.H, columns []string, with gin.H, p *db.Paginator) (ms []*%[4]s.%[3]s, err error) {
 	err = %[4]s.NewDao().Query(params, columns, with).Paginate(&ms, p)
+
 	return ms, errorw.UP(err)
 }
 
 func (*%[2]sService) Show(id uint, columns []string) (*%[4]s.%[3]s, error) {
 	b := %[4]s.New()
-	err := b.Dao().FindById(id, columns)
+	err := b.Dao().FindByID(id, columns)
+
 	return b, errorw.UP(err)
 }
 
 func (*%[2]sService) Create(m *%[4]s.%[3]s) error {
 	err := %[4]s.NewDao().Create(m)
+
 	return errorw.UP(err)
 }
 
 func (*%[2]sService) Update(id uint, data gin.H) error {
 	err := %[4]s.NewDao().Update(id, data)
+
 	return errorw.UP(err)
 }
 
@@ -75,10 +79,11 @@ func (*%[2]sService) Delete(id uint) error {
 
 func (*%[2]sService) Deletes(ids []uint) error {
 	err := %[4]s.NewDao().Deletes(ids)
+
 	return errorw.UP(err)
 }
 `
-	fmt.Println(packageName, structName, varName, name)
+
 	content := fmt.Sprintf(temp, packageName, structName, varName, name, config.App().Name)
 
 	if _, err = file.WriteString(content); err != nil {

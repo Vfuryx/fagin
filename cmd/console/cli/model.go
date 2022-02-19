@@ -4,6 +4,8 @@ import (
 	"fagin/pkg/db"
 	"fagin/utils"
 	"fmt"
+	"path"
+
 	"github.com/spf13/cobra"
 )
 
@@ -13,11 +15,11 @@ var ModelCmd = &cobra.Command{
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("model called")
-		if len(args) <= 0 {
+		if len(args) == 0 {
 			fmt.Println("create model err")
 			return
 		}
-		path, name := utils.GetPathAndUnderscore(args[0])
-		db.CreateModelTemplate(path, name)
+		p := utils.PathUnderscore(args[0])
+		db.CreateModelTemplate(p, path.Base(p))
 	},
 }

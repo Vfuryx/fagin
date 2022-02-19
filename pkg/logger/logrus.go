@@ -2,11 +2,13 @@ package logger
 
 import (
 	"fagin/config"
+	"io"
+	"os"
+	"time"
+
 	rotatelogs "github.com/lestrrat/go-file-rotatelogs"
 	"github.com/rifflock/lfshook"
 	"github.com/sirupsen/logrus"
-	"os"
-	"time"
 )
 
 type logrusLog struct {
@@ -24,16 +26,16 @@ func init() {
 
 // NewLogrus 实例化
 func NewLogrus(name string) Logger {
-
 	log := logrus.New()
 	// 禁止 logrus 的输出
 	file, err := os.OpenFile(os.DevNull, os.O_APPEND|os.O_WRONLY, os.ModeAppend)
 	if err != nil {
 		panic(err)
 	}
+
 	log.SetOutput(file)
 
-	path := config.Log().Channels[name].Path
+	path := config.Log().Channels()[name].Path
 
 	// 创建文件夹 可以多层
 	err = os.MkdirAll(path, os.ModePerm)
@@ -43,11 +45,14 @@ func NewLogrus(name string) Logger {
 
 	// 设置LfHook
 	var lfHook *lfshook.LfsHook
+
 	lfHook, err = NewLfHook(path + "/%Y-%m-%d.log")
 	if err != nil {
 		panic(err)
 	}
+
 	log.AddHook(lfHook)
+
 	return &logrusLog{log: log}
 }
 
@@ -57,21 +62,20 @@ func NewLfHook(path string) (*lfshook.LfsHook, error) {
 	logWriter, err := rotatelogs.New(
 		path,
 		rotatelogs.WithMaxAge(365*24*time.Hour),   // 文件最大保存时间
-		rotatelogs.WithRotationTime(24*time.Hour), // 日志切割时间间隔
+		rotatelogs.WithRotationTime(24*time.Hour), //nolint:gomnd // 日志切割时间间隔
 	)
 	if err != nil {
 		return nil, err
 	}
 
-	// 不同等级可以配置不同的写入方式
-	// 一下用的是同一种方式
+	// 不同等级可以配置不同的写入方式 一下用的是同一种方式
 	writeMap := lfshook.WriterMap{
 		logrus.DebugLevel: logWriter,
 		logrus.InfoLevel:  logWriter,
 		logrus.WarnLevel:  logWriter,
 		logrus.ErrorLevel: logWriter,
-		//logrus.FatalLevel: logWriter,
-		//logrus.PanicLevel: logWriter,
+		// logrus.FatalLevel: logWriter,
+		// logrus.PanicLevel: logWriter,
 	}
 
 	lfHook := lfshook.NewHook(writeMap, &Formatter{
@@ -113,4 +117,8 @@ func (l *logrusLog) Warnf(format string, args ...interface{}) {
 
 func (l *logrusLog) Errorf(format string, args ...interface{}) {
 	l.log.Errorf(format, args...)
+}
+
+func (l *logrusLog) Writer() io.Writer {
+	return l.log.Writer()
 }

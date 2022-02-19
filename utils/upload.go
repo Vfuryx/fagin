@@ -21,5 +21,6 @@ func SaveUploadedFile(file *multipart.FileHeader, dst string) error {
 	defer out.Close()
 
 	_, err = io.Copy(out, src)
+
 	return err
 }

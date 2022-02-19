@@ -1,8 +1,9 @@
 package website_config
 
 import (
-	"gorm.io/gorm"
 	"time"
+
+	"gorm.io/gorm"
 )
 
 type WebsiteConfig struct {

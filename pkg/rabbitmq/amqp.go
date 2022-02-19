@@ -2,16 +2,18 @@ package rabbitmq
 
 import (
 	"fagin/config"
-	"fmt"
-	"github.com/streadway/amqp"
+
+	amqp "github.com/rabbitmq/amqp091-go"
 )
 
+// AMQP amqp
 type AMQP interface {
 	Publish(msg amqp.Publishing) error // 生产者
 	Consume() error                    // 消费者
 	Destroy() error                    // 需要关闭channel，才能在下次新建
 }
 
+// RabbitMQ 消息队列
 type RabbitMQ struct {
 	conn      *amqp.Connection
 	Channel   *amqp.Channel
@@ -20,26 +22,32 @@ type RabbitMQ struct {
 	Key       string
 }
 
+// NewRabbitMQ 实例化
 func NewRabbitMQ(queueName, exchange, key string) (*RabbitMQ, error) {
 	rabbitMQ := &RabbitMQ{
 		QueueName: queueName,
 		Exchange:  exchange,
 		Key:       key,
 	}
-	link := config.AMQP().GetConnectLink()
-	fmt.Println(link)
+	conf := config.AMQP()
+	link := conf.GetConnectLink()
+
 	var err error
+
 	rabbitMQ.conn, err = amqp.Dial(link)
 	if err != nil {
 		return nil, err
 	}
+
 	rabbitMQ.Channel, err = rabbitMQ.conn.Channel()
 	if err != nil {
 		return nil, err
 	}
+
 	return rabbitMQ, nil
 }
 
+// NewRabbitMQSimple 简单方式
 func NewRabbitMQSimple(queueName string) (*RabbitMQ, error) {
 	return NewRabbitMQ(queueName, "", "")
 }
@@ -50,15 +58,17 @@ func (r *RabbitMQ) Destroy() error {
 	if err != nil {
 		return err
 	}
+
 	err = r.conn.Close()
 	if err != nil {
 		return err
 	}
+
 	return nil
 }
 
 //// 消费者
-//func (r *RabbitMQ) Consume() error {
+// func (r *RabbitMQ) Consume() error {
 //	if r.channel == nil {
 //		return errors.New("空")
 //	}
@@ -99,7 +109,7 @@ func (r *RabbitMQ) Destroy() error {
 //}
 //
 //// 生产者
-//func (r *RabbitMQ) Publish(msg amqp.Publishing) error {
+// func (r *RabbitMQ) Publish(msg amqp.Publishing) error {
 //	if r.channel == nil {
 //		return errors.New("channel 不存在")
 //	}
@@ -114,4 +124,4 @@ func (r *RabbitMQ) Destroy() error {
 //		return err
 //	}
 //	return nil
-//}
+// }

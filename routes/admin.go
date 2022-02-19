@@ -5,23 +5,24 @@ import (
 	"fagin/app/middleware"
 	"fagin/config"
 	"fagin/pkg/router/no_router"
+	"net/http"
+
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
-	"net/http"
 )
 
-var adminRoute = func(Admin *gin.RouterGroup) {
+var adminRoute routeFunc = func(Admin *gin.RouterGroup) {
 	// 404
 	no_router.NoRoute(Admin.BasePath(), func(ctx *gin.Context) {
 		ctx.JSON(http.StatusNotFound, gin.H{"m": "admin 404"})
 	})
 
 	// 配置跨域
-	if config.AdminRouter().IsCors {
+	if config.AdminRouter().IsCors() {
 		conf := cors.DefaultConfig()
-		conf.AllowOrigins = config.AdminRouter().CorsConf.AllowOrigins
-		conf.AllowHeaders = config.AdminRouter().CorsConf.AllowHeaders
-		conf.AllowMethods = config.AdminRouter().CorsConf.AllowMethods
+		conf.AllowOrigins = config.AdminRouter().CorsConf().AllowOrigins
+		conf.AllowHeaders = config.AdminRouter().CorsConf().AllowHeaders
+		conf.AllowMethods = config.AdminRouter().CorsConf().AllowMethods
 		Admin.Use(cors.New(conf))
 	}
 
@@ -48,7 +49,7 @@ var adminRoute = func(Admin *gin.RouterGroup) {
 				common.GET("/auth/permcode", admin.AuthController.PermissionCode) // 获取用户权限
 				common.GET("/auth/routes", admin.AuthController.Routes)           // 获取菜单（新）
 				common.POST("/auth/logout", admin.AuthController.Logout)          // 登出
-				//apiAuth.PUT("/user/:id", admin.AuthController.UpdateAdminUser) 			// 修改用户信息
+				// apiAuth.PUT("/user/:id", admin.AuthController.UpdateAdminUser) 			// 修改用户信息
 			}
 
 			// 用户管理
@@ -88,6 +89,7 @@ var adminRoute = func(Admin *gin.RouterGroup) {
 				admins.GET("/exists", admin.AdminsController.UsernameExists)   // 账号名是否已存在
 				admins.GET("/roles", admin.RoleController.Roles)               // 角色列表
 				admins.GET("/departments", admin.DepartmentController.Index)   // 部门列表
+				admins.GET("/role-route", admin.AdminsController.RolesRoute)   // 角色列表
 			}
 
 			// 菜单管理
@@ -112,7 +114,8 @@ var adminRoute = func(Admin *gin.RouterGroup) {
 				role.GET("/key", admin.RoleController.KeyExist)            // 角色 key 是否存在
 				role.PUT("/:id/status", admin.RoleController.UpdateStatus) // 角色更新状态
 				role.GET("/menus", admin.MenuController.All)               // 所有菜单
-				//role.GET("/all", admin.RoleController.Roles)               		  // 所有角色
+
+				// role.GET("/all", admin.RoleController.Roles)               		  // 所有角色
 			}
 
 			// 操作日志管理

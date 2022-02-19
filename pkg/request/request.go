@@ -3,10 +3,11 @@ package request
 import (
 	"errors"
 	"fagin/app/errno"
-	"github.com/gin-gonic/gin"
-	"github.com/go-playground/validator/v10"
 	"net/http"
 	"strings"
+
+	"github.com/gin-gonic/gin"
+	"github.com/go-playground/validator/v10"
 )
 
 // Request 请求接口
@@ -31,9 +32,9 @@ func (v *Validation) Validate(ctx *gin.Context) (map[string]string, bool) {
 	return Validated(v.Request, ctx)
 }
 
-// ValidateUri 验证 Uri
-func (v *Validation) ValidateUri(ctx *gin.Context) (map[string]string, bool) {
-	return ValidateUri(v.Request, ctx)
+// ValidateURI 验证 Uri
+func (v *Validation) ValidateURI(ctx *gin.Context) (map[string]string, bool) {
+	return ValidateURI(v.Request, ctx)
 }
 
 // FileValidate 文件验证
@@ -49,22 +50,25 @@ func Validated(request Request, ctx *gin.Context) (map[string]string, bool) {
 	if err == nil {
 		return nil, true
 	}
+
 	return validate(err, request), false
 }
 
-// ValidateUri 验证 Uri
-func ValidateUri(request Request, ctx *gin.Context) (map[string]string, bool) {
+// ValidateURI  验证 Uri
+func ValidateURI(request Request, ctx *gin.Context) (map[string]string, bool) {
 	err := ctx.ShouldBindUri(request)
 	if err == nil {
 		return nil, true
 	}
+
 	return validate(err, request), false
 }
 
 func validationErrorMessageHandle(request Request, errs validator.ValidationErrors) map[string]string {
 	var data = map[string]string{}
 	// 获取 Attributes
-	attributes := request.Attributes()
+	var attributes = request.Attributes()
+
 	for _, value := range errs {
 		// 查询自定义的message
 		msg, ok := request.Message()[value.StructField()+`.`+value.Tag()]
@@ -83,21 +87,25 @@ func validationErrorMessageHandle(request Request, errs validator.ValidationErro
 			// 根据规则替换占位符
 			msg = callReplacer(msg, value.StructField(), value.Tag(), value.Param())
 		}
+
 		data[value.Field()] = msg
 	}
+
 	return data
 }
 
 func validate(err error, request Request) map[string]string {
 	var data = map[string]string{}
+
 	if err != nil {
-		switch err.(type) {
+		switch err := err.(type) {
 		case validator.ValidationErrors:
-			data = validationErrorMessageHandle(request, err.(validator.ValidationErrors))
+			data = validationErrorMessageHandle(request, err)
 		default:
 			data["error"] = err.Error()
 		}
 	}
+
 	return data
 }
 
@@ -117,8 +125,10 @@ func FileValidate(request Request, ctx *gin.Context, maxSize int64, typeFunc fun
 		_ = ctx.Request.Body.Close()
 		// 错误输出处理
 		data := fileValidate(err, request)
+
 		return data, false
 	}
+
 	return typeFunc()
 }
 
@@ -128,12 +138,11 @@ func ParseMultipartForm(ctx *gin.Context, maxMemory int64) bool {
 	if ctx.Request.ContentLength > maxMemory {
 		return false
 	}
+
 	ctx.Request.Body = http.MaxBytesReader(ctx.Writer, ctx.Request.Body, maxMemory)
 	err := ctx.Request.ParseMultipartForm(maxMemory)
-	if err != nil {
-		return false
-	}
-	return true
+
+	return err == nil
 }
 
 // 自定义处理方法
@@ -141,10 +150,11 @@ func fileValidate(err error, request Request) map[string]string {
 	var data = map[string]string{}
 	// 字段名
 	var name = "file"
+
 	if err != nil {
-		switch err.(type) {
+		switch err := err.(type) {
 		case validator.ValidationErrors:
-			data = validationErrorMessageHandle(request, err.(validator.ValidationErrors))
+			data = validationErrorMessageHandle(request, err)
 		default:
 			// default
 			data[name] = "上传文件错误"
@@ -152,13 +162,16 @@ func fileValidate(err error, request Request) map[string]string {
 			if errors.Is(err, http.ErrMissingFile) {
 				data[name] = "不是文件"
 			}
+
 			if err.Error() == "multipart: NextPart: EOF" {
 				data[name] = "文件不能为空"
 			}
+
 			if err.Error() == "http: request body too large" {
 				data[name] = "上传的文件过大"
 			}
 		}
 	}
+
 	return data
 }

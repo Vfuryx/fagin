@@ -10,14 +10,14 @@ import (
 )
 
 func CreateControllerTemplate(path, name string) {
-	filePath := config.App().AppPath + "/controllers/" + path + ".go"
+	filePath := config.App().AppPath() + "/controllers/" + path + ".go"
 	sl := strings.Split(filePath, "/")
 	dirPath := strings.Join(sl[:len(sl)-1], "/")
 	packageName := sl[len(sl)-2]
 	name = utils.Camel(name)
 	structName := strings.ToLower(string(name[0])) + name[1:]
 
-	//os.Stat获取文件信息
+	// os.Stat获取文件信息
 	if _, err := os.Stat(filePath); err == nil {
 		panic("文件已存在")
 	}
@@ -37,7 +37,7 @@ func CreateControllerTemplate(path, name string) {
 
 import (
 	"fagin/app/errno"
-	"fagin/app/service"
+	"fagin/app/services"
 	"fagin/pkg/db"
 	"fagin/pkg/request"
 	"github.com/gin-gonic/gin"
@@ -51,7 +51,7 @@ var %[3]s %[2]s
 
 // Index 列表
 func (ctr *%[2]s) Index(ctx *gin.Context) {
-	paginator := db.NewPaginatorWithCtx(ctx, 1, 15)
+	paginator := db.NewPaginatorWithCtx(ctx, , 1, DefaultLimit)
 
 	params := gin.H{
 		"orderBy": "id asc",
@@ -70,7 +70,6 @@ func (ctr *%[2]s) Index(ctx *gin.Context) {
 		"data": data,
 		"paginator":  paginator,
 	})
-	return
 }
 
 // Show 展示
@@ -91,7 +90,6 @@ func (ctr *%[2]s) Show(ctx *gin.Context) {
 	ctr.ResponseJsonOK(ctx, gin.H{
 		"id": data.ID,
 	})
-	return
 }
 
 // Store 创建
@@ -111,7 +109,6 @@ func (ctr *%[2]s) Store(ctx *gin.Context) {
 	}
 
 	ctr.ResponseJsonOK(ctx, nil)
-	return
 }
 
 // Update 更新
@@ -135,7 +132,6 @@ func (ctr *%[2]s) Update(ctx *gin.Context) {
 	}
 
 	ctr.ResponseJsonOK(ctx, nil)
-	return
 }
 
 // Del 删除
@@ -153,7 +149,6 @@ func (ctr *%[2]s) Del(ctx *gin.Context) {
 	}
 
 	ctr.ResponseJsonOK(ctx, nil)
-	return
 }
 
 // Deletes 批量删除
@@ -175,11 +170,10 @@ func (ctr *%[2]s) Deletes(ctx *gin.Context) {
 	}
 
 	c.ResponseJsonOK(ctx, nil)
-	return
 }
 `
-	content := fmt.Sprintf(temp, packageName, structName, name, config.App().Name)
 
+	var content = fmt.Sprintf(temp, packageName, structName, name, config.App().Name)
 	if _, err = file.WriteString(content); err != nil {
 		panic(err)
 	}
