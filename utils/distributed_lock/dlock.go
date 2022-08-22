@@ -84,6 +84,10 @@ func (dl *DLock) Key(key string) string {
 
 // TimeWait 计算等待时间
 func (dl *DLock) TimeWait(count int64) time.Duration {
+	if count <= 0 {
+		count = 1
+	}
+
 	return dl.timeWait + time.Duration(dl.wait.Load()/count*randNum.Int63n(ratio))
 }
 
@@ -110,6 +114,7 @@ func (dl *DLock) TryLock(key, uuid string, timeout time.Duration) bool {
 	var i int64 = 0
 
 	out := time.Now().Add(timeout).UnixMilli()
+
 	for time.Now().UnixMilli() < out {
 		i++
 		time.Sleep(dl.TimeWait(i))
@@ -130,6 +135,58 @@ func (dl *DLock) TryLock(key, uuid string, timeout time.Duration) bool {
 
 	return false
 }
+
+//// TryLock2 尝试获取锁
+//// key 键
+//// uuid UUID
+//// timeout 超时时间
+//func (dl *DLock) TryLock2(key, uuid string, timeout time.Duration) bool {
+//	dl.wait.Inc()
+//
+//	// 防止并发访问 redis
+//	dl.lock.Lock()
+//	b, err := dl.redisClient.SetNX(dl.ctx, dl.Key(key), uuid, dl.expire).Result()
+//	dl.lock.Unlock()
+//
+//	if err != nil {
+//		return false
+//	}
+//
+//	if b {
+//		return true
+//	}
+//
+//	var i int64 = 0
+//
+//	out := time.Now().Add(timeout).UnixMilli()
+//	t := time.NewTimer(time.Microsecond)
+//
+//	defer t.Stop()
+//
+//	for time.Now().UnixMilli() < out {
+//		i++
+//
+//		// 明确time已经过期，并且t.C已经被取空，那么可以直接使用Reset；
+//		// 如果程序之前没有从t.C中读取过值，这时需要首先调用Stop()
+//		t.Reset(dl.TimeWait(i))
+//		<-t.C
+//
+//		// 防止并发访问 redis
+//		dl.lock2.Lock()
+//		b, err = dl.redisClient.SetNX(dl.ctx, dl.Key(key), uuid, dl.expire).Result()
+//		dl.lock2.Unlock()
+//
+//		if err != nil {
+//			return false
+//		}
+//
+//		if b {
+//			return true
+//		}
+//	}
+//
+//	return false
+//}
 
 // UnLock 解锁
 func (dl *DLock) UnLock(key, uuid string) {
