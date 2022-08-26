@@ -12,22 +12,15 @@ type UpdateStructure struct {
 	Name          string `form:"name" json:"name" binding:"required,max=32"`
 	PermissionIDs []uint `form:"permission_ids" json:"permission_ids" binding:"required,dive,required"`
 	Sort          uint   `form:"sort" json:"sort" binding:""`
-
-	request.Validation `binding:"-"`
 }
 
-func NewUpdateStructure() *UpdateStructure {
-	r := new(UpdateStructure)
-	r.SetRequest(r)
+var _ request.Request = UpdateStructure{}
 
-	return r
-}
-
-func (*UpdateStructure) Message() map[string]string {
+func (UpdateStructure) Message() map[string]string {
 	return map[string]string{}
 }
 
-func (*UpdateStructure) Attributes() map[string]string {
+func (UpdateStructure) Attributes() map[string]string {
 	return map[string]string{
 		"SID":           "组件",
 		"Type":          "类型",
@@ -38,31 +31,29 @@ func (*UpdateStructure) Attributes() map[string]string {
 	}
 }
 
+func (r UpdateStructure) Validate(ctx *gin.Context) (any, map[string]string) {
+	return request.Validate[UpdateStructure](r, ctx)
+}
+
 // UpdateStructureURI  获取 uint 类型的 id
 type UpdateStructureURI struct {
-	ID                 uint `uri:"id" binding:"required,min=1"`
-	SID                uint `uri:"sid" binding:"required,min=1"`
-	request.Validation `binding:"-"`
+	ID  uint `uri:"id" binding:"required,min=1"`
+	SID uint `uri:"sid" binding:"required,min=1"`
 }
 
-func NewUpdateStructureURI() *UpdateStructureURI {
-	r := new(UpdateStructureURI)
-	r.SetRequest(r)
+var _ request.Request = UpdateStructureURI{}
 
-	return r
-}
-
-func (*UpdateStructureURI) Message() map[string]string {
+func (UpdateStructureURI) Message() map[string]string {
 	return map[string]string{}
 }
 
-func (*UpdateStructureURI) Attributes() map[string]string {
+func (UpdateStructureURI) Attributes() map[string]string {
 	return map[string]string{
 		"ID":  "菜单",
 		"SID": "组件",
 	}
 }
 
-func (r *UpdateStructureURI) Validate(ctx *gin.Context) (map[string]string, bool) {
-	return request.ValidateURI(r, ctx)
+func (r UpdateStructureURI) Validate(ctx *gin.Context) (any, map[string]string) {
+	return request.ValidateURI[UpdateStructureURI](r, ctx)
 }

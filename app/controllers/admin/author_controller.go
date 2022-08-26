@@ -63,9 +63,9 @@ func (ctr *authorController) Show(ctx *gin.Context) {
 }
 
 func (ctr *authorController) Store(ctx *gin.Context) {
-	var r = adminRequest.NewCreateAuthor()
-	if data, ok := r.Validate(ctx); !ok {
-		ctr.ResponseJSONErr(ctx, errno.ReqErr, data)
+	r, msg := request.Validation[adminRequest.CreateAuthor](ctx)
+	if len(msg) > 0 {
+		ctr.ResponseJSONErr(ctx, errno.ReqErr, msg)
 		return
 	}
 
@@ -90,9 +90,9 @@ func (ctr *authorController) Update(ctx *gin.Context) {
 		return
 	}
 
-	var r = adminRequest.NewCreateAuthor()
-	if data, ok := r.Validate(ctx); !ok {
-		ctr.ResponseJSONErr(ctx, errno.ReqErr, data)
+	r, msg := request.Validation[adminRequest.CreateAuthor](ctx)
+	if len(msg) > 0 {
+		ctr.ResponseJSONErr(ctx, errno.ReqErr, msg)
 		return
 	}
 

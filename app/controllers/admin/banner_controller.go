@@ -3,7 +3,7 @@ package admin
 import (
 	"fagin/app/errno"
 	"fagin/app/models/banner"
-	admin_request "fagin/app/requests/admin"
+	adminRequest "fagin/app/requests/admin"
 	response "fagin/app/responses/admin"
 	"fagin/app/services"
 	"fagin/config"
@@ -67,9 +67,9 @@ func (ctr *bannerController) Show(ctx *gin.Context) {
 }
 
 func (ctr *bannerController) Store(ctx *gin.Context) {
-	var r = admin_request.NewCreateBanner()
-	if data, ok := r.Validate(ctx); !ok {
-		ctr.ResponseJSONErr(ctx, errno.ReqErr, data)
+	r, msg := request.Validation[adminRequest.CreateBanner](ctx)
+	if len(msg) > 0 {
+		ctr.ResponseJSONErr(ctx, errno.ReqErr, msg)
 		return
 	}
 
@@ -97,9 +97,9 @@ func (ctr *bannerController) Update(ctx *gin.Context) {
 		return
 	}
 
-	var r = admin_request.NewUpdateBanner()
-	if data, ok := r.Validate(ctx); !ok {
-		ctr.ResponseJSONErr(ctx, errno.ReqErr, data)
+	r, msg := request.Validation[adminRequest.UpdateBanner](ctx)
+	if len(msg) > 0 {
+		ctr.ResponseJSONErr(ctx, errno.ReqErr, msg)
 		return
 	}
 
@@ -122,9 +122,9 @@ func (ctr *bannerController) Update(ctx *gin.Context) {
 
 // Upload 上传视频
 func (ctr *bannerController) Upload(ctx *gin.Context) {
-	var r = admin_request.NewUploadBanner()
-	if data, ok := r.Validate(ctx); !ok {
-		ctr.ResponseJSONErr(ctx, errno.ReqErr, data)
+	r, msg := request.Validation[adminRequest.UploadBanner](ctx)
+	if len(msg) > 0 {
+		ctr.ResponseJSONErr(ctx, errno.ReqErr, msg)
 		return
 	}
 

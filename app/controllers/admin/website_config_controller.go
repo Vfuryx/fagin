@@ -8,6 +8,7 @@ import (
 	response "fagin/app/responses/admin"
 	"fagin/app/services"
 	"fagin/config"
+	"fagin/pkg/request"
 
 	"github.com/gin-gonic/gin"
 )
@@ -51,9 +52,9 @@ func (ctr *websiteConfigController) Info(ctx *gin.Context) {
 }
 
 func (ctr *websiteConfigController) UpdateInfo(ctx *gin.Context) {
-	var r = adminRequest.NewUpdateWebsiteConfig()
-	if data, ok := r.Validate(ctx); !ok {
-		ctr.ResponseJSONErr(ctx, errno.ReqErr, data)
+	r, msg := request.Validation[adminRequest.UpdateWebsiteConfig](ctx)
+	if len(msg) > 0 {
+		ctr.ResponseJSONErr(ctx, errno.ReqErr, msg)
 		return
 	}
 
@@ -84,9 +85,9 @@ func (ctr *websiteConfigController) UpdateInfo(ctx *gin.Context) {
 
 // Upload 上传
 func (ctr *websiteConfigController) Upload(ctx *gin.Context) {
-	var r = adminRequest.NewUploadWebsiteConfigPic()
-	if data, ok := r.Validate(ctx); !ok {
-		ctr.ResponseJSONErr(ctx, errno.ReqErr, data)
+	r, msg := request.Validation[adminRequest.UploadWebsiteConfigPic](ctx)
+	if len(msg) > 0 {
+		ctr.ResponseJSONErr(ctx, errno.ReqErr, msg)
 		return
 	}
 

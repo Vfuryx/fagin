@@ -91,9 +91,9 @@ func (ctr *articleController) Show(ctx *gin.Context) {
 }
 
 func (ctr *articleController) Store(ctx *gin.Context) {
-	var r = adminRequest.NewCreateArticle()
-	if data, ok := r.Validate(ctx); !ok {
-		ctr.ResponseJSONErr(ctx, errno.ReqErr, data)
+	r, msg := request.Validation[adminRequest.CreateArticle](ctx)
+	if len(msg) > 0 {
+		ctr.ResponseJSONErr(ctx, errno.ReqErr, msg)
 		return
 	}
 
@@ -145,9 +145,9 @@ func (ctr *articleController) Update(ctx *gin.Context) {
 		return
 	}
 
-	var r = adminRequest.NewCreateArticle()
-	if data, ok := r.Validate(ctx); !ok {
-		ctr.ResponseJSONErr(ctx, errno.ReqErr, data)
+	r, msg := request.Validation[adminRequest.CreateArticle](ctx)
+	if len(msg) > 0 {
+		ctr.ResponseJSONErr(ctx, errno.ReqErr, msg)
 		return
 	}
 

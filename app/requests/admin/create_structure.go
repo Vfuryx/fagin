@@ -2,6 +2,8 @@ package request
 
 import (
 	"fagin/pkg/request"
+
+	"github.com/gin-gonic/gin"
 )
 
 type CreateStructure struct {
@@ -10,22 +12,15 @@ type CreateStructure struct {
 	Name          string `form:"name" json:"name" binding:"required,max=32"`
 	PermissionIDs []uint `form:"permission_ids" json:"permission_ids" binding:"required,dive,required"`
 	Sort          uint   `form:"sort" json:"sort" binding:""`
-
-	request.Validation `binding:"-"`
 }
 
-func NewCreateStructure() *CreateStructure {
-	r := new(CreateStructure)
-	r.SetRequest(r)
+var _ request.Request = CreateStructure{}
 
-	return r
-}
-
-func (*CreateStructure) Message() map[string]string {
+func (CreateStructure) Message() map[string]string {
 	return map[string]string{}
 }
 
-func (*CreateStructure) Attributes() map[string]string {
+func (CreateStructure) Attributes() map[string]string {
 	return map[string]string{
 		"Type":          "类型",
 		"Code":          "组件编码",
@@ -33,4 +28,8 @@ func (*CreateStructure) Attributes() map[string]string {
 		"PermissionIDs": "权限组",
 		"Sort":          "排序",
 	}
+}
+
+func (r CreateStructure) Validate(ctx *gin.Context) (any, map[string]string) {
+	return request.Validate[CreateStructure](r, ctx)
 }

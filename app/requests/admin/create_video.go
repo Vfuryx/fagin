@@ -2,6 +2,8 @@ package request
 
 import (
 	"fagin/pkg/request"
+
+	"github.com/gin-gonic/gin"
 )
 
 type CreateVideo struct {
@@ -9,18 +11,11 @@ type CreateVideo struct {
 	Path        string `form:"path" json:"path" binding:"required"`
 	Description string `form:"description" json:"description" binding:"required"`
 	Status      uint8  `form:"status" json:"status" binding:"min=0,max=1"`
-
-	request.Validation `binding:"-"`
 }
 
-func NewCreateVideo() *CreateVideo {
-	r := new(CreateVideo)
-	r.SetRequest(r)
+var _ request.Request = CreateVideo{}
 
-	return r
-}
-
-func (*CreateVideo) Message() map[string]string {
+func (CreateVideo) Message() map[string]string {
 	return map[string]string{
 		// "Title.required":       "标题不能为空",
 		// "Path.required":        "路径不能为空",
@@ -30,11 +25,15 @@ func (*CreateVideo) Message() map[string]string {
 	}
 }
 
-func (*CreateVideo) Attributes() map[string]string {
+func (CreateVideo) Attributes() map[string]string {
 	return map[string]string{
 		"Title":       "标题",
 		"Path":        "路径",
 		"Description": "详情",
 		"Status":      "状态",
 	}
+}
+
+func (r CreateVideo) Validate(ctx *gin.Context) (any, map[string]string) {
+	return request.Validate[CreateVideo](r, ctx)
 }

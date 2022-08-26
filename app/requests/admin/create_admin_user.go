@@ -2,6 +2,8 @@ package request
 
 import (
 	"fagin/pkg/request"
+
+	"github.com/gin-gonic/gin"
 )
 
 type CreateAdminUser struct {
@@ -15,23 +17,15 @@ type CreateAdminUser struct {
 	Remark   string `form:"remark" json:"remark" binding:"max=255"`
 	Status   *uint8 `form:"status" json:"status" binding:"required,oneof=0 1"`
 	HomePath string `form:"home_path" json:"home_path" binding:"required,max=255"`
-
-	request.Validation `binding:"-"`
 }
 
-// NewCreateAdminUser 实例化
-func NewCreateAdminUser() *CreateAdminUser {
-	r := new(CreateAdminUser)
-	r.SetRequest(r)
+var _ request.Request = CreateAdminUser{}
 
-	return r
-}
-
-func (*CreateAdminUser) Message() map[string]string {
+func (CreateAdminUser) Message() map[string]string {
 	return map[string]string{}
 }
 
-func (*CreateAdminUser) Attributes() map[string]string {
+func (CreateAdminUser) Attributes() map[string]string {
 	return map[string]string{
 		"NickName": "昵称",
 		"Phone":    "电话",
@@ -43,4 +37,8 @@ func (*CreateAdminUser) Attributes() map[string]string {
 		"Status":   "状态",
 		"Password": "密码",
 	}
+}
+
+func (r CreateAdminUser) Validate(ctx *gin.Context) (any, map[string]string) {
+	return request.Validate[CreateAdminUser](r, ctx)
 }

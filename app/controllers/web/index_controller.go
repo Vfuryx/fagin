@@ -126,9 +126,9 @@ func (ctr *indexController) Category(ctx *gin.Context) {
 		return
 	}
 
-	var r = webRequest.NewCategoryList()
-	if data, ok := r.Validate(ctx); !ok {
-		ctr.ResponseJSONErr(ctx, errno.CtxListErr, data)
+	r, msg := request.Validation[webRequest.CategoryList](ctx)
+	if len(msg) > 0 {
+		ctr.ResponseJSONErr(ctx, errno.CtxListErr, msg)
 		return
 	}
 
@@ -179,9 +179,9 @@ func (ctr *indexController) Tag(ctx *gin.Context) {
 		return
 	}
 
-	var r = webRequest.NewTagList()
-	if data, ok := r.Validate(ctx); !ok {
-		ctr.ResponseJSONErr(ctx, errno.CtxShowErr, data)
+	r, msg := request.Validation[webRequest.TagList](ctx)
+	if len(msg) > 0 {
+		ctr.ResponseJSONErr(ctx, errno.CtxShowErr, msg)
 		return
 	}
 

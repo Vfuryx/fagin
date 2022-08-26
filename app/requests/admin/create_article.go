@@ -3,6 +3,8 @@ package request
 import (
 	"fagin/pkg/request"
 	"time"
+
+	"github.com/gin-gonic/gin"
 )
 
 // type myTime time.Time
@@ -32,22 +34,15 @@ type CreateArticle struct {
 	Status     *uint8    `form:"status" json:"status" binding:"required,oneof=0 1"`
 	PostAt     time.Time `form:"post_at" json:"post_at" binding:"required" time_format:"2006-01-02 15:04:05"`
 	Tags       []uint    `form:"tags" json:"tags" binding:"required,dive,required"`
-
-	request.Validation `binding:"-"`
 }
 
-func NewCreateArticle() *CreateArticle {
-	r := new(CreateArticle)
-	r.SetRequest(r)
+var _ request.Request = CreateArticle{}
 
-	return r
-}
-
-func (*CreateArticle) Message() map[string]string {
+func (CreateArticle) Message() map[string]string {
 	return map[string]string{}
 }
 
-func (*CreateArticle) Attributes() map[string]string {
+func (CreateArticle) Attributes() map[string]string {
 	return map[string]string{
 		"Title":      "标题",
 		"Content":    "内容",
@@ -58,4 +53,8 @@ func (*CreateArticle) Attributes() map[string]string {
 		"PostAt":     "发布时间",
 		"Tags":       "标签组",
 	}
+}
+
+func (r CreateArticle) Validate(ctx *gin.Context) (any, map[string]string) {
+	return request.Validate[CreateArticle](r, ctx)
 }

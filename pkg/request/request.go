@@ -12,56 +12,54 @@ import (
 
 // Request 请求接口
 type Request interface {
-	Validate(*gin.Context) (map[string]string, bool)
+	Validate(ctx *gin.Context) (any, map[string]string)
 	Message() map[string]string
 	Attributes() map[string]string
 }
 
-// Validation 验证
-type Validation struct {
-	Request
-}
+func Validation[T Request](ctx *gin.Context) (T, map[string]string) {
+	var req = new(T)
+	t, data := (*req).Validate(ctx)
+	if t != nil {
+		return t.(T), data
+	}
 
-// SetRequest 设置请求实例
-func (v *Validation) SetRequest(r Request) {
-	v.Request = r
+	return *req, data
 }
 
 // Validate 验证
-func (v *Validation) Validate(ctx *gin.Context) (map[string]string, bool) {
-	return Validated(v.Request, ctx)
-}
-
-// ValidateURI 验证 Uri
-func (v *Validation) ValidateURI(ctx *gin.Context) (map[string]string, bool) {
-	return ValidateURI(v.Request, ctx)
-}
-
-// FileValidate 文件验证
-// maxSize 限定大小
-// typeFunc 判断文件类型方法
-func (v *Validation) FileValidate(ctx *gin.Context, maxSize int64, typeFunc func() (map[string]string, bool)) (map[string]string, bool) {
-	return FileValidate(v.Request, ctx, maxSize, typeFunc)
-}
-
-// Validated 验证
-func Validated(request Request, ctx *gin.Context) (map[string]string, bool) {
-	err := ctx.ShouldBind(request)
+func Validate[T Request](request T, ctx *gin.Context) (any, map[string]string) {
+	err := ctx.ShouldBind(&request)
 	if err == nil {
-		return nil, true
+		return request, nil //nolint:typecheck
 	}
 
-	return validate(err, request), false
+	return nil, validate(err, request)
 }
 
 // ValidateURI  验证 Uri
-func ValidateURI(request Request, ctx *gin.Context) (map[string]string, bool) {
+func ValidateURI[T Request](request T, ctx *gin.Context) (any, map[string]string) {
 	err := ctx.ShouldBindUri(request)
 	if err == nil {
-		return nil, true
+		return request, nil //nolint:typecheck
 	}
 
-	return validate(err, request), false
+	return nil, validate(err, request)
+}
+
+func validate(err error, request Request) map[string]string {
+	var data = map[string]string{}
+
+	if err != nil {
+		switch err := err.(type) {
+		case validator.ValidationErrors:
+			data = validationErrorMessageHandle(request, err)
+		default:
+			data["error"] = err.Error()
+		}
+	}
+
+	return data
 }
 
 func validationErrorMessageHandle(request Request, errs validator.ValidationErrors) map[string]string {
@@ -94,29 +92,15 @@ func validationErrorMessageHandle(request Request, errs validator.ValidationErro
 	return data
 }
 
-func validate(err error, request Request) map[string]string {
-	var data = map[string]string{}
-
-	if err != nil {
-		switch err := err.(type) {
-		case validator.ValidationErrors:
-			data = validationErrorMessageHandle(request, err)
-		default:
-			data["error"] = err.Error()
-		}
-	}
-
-	return data
-}
-
 // FileValidate 文件验证
 // maxSize 限定大小
 // typeFunc 判断文件类型方法
-func FileValidate(request Request, ctx *gin.Context, maxSize int64, typeFunc func() (map[string]string, bool)) (map[string]string, bool) {
+func FileValidate[T Request](
+	request T, ctx *gin.Context, maxSize int64, typeFunc func() (any, map[string]string)) (any, map[string]string) {
 	// 检查上传文件的大小
 	if ok := ParseMultipartForm(ctx, maxSize); !ok {
 		// 一般要前端严格限定上传大小
-		return map[string]string{"file": errno.ReqUploadSizeExceededErr.Error()}, false
+		return nil, map[string]string{"file": errno.ReqUploadSizeExceededErr.Error()}
 	}
 
 	// 绑定
@@ -126,7 +110,7 @@ func FileValidate(request Request, ctx *gin.Context, maxSize int64, typeFunc fun
 		// 错误输出处理
 		data := fileValidate(err, request)
 
-		return data, false
+		return nil, data
 	}
 
 	return typeFunc()

@@ -20,9 +20,9 @@ var DepartmentController departmentController
 
 // Index 列表
 func (ctr *departmentController) Index(ctx *gin.Context) {
-	var r = adminRequest.NewAdminDepartmentList()
-	if data, ok := r.Validate(ctx); !ok {
-		ctr.ResponseJSONErr(ctx, errno.ReqErr, data)
+	r, msg := request.Validation[adminRequest.AdminDepartmentList](ctx)
+	if len(msg) > 0 {
+		ctr.ResponseJSONErr(ctx, errno.ReqErr, msg)
 		return
 	}
 
@@ -77,9 +77,9 @@ func (ctr *departmentController) Show(ctx *gin.Context) {
 
 // Store 创建
 func (ctr *departmentController) Store(ctx *gin.Context) {
-	var r = adminRequest.NewCreateAdminDepartment()
-	if data, ok := r.Validate(ctx); !ok {
-		ctr.ResponseJSONErr(ctx, errno.ReqErr, data)
+	r, msg := request.Validation[adminRequest.CreateAdminDepartment](ctx)
+	if len(msg) > 0 {
+		ctr.ResponseJSONErr(ctx, errno.ReqErr, msg)
 		return
 	}
 
@@ -108,9 +108,9 @@ func (ctr *departmentController) Update(ctx *gin.Context) {
 		return
 	}
 
-	var r = adminRequest.NewUpdateAdminDepartment()
-	if data, ok := r.Validate(ctx); !ok {
-		ctr.ResponseJSONErr(ctx, errno.ReqErr, data)
+	r, msg := request.Validation[adminRequest.UpdateAdminDepartment](ctx)
+	if len(msg) > 0 {
+		ctr.ResponseJSONErr(ctx, errno.ReqErr, msg)
 		return
 	}
 

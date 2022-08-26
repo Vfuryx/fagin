@@ -4,7 +4,7 @@ import (
 	"fagin/app/enums"
 	"fagin/app/errno"
 	"fagin/app/models/user"
-	api_request "fagin/app/requests/api"
+	apiRequest "fagin/app/requests/api"
 	apiResponses "fagin/app/responses/api"
 	"fagin/app/services"
 	"fagin/pkg/db"
@@ -26,16 +26,15 @@ type Login struct {
 }
 
 func (ctr *userController) Register(ctx *gin.Context) {
-	var v = api_request.NewAddUserRequest()
-
-	if msg, ok := v.Validate(ctx); !ok {
+	r, msg := request.Validation[apiRequest.AddUserRequest](ctx)
+	if len(msg) > 0 {
 		ctr.ResponseJSONErr(ctx, errno.ReqErr, msg)
 		return
 	}
 
 	u := user.User{
-		Username: v.UserName,
-		Password: v.Password,
+		Username: r.UserName,
+		Password: r.Password,
 		Status:   enums.StatusActive.Get(),
 	}
 
@@ -103,9 +102,8 @@ func (ctr *userController) UpdateUser(ctx *gin.Context) {
 		return
 	}
 
-	var r = api_request.NewUpdateUserRequest()
-
-	if msg, ok := r.Validate(ctx); !ok {
+	r, msg := request.Validation[apiRequest.UpdateUserRequest](ctx)
+	if len(msg) > 0 {
 		ctr.ResponseJSONErr(ctx, errno.ReqErr, msg)
 		return
 	}

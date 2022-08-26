@@ -23,9 +23,9 @@ var UserController userController
 func (ctr *userController) Index(ctx *gin.Context) {
 	paginator := db.NewPaginatorWithCtx(ctx, 1, DefaultLimit)
 
-	var r = adminRequest.NewAdminUserList()
-	if data, ok := r.Validate(ctx); !ok {
-		ctr.ResponseJSONErr(ctx, errno.ReqErr, data)
+	r, msg := request.Validation[adminRequest.AdminUserList](ctx)
+	if len(msg) > 0 {
+		ctr.ResponseJSONErr(ctx, errno.ReqErr, msg)
 		return
 	}
 
@@ -128,9 +128,9 @@ func (ctr *userController) Dels(ctx *gin.Context) {
 }
 
 func (ctr *userController) Store(ctx *gin.Context) {
-	var r = adminRequest.NewCreateUser()
-	if data, ok := r.Validate(ctx); !ok {
-		ctr.ResponseJSONErr(ctx, errno.ReqErr, data)
+	r, msg := request.Validation[adminRequest.CreateUser](ctx)
+	if len(msg) > 0 {
+		ctr.ResponseJSONErr(ctx, errno.ReqErr, msg)
 		return
 	}
 
@@ -175,9 +175,9 @@ func (ctr *userController) Update(ctx *gin.Context) {
 		return
 	}
 
-	var r = adminRequest.NewUpdateUser()
-	if data, ok := r.Validate(ctx); !ok {
-		ctr.ResponseJSONErr(ctx, errno.ReqErr, data)
+	r, msg := request.Validation[adminRequest.UpdateUser](ctx)
+	if len(msg) > 0 {
+		ctr.ResponseJSONErr(ctx, errno.ReqErr, msg)
 		return
 	}
 
@@ -250,9 +250,9 @@ func (ctr *userController) Reset(ctx *gin.Context) {
 		return
 	}
 
-	var r = adminRequest.NewResetAdminUser()
-	if data, ok := r.Validate(ctx); !ok {
-		ctr.ResponseJSONErr(ctx, errno.ReqErr, data)
+	r, msg := request.Validation[adminRequest.ResetAdminUser](ctx)
+	if len(msg) > 0 {
+		ctr.ResponseJSONErr(ctx, errno.ReqErr, msg)
 		return
 	}
 
