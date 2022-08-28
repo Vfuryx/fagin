@@ -36,8 +36,8 @@ func NewDao() *Dao {
 	return dao
 }
 
-func (d *Dao) All(params gin.H, columns []string) ([]*AdminMenu, error) {
-	var model []*AdminMenu
+func (d *Dao) All(params gin.H, columns []string) ([]AdminMenu, error) {
+	var model []AdminMenu
 
 	m := db.ORM().Select(columns)
 	if v, ok := params["type"]; ok {

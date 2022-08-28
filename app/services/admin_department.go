@@ -11,7 +11,7 @@ type adminDepartmentService struct{}
 
 var AdminDepartment adminDepartmentService
 
-func (*adminDepartmentService) Index(params gin.H, columns []string, with gin.H) (ms []*admin_department.AdminDepartment, err error) {
+func (*adminDepartmentService) Index(params gin.H, columns []string, with gin.H) (ms []admin_department.AdminDepartment, err error) {
 	err = admin_department.NewDao().Query(params, columns, with).Find(&ms)
 	return ms, errorw.UP(err)
 }

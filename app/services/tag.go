@@ -13,7 +13,7 @@ type tagService struct{}
 // Tag 标签
 var Tag tagService
 
-func (*tagService) Index(params gin.H, columns []string, with gin.H, p *db.Paginator) (ms []*tag.Tag, err error) {
+func (*tagService) Index(params gin.H, columns []string, with gin.H, p *db.Paginator) (ms []tag.Tag, err error) {
 	err = tag.NewDao().Query(params, columns, with).Paginate(&ms, p)
 
 	return ms, errorw.UP(err)
@@ -46,7 +46,7 @@ func (*tagService) Deletes(ids []uint) error {
 	return errorw.UP(err)
 }
 
-func (*tagService) All(params gin.H, columns []string, with gin.H) (ms []*tag.Tag, err error) {
+func (*tagService) All(params gin.H, columns []string, with gin.H) (ms []tag.Tag, err error) {
 	err = tag.NewDao().Query(params, columns, with).Find(&ms)
 
 	return ms, errorw.UP(err)

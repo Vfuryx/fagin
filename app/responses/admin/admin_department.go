@@ -6,24 +6,18 @@ import (
 	"fagin/pkg/response"
 )
 
-type adminDepartment struct {
-	ms []*admin_department.AdminDepartment
+type adminDepartment []admin_department.AdminDepartment
 
-	response.Collect
+func NewAdminDepartment(models ...admin_department.AdminDepartment) *response.Collect[adminDepartment] {
+	return new(response.Collect[adminDepartment]).SetCollect(models)
+
 }
 
-func NewAdminDepartment(models ...*admin_department.AdminDepartment) response.Response {
-	res := adminDepartment{ms: models}
-	res.SetCollect(&res)
-
-	return &res
+func (res adminDepartment) Serialize() []map[string]interface{} {
+	return res.getTree(res, 0)
 }
 
-func (res *adminDepartment) Serialize() []map[string]interface{} {
-	return res.getTree(res.ms, 0)
-}
-
-func (res *adminDepartment) getTree(data []*admin_department.AdminDepartment, pid uint) []map[string]interface{} {
+func (res adminDepartment) getTree(data []admin_department.AdminDepartment, pid uint) []map[string]interface{} {
 	result := make([]map[string]interface{}, 0, response.DefCap)
 
 	for index := range data {

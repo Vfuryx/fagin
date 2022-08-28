@@ -11,30 +11,36 @@ import (
 
 const DefCap = 20
 
+//type Response interface {
+//	Serialize() []map[string]interface{}
+//	Handle() []map[string]interface{}
+//	Item() map[string]interface{}
+//	Collection() []map[string]interface{}
+//}
+
 type Response interface {
 	Serialize() []map[string]interface{}
-	Handle() []map[string]interface{}
-	Item() map[string]interface{}
-	Collection() []map[string]interface{}
 }
 
-type Collect struct {
-	Response
+type Collect[T Response] struct {
+	Response T
 }
 
-func (c *Collect) SetCollect(res Response) {
+func (c *Collect[T]) SetCollect(res T) *Collect[T] {
 	c.Response = res
+
+	return c
 }
 
-func (c Collect) Handle() []map[string]interface{} {
-	return c.Serialize()
+func (c Collect[T]) Handle() []map[string]interface{} {
+	return c.Response.Serialize()
 }
 
-func (c Collect) Item() map[string]interface{} {
+func (c Collect[T]) Item() map[string]interface{} {
 	return c.Handle()[0]
 }
 
-func (c Collect) Collection() []map[string]interface{} {
+func (c Collect[T]) Collection() []map[string]interface{} {
 	return c.Handle()
 }
 

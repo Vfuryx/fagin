@@ -90,7 +90,7 @@ func (ctr *userController) ShowUser(ctx *gin.Context) {
 		return
 	}
 
-	ru := apiResponses.NewUserResponse(u).Item()
+	ru := apiResponses.NewUserResponse(*u).Item()
 	ctr.ResponseJSONOK(ctx, ru)
 }
 

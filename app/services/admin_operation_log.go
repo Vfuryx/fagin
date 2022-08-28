@@ -12,8 +12,8 @@ type adminOperationLog struct{}
 
 var AdminOperationLog adminOperationLog
 
-func (*adminOperationLog) List(params gin.H, columns []string, with gin.H, p *db.Paginator) ([]*aol.AdminOperationLog, error) {
-	var operationLogs []*aol.AdminOperationLog
+func (*adminOperationLog) List(params gin.H, columns []string, with gin.H, p *db.Paginator) ([]aol.AdminOperationLog, error) {
+	var operationLogs []aol.AdminOperationLog
 	err := aol.NewDao().Query(params, columns, with).Paginate(&operationLogs, p)
 
 	return operationLogs, errorw.UP(err)

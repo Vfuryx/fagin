@@ -6,24 +6,17 @@ import (
 	"fagin/pkg/response"
 )
 
-type adminMenusList struct {
-	ms []*admin_menu.AdminMenu
+type adminMenusList []admin_menu.AdminMenu
 
-	response.Collect
+func NewAdminMenusList(models ...admin_menu.AdminMenu) *response.Collect[adminMenusList] {
+	return new(response.Collect[adminMenusList]).SetCollect(models)
 }
 
-func NewAdminMenusList(models ...*admin_menu.AdminMenu) response.Response {
-	res := adminMenusList{ms: models}
-	res.SetCollect(&res)
-
-	return &res
+func (res adminMenusList) Serialize() []map[string]interface{} {
+	return res.getMenuTree(res, 0)
 }
 
-func (res *adminMenusList) Serialize() []map[string]interface{} {
-	return res.getMenuTree(res.ms, 0)
-}
-
-func (res *adminMenusList) getMenuTree(data []*admin_menu.AdminMenu, pid uint) []map[string]interface{} {
+func (res adminMenusList) getMenuTree(data []admin_menu.AdminMenu, pid uint) []map[string]interface{} {
 	result := make([]map[string]interface{}, 0, response.DefCap)
 
 	for index := range data {

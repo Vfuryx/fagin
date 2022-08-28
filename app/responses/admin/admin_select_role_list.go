@@ -5,26 +5,19 @@ import (
 	"fagin/pkg/response"
 )
 
-type adminSelectRoleList struct {
-	ms []*admin_role.AdminRole
+type adminSelectRoleList []admin_role.AdminRole
 
-	response.Collect
+func NewAdminSelectRoleList(models ...admin_role.AdminRole) *response.Collect[adminSelectRoleList] {
+	return new(response.Collect[adminSelectRoleList]).SetCollect(models)
 }
 
-func NewAdminSelectRoleList(models ...*admin_role.AdminRole) response.Response {
-	res := adminSelectRoleList{ms: models}
-	res.SetCollect(&res)
-
-	return &res
-}
-
-func (res *adminSelectRoleList) Serialize() []map[string]interface{} {
+func (res adminSelectRoleList) Serialize() []map[string]interface{} {
 	sm := make([]map[string]interface{}, 0, response.DefCap)
 
-	for i := range res.ms {
+	for i := range res {
 		m := map[string]interface{}{
-			"id":   res.ms[i].ID,
-			"name": res.ms[i].Name,
+			"id":   res[i].ID,
+			"name": res[i].Name,
 		}
 		sm = append(sm, m)
 	}

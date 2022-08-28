@@ -5,28 +5,21 @@ import (
 	"fagin/pkg/response"
 )
 
-type categoryList struct {
-	ms []*category.Category
+type categoryList []category.Category
 
-	response.Collect
+func NewCategoryList(models ...category.Category) *response.Collect[categoryList] {
+	return new(response.Collect[categoryList]).SetCollect(models)
 }
 
-func NewCategoryList(models ...*category.Category) response.Response {
-	res := categoryList{ms: models}
-	res.SetCollect(&res)
-
-	return &res
-}
-
-func (res *categoryList) Serialize() []map[string]interface{} {
+func (res categoryList) Serialize() []map[string]interface{} {
 	sm := make([]map[string]interface{}, 0, response.DefCap)
 
-	for i := range res.ms {
+	for i := range res {
 		m := map[string]interface{}{
-			"id":     res.ms[i].ID,
-			"name":   res.ms[i].Name,
-			"sort":   res.ms[i].Sort,
-			"status": res.ms[i].Status,
+			"id":     res[i].ID,
+			"name":   res[i].Name,
+			"sort":   res[i].Sort,
+			"status": res[i].Status,
 		}
 		sm = append(sm, m)
 	}

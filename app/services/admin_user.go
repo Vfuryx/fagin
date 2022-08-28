@@ -21,8 +21,8 @@ type adminUserService struct{}
 // AdminUserService 后台用户服务
 var AdminUserService adminUserService
 
-func (*adminUserService) Index(params gin.H, columns []string, with gin.H, p *db.Paginator) ([]*admin_user.AdminUser, error) {
-	var users []*admin_user.AdminUser
+func (*adminUserService) Index(params gin.H, columns []string, with gin.H, p *db.Paginator) ([]admin_user.AdminUser, error) {
+	var users []admin_user.AdminUser
 	err := admin_user.NewDao().Query(params, columns, with).Paginate(&users, p)
 
 	return users, errorw.UP(err)

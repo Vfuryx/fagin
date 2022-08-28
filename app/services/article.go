@@ -14,8 +14,8 @@ type articleService struct{}
 
 var Article articleService
 
-func (*articleService) Index(params gin.H, columns []string, with gin.H, p *db.Paginator) ([]*article.Article, error) {
-	var art []*article.Article
+func (*articleService) Index(params gin.H, columns []string, with gin.H, p *db.Paginator) ([]article.Article, error) {
+	var art []article.Article
 	err := article.NewDao().Query(params, columns, with).Paginate(&art, p)
 
 	return art, errorw.UP(err)

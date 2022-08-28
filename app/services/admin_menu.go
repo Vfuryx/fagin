@@ -24,7 +24,7 @@ type adminMenuService struct{}
 // AdminMenuService 后台菜单服务
 var AdminMenuService adminMenuService
 
-func (*adminMenuService) All(params gin.H, columns []string) ([]*admin_menu.AdminMenu, error) {
+func (*adminMenuService) All(params gin.H, columns []string) ([]admin_menu.AdminMenu, error) {
 	menus, err := admin_menu.NewDao().All(params, columns)
 	if err != nil {
 		return nil, errorw.UP(err)
@@ -33,8 +33,8 @@ func (*adminMenuService) All(params gin.H, columns []string) ([]*admin_menu.Admi
 	return menus, nil
 }
 
-func (*adminMenuService) Index(params gin.H, columns []string, with gin.H) ([]*admin_menu.AdminMenu, error) {
-	var menus []*admin_menu.AdminMenu
+func (*adminMenuService) Index(params gin.H, columns []string, with gin.H) ([]admin_menu.AdminMenu, error) {
+	var menus []admin_menu.AdminMenu
 
 	err := admin_menu.NewDao().Query(params, columns, with).Find(&menus)
 	if err != nil {
@@ -205,3 +205,40 @@ func (*adminMenuService) FindByPath(method, path string, column []string) (admin
 
 	return m, errorw.UP(err)
 }
+
+//CREATE TABLE "public"."accident_reasons" (
+//  "id" int8 NOT NULL DEFAULT nextval('accident_reasons_id_seq'::regclass),
+//  "name" varchar(255) COLLATE "pg_catalog"."default" NOT NULL,
+//  "accident_reason_category_id" int8 NOT NULL,
+//  "active" bool NOT NULL,
+//  "created_at" timestamp(0),
+//  "updated_at" timestamp(0),
+//  CONSTRAINT "accident_reasons_pkey" PRIMARY KEY ("id"),
+//  CONSTRAINT "accident_reasons_accident_reason_category_id_foreign" FOREIGN KEY ("accident_reason_category_id") REFERENCES "public"."accident_reason_categories" ("id") ON DELETE CASCADE ON UPDATE NO ACTION
+//)
+// CREATE TABLE "public"."admin_menus" (
+//  "id" int8 NOT NULL DEFAULT nextval('admin_menus_id_seq'::regclass),
+//  "created_at" timestamptz(6),
+//  "updated_at" timestamptz(6),
+//  "deleted_at" timestamptz(6),
+//  "parent_id" int8 NOT NULL DEFAULT 0,
+//  "paths" varchar(128) COLLATE "pg_catalog"."default" NOT NULL DEFAULT ''::character varying,
+//  "type" int8 NOT NULL DEFAULT 0,
+//  "name" varchar(32) COLLATE "pg_catalog"."default" NOT NULL DEFAULT ''::character varying,
+//  "permission" varchar(64) COLLATE "pg_catalog"."default" NOT NULL DEFAULT ''::character varying,
+//  "title" varchar(32) COLLATE "pg_catalog"."default" NOT NULL DEFAULT ''::character varying,
+//  "component" varchar(255) COLLATE "pg_catalog"."default" NOT NULL DEFAULT ''::character varying,
+//  "path" varchar(255) COLLATE "pg_catalog"."default" NOT NULL DEFAULT ''::character varying,
+//  "method" varchar(16) COLLATE "pg_catalog"."default" NOT NULL DEFAULT ''::character varying,
+//  "redirect" varchar(255) COLLATE "pg_catalog"."default" NOT NULL DEFAULT ''::character varying,
+//  "frame_src" varchar(255) COLLATE "pg_catalog"."default" NOT NULL DEFAULT ''::character varying,
+//  "current_active" varchar(255) COLLATE "pg_catalog"."default" NOT NULL DEFAULT ''::character varying,
+//  "icon" varchar(128) COLLATE "pg_catalog"."default" NOT NULL DEFAULT ''::character varying,
+//  "is_show" int2 NOT NULL DEFAULT 1,
+//  "is_hide_child" int2 NOT NULL DEFAULT 0,
+//  "is_no_cache" int2 NOT NULL DEFAULT 0,
+//  "sort" int8 NOT NULL DEFAULT 100,
+//  "status" int2 NOT NULL DEFAULT 1,
+//  CONSTRAINT "admin_menus_pkey" PRIMARY KEY ("id")
+//)
+//;

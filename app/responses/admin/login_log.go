@@ -6,31 +6,24 @@ import (
 	"fagin/pkg/response"
 )
 
-type loginLog struct {
-	ms []*all.AdminLoginLog
+type loginLog []all.AdminLoginLog
 
-	response.Collect
+func NewLoginLog(models ...all.AdminLoginLog) *response.Collect[loginLog] {
+	return new(response.Collect[loginLog]).SetCollect(models)
 }
 
-func NewLoginLog(models ...*all.AdminLoginLog) response.Response {
-	res := loginLog{ms: models}
-	res.SetCollect(&res)
-
-	return &res
-}
-
-func (res *loginLog) Serialize() []map[string]interface{} {
+func (res loginLog) Serialize() []map[string]interface{} {
 	sm := make([]map[string]interface{}, 0, response.DefCap)
 
-	for i := range res.ms {
+	for i := range res {
 		m := map[string]interface{}{
-			"id":         res.ms[i].ID,
-			"login_name": res.ms[i].LoginName,
-			"ip":         res.ms[i].IP,
-			"location":   res.ms[i].Location,
-			"browser":    res.ms[i].Browser,
-			"os":         res.ms[i].OS,
-			"created_at": app.TimeToStr(res.ms[i].CreatedAt),
+			"id":         res[i].ID,
+			"login_name": res[i].LoginName,
+			"ip":         res[i].IP,
+			"location":   res[i].Location,
+			"browser":    res[i].Browser,
+			"os":         res[i].OS,
+			"created_at": app.TimeToStr(res[i].CreatedAt),
 		}
 		sm = append(sm, m)
 	}

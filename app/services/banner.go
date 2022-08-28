@@ -13,8 +13,8 @@ type bannerService struct{}
 // Banner Banner服务
 var Banner bannerService
 
-func (*bannerService) Index(params gin.H, columns []string, with gin.H, p *db.Paginator) ([]*banner.Banner, error) {
-	var banners []*banner.Banner
+func (*bannerService) Index(params gin.H, columns []string, with gin.H, p *db.Paginator) ([]banner.Banner, error) {
+	var banners []banner.Banner
 	err := banner.NewDao().Query(params, columns, with).Paginate(&banners, p)
 
 	return banners, errorw.UP(err)

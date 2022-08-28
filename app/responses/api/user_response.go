@@ -5,23 +5,16 @@ import (
 	"fagin/pkg/response"
 )
 
-type userResponse struct {
-	ms []*user.User
+type userResponse []user.User
 
-	response.Collect
+func NewUserResponse(models ...user.User) *response.Collect[userResponse] {
+	return new(response.Collect[userResponse]).SetCollect(models)
 }
 
-func NewUserResponse(users ...*user.User) response.Response {
-	ur := userResponse{ms: users}
-	ur.Collect.Response = &ur
-
-	return &ur
-}
-
-func (ur *userResponse) Serialize() []map[string]interface{} {
+func (res userResponse) Serialize() []map[string]interface{} {
 	sm := make([]map[string]interface{}, 0, response.DefCap)
 
-	for _, u := range ur.ms {
+	for _, u := range res {
 		m := map[string]interface{}{
 			"id":       u.ID,
 			"username": u.Username,

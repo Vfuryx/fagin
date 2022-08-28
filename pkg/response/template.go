@@ -40,25 +40,18 @@ import (
 	"%[4]s/pkg/response"
 )
 
-type %[2]s struct {
-	ms []*M.m
+type %[2]s []M.m
 
-	response.Collect
+func New%[3]s(models ...M.m) *response.Collect[%[2]s] {
+	return new(response.Collect[%[2]s]).SetCollect(models)
 }
 
-func New%[3]s(models ...M.m) response.Response {
-	res := %[2]s{ms:models}
-	res.SetCollect(&res)
-
-	return &res
-}
-
-func (res *%[2]s) Serialize() []map[string]interface{} {
+func (res %[2]s) Serialize() []map[string]interface{} {
 	sm := make([]map[string]interface{}, 0, response.DefCap)
 
-	for i := range res.ms {
+	for i := range res {
 		m := map[string]interface{}{
-			"id": res.ms[i].ID,
+			"id": res[i].ID,
 		}
 		sm = append(sm, m)
 	}

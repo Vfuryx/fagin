@@ -22,8 +22,8 @@ type adminRoleService struct{}
 // AdminRoleService 后台角色服务
 var AdminRoleService adminRoleService
 
-func (*adminRoleService) Index(params gin.H, columns []string, with gin.H, p *db.Paginator) ([]*admin_role.AdminRole, error) {
-	var roles []*admin_role.AdminRole
+func (*adminRoleService) Index(params gin.H, columns []string, with gin.H, p *db.Paginator) ([]admin_role.AdminRole, error) {
+	var roles []admin_role.AdminRole
 
 	err := admin_role.NewDao().Query(params, columns, with).Paginate(&roles, p)
 	if err != nil {
@@ -164,8 +164,8 @@ func (*adminRoleService) UpdateStatus(id uint, status int) error {
 	return errorw.UP(err)
 }
 
-func (*adminRoleService) List(params gin.H, columns []string, with gin.H) ([]*admin_role.AdminRole, error) {
-	var roles []*admin_role.AdminRole
+func (*adminRoleService) List(params gin.H, columns []string, with gin.H) ([]admin_role.AdminRole, error) {
+	var roles []admin_role.AdminRole
 
 	err := admin_role.NewDao().Query(params, columns, with).Find(&roles)
 	if err != nil {

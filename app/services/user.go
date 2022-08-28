@@ -11,7 +11,7 @@ type userService struct{}
 
 var User userService
 
-func (*userService) UserList(params map[string]interface{}, columns []string, with map[string]interface{}, p *db.Paginator) (users []*user.User, err error) {
+func (*userService) UserList(params map[string]interface{}, columns []string, with map[string]interface{}, p *db.Paginator) (users []user.User, err error) {
 	err = user.NewDao().Query(params, columns, with).Paginate(&users, p)
 
 	return users, errorw.UP(err)

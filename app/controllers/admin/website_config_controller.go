@@ -30,7 +30,7 @@ func (ctr *websiteConfigController) Info(ctx *gin.Context) {
 		if err != nil {
 			return nil, err
 		}
-		data := response.NewWebsiteConfig(info).Item()
+		data := response.NewWebsiteConfig(*info).Item()
 		return json.Marshal(data)
 	})
 

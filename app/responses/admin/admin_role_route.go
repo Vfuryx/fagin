@@ -5,21 +5,14 @@ import (
 	"fagin/pkg/response"
 )
 
-type adminRoleRoute struct {
-	ms []admin_menu.AdminMenu
+type adminRoleRoute []admin_menu.AdminMenu
 
-	response.Collect
+func NewAdminRoleRoute(models ...admin_menu.AdminMenu) *response.Collect[adminRoleRoute] {
+	return new(response.Collect[adminRoleRoute]).SetCollect(models)
 }
 
-func NewAdminRoleRoute(models ...admin_menu.AdminMenu) response.Response {
-	res := adminRoleRoute{ms: models}
-	res.SetCollect(&res)
-
-	return &res
-}
-
-func (res *adminRoleRoute) Serialize() []map[string]interface{} {
-	return res.RouteTree(res.ms, 0)
+func (res adminRoleRoute) Serialize() []map[string]interface{} {
+	return res.RouteTree(res, 0)
 }
 
 func (res adminRoleRoute) RouteTree(data []admin_menu.AdminMenu, pid uint) []map[string]interface{} {
