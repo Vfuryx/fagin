@@ -45,9 +45,9 @@ func (ctr *videoController) VideoList(ctx *gin.Context) {
 
 // CreateVideo 创建视频
 func (ctr *videoController) CreateVideo(ctx *gin.Context) {
-	var r = adminRequest.NewCreateVideo()
-	if data, ok := r.Validate(ctx); !ok {
-		ctr.ResponseJSONErr(ctx, errno.ReqErr, data)
+	r, msg := request.Validation[adminRequest.CreateVideo](ctx)
+	if len(msg) > 0 {
+		ctr.ResponseJSONErr(ctx, errno.ReqErr, msg)
 		return
 	}
 
@@ -75,9 +75,9 @@ func (ctr *videoController) UpdateVideo(ctx *gin.Context) {
 		return
 	}
 
-	var r = adminRequest.NewUpdateVideo()
-	if data, ok := r.Validate(ctx); !ok {
-		ctr.ResponseJSONErr(ctx, errno.ReqErr, data)
+	r, msg := request.Validation[adminRequest.UpdateVideo](ctx)
+	if len(msg) > 0 {
+		ctr.ResponseJSONErr(ctx, errno.ReqErr, msg)
 		return
 	}
 
@@ -139,9 +139,9 @@ func (ctr *videoController) DeleteVideos(ctx *gin.Context) {
 
 // UploadVideo 上传视频
 func (ctr *videoController) UploadVideo(ctx *gin.Context) {
-	var r = adminRequest.NewUploadVideo()
-	if data, ok := r.Validate(ctx); !ok {
-		ctr.ResponseJSONErr(ctx, errno.ReqErr, data)
+	r, msg := request.Validation[adminRequest.UploadVideo](ctx)
+	if len(msg) > 0 {
+		ctr.ResponseJSONErr(ctx, errno.ReqErr, msg)
 		return
 	}
 

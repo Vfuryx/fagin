@@ -1,6 +1,7 @@
 package db
 
 import (
+	"errors"
 	"fagin/config"
 	"fagin/pkg/errorw"
 	flog "fagin/pkg/logger"
@@ -10,12 +11,14 @@ import (
 	"time"
 
 	"gorm.io/driver/mysql"
+	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
 )
 
 var (
-	orm *gorm.DB
+	orm                 *gorm.DB
+	ErrDBDriverNotFound = errors.New("数据库不支持")
 )
 
 // Init 初始化
@@ -44,12 +47,18 @@ func Init() {
 
 	database := config.Database()
 	link := database.GetConnectLink()
-	orm, err = gorm.Open(mysql.Open(link), &gorm.Config{
-		Logger: Logger,
-	})
 
-	if config.Database().Debug() {
-		orm = orm.Debug()
+	switch database.Driver() {
+	case config.DBDriverMysql:
+		orm, err = gorm.Open(mysql.Open(link), &gorm.Config{
+			Logger: Logger,
+		})
+	case config.DBDriverPostgres:
+		orm, err = gorm.Open(postgres.Open(link), &gorm.Config{
+			Logger: Logger,
+		})
+	default:
+		panic(errorw.UP(ErrDBDriverNotFound))
 	}
 
 	if err != nil {
@@ -58,6 +67,10 @@ func Init() {
 
 	if orm.Error != nil {
 		panic(errorw.UP(orm.Error))
+	}
+
+	if config.Database().Debug() {
+		orm = orm.Debug()
 	}
 
 	sqlDB, err := orm.DB()

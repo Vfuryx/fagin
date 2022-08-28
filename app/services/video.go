@@ -15,8 +15,8 @@ func (*videoInfoService) CreateVideo(m *video_info.VideoInfo) error {
 	return errorw.UP(err)
 }
 
-func (*videoInfoService) VideoList(params map[string]interface{}, columns []string, with map[string]interface{}, p *db.Paginator) ([]*video_info.VideoInfo, error) {
-	var vs []*video_info.VideoInfo
+func (*videoInfoService) VideoList(params map[string]interface{}, columns []string, with map[string]interface{}, p *db.Paginator) ([]video_info.VideoInfo, error) {
+	var vs []video_info.VideoInfo
 	err := video_info.NewDao().Query(params, columns, with).Paginate(&vs, p)
 
 	return vs, errorw.UP(err)

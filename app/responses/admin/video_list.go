@@ -6,31 +6,24 @@ import (
 	"fagin/pkg/response"
 )
 
-type videoList struct {
-	ms []*video_info.VideoInfo
+type videoList []video_info.VideoInfo
 
-	response.Collect
+func NewVideoList(models ...video_info.VideoInfo) *response.Collect[videoList] {
+	return new(response.Collect[videoList]).SetCollect(models)
 }
 
-func NewVideoList(models ...*video_info.VideoInfo) response.Response {
-	res := videoList{ms: models}
-	res.SetCollect(&res)
-
-	return &res
-}
-
-func (res *videoList) Serialize() []map[string]interface{} {
+func (res videoList) Serialize() []map[string]interface{} {
 	sm := make([]map[string]interface{}, 0, response.DefCap)
 
-	for i := range res.ms {
+	for i := range res {
 		m := map[string]interface{}{
-			"id":          res.ms[i].ID,
-			"title":       res.ms[i].Title,
-			"status":      res.ms[i].Status,
-			"path":        res.ms[i].Path,
-			"description": res.ms[i].Description,
-			"duration":    res.ms[i].Duration,
-			"created_at":  app.TimeToStr(res.ms[i].CreatedAt),
+			"id":          res[i].ID,
+			"title":       res[i].Title,
+			"status":      res[i].Status,
+			"path":        res[i].Path,
+			"description": res[i].Description,
+			"duration":    res[i].Duration,
+			"created_at":  app.TimeToStr(res[i].CreatedAt),
 		}
 		sm = append(sm, m)
 	}

@@ -24,8 +24,8 @@ var AuthController authController
 
 // Login 后台登录
 func (ctr *authController) Login(ctx *gin.Context) {
-	var r = adminRequest.NewLoginRequest()
-	if data, ok := r.Validate(ctx); !ok {
+	r, data := request.Validation[adminRequest.LoginRequest](ctx)
+	if len(data) > 0 {
 		ctr.ResponseJSONErr(ctx, errno.ReqErr, data)
 		return
 	}
@@ -95,9 +95,9 @@ func (ctr *authController) UpdateAdminUser(ctx *gin.Context) {
 		return
 	}
 
-	r := adminRequest.NewUpdateAdminUser()
-	if data, ok := r.Validate(ctx); !ok {
-		ctr.ResponseJSONErr(ctx, errno.ReqErr, data)
+	r, msg := request.Validation[adminRequest.UpdateAdminUser](ctx)
+	if len(msg) > 0 {
+		ctr.ResponseJSONErr(ctx, errno.ReqErr, msg)
 		return
 	}
 

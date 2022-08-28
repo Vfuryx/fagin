@@ -21,9 +21,9 @@ type menuController struct {
 var MenuController menuController
 
 func (ctr *menuController) Index(ctx *gin.Context) {
-	var r = adminRequest.NewAdminMenuList()
-	if data, ok := r.Validate(ctx); !ok {
-		ctr.ResponseJSONErr(ctx, errno.ReqErr, data)
+	r, msg := request.Validation[adminRequest.AdminMenuList](ctx)
+	if len(msg) > 0 {
+		ctr.ResponseJSONErr(ctx, errno.ReqErr, msg)
 		return
 	}
 
@@ -95,9 +95,9 @@ func (ctr *menuController) Show(ctx *gin.Context) {
 }
 
 func (ctr *menuController) Store(ctx *gin.Context) {
-	var r = adminRequest.NewCreateAdminMenu()
-	if data, ok := r.Validate(ctx); !ok {
-		ctr.ResponseJSONErr(ctx, errno.ReqErr, data)
+	r, msg := request.Validation[adminRequest.CreateAdminMenu](ctx)
+	if len(msg) > 0 {
+		ctr.ResponseJSONErr(ctx, errno.ReqErr, msg)
 		return
 	}
 
@@ -137,9 +137,9 @@ func (ctr *menuController) Update(ctx *gin.Context) {
 		return
 	}
 
-	var r = adminRequest.NewUpdateAdminMenu()
-	if data, ok := r.Validate(ctx); !ok {
-		ctr.ResponseJSONErr(ctx, errno.ReqErr, data)
+	r, msg := request.Validation[adminRequest.UpdateAdminMenu](ctx)
+	if len(msg) > 0 {
+		ctr.ResponseJSONErr(ctx, errno.ReqErr, msg)
 		return
 	}
 
@@ -211,9 +211,9 @@ func (ctr *menuController) Delete(ctx *gin.Context) {
 }
 
 func (ctr *menuController) All(ctx *gin.Context) {
-	var r = adminRequest.NewAdminMenuList()
-	if data, ok := r.Validate(ctx); !ok {
-		ctr.ResponseJSONErr(ctx, errno.ReqErr, data)
+	_, msg := request.Validation[adminRequest.AdminMenuList](ctx)
+	if len(msg) > 0 {
+		ctr.ResponseJSONErr(ctx, errno.ReqErr, msg)
 		return
 	}
 

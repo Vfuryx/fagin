@@ -6,26 +6,19 @@ import (
 	"fagin/pkg/response"
 )
 
-type articleList struct {
-	ms []*article.Article
+type articleList []article.Article
 
-	response.Collect
+func NewArticleList(models ...article.Article) *response.Collect[articleList] {
+	return new(response.Collect[articleList]).SetCollect(models)
 }
 
-func NewArticleList(models ...*article.Article) response.Response {
-	res := articleList{ms: models}
-	res.SetCollect(&res)
-
-	return &res
-}
-
-func (res *articleList) Serialize() []map[string]interface{} {
+func (res articleList) Serialize() []map[string]interface{} {
 	sm := make([]map[string]interface{}, 0, response.DefCap)
 
-	for i := range res.ms {
+	for i := range res {
 		tags := make([]map[string]interface{}, 0, response.DefCap)
 
-		for _, t := range res.ms[i].Tags {
+		for _, t := range res[i].Tags {
 			m := map[string]interface{}{
 				"id":   t.ID,
 				"name": t.Name,
@@ -34,14 +27,14 @@ func (res *articleList) Serialize() []map[string]interface{} {
 		}
 
 		m := map[string]interface{}{
-			"id":          res.ms[i].ID,
-			"title":       res.ms[i].Title,
-			"author_id":   res.ms[i].AuthorID,
-			"category_id": res.ms[i].CategoryID,
-			"post_at":     app.TimeToStr(res.ms[i].PostAt),
-			"status":      res.ms[i].Status,
-			"author":      res.ms[i].Author.Name,
-			"category":    res.ms[i].Category.Name,
+			"id":          res[i].ID,
+			"title":       res[i].Title,
+			"author_id":   res[i].AuthorID,
+			"category_id": res[i].CategoryID,
+			"post_at":     app.TimeToStr(res[i].PostAt),
+			"status":      res[i].Status,
+			"author":      res[i].Author.Name,
+			"category":    res[i].Category.Name,
 			"tags":        tags,
 		}
 		sm = append(sm, m)

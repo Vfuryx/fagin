@@ -94,9 +94,9 @@ func (ctr *%[2]s) Show(ctx *gin.Context) {
 
 // Store 创建
 func (ctr *%[2]s) Store(ctx *gin.Context) {
-	var r r.R
-	if data, ok := r.Validate(ctx); !ok {
-		ctr.ResponseJsonErr(ctx, errno.ReqErr, data)
+	r, msg := request.Validation[r.R](ctx)
+	if len(msg) > 0 {
+		ctr.ResponseJSONErr(ctx, errno.ReqErr, msg)
 		return
 	}
 
@@ -119,9 +119,9 @@ func (ctr *%[2]s) Update(ctx *gin.Context) {
 		return
 	}
 
-	var r r.Create
-	if data, ok := r.Validate(ctx); !ok {
-		ctr.ResponseJsonErr(ctx, errno.ReqErr, data)
+	r, msg := request.Validation[r.Create](ctx)
+	if len(msg) > 0 {
+		ctr.ResponseJSONErr(ctx, errno.ReqErr, msg)
 		return
 	}
 	data := map[string]interface{}{}

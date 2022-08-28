@@ -25,9 +25,9 @@ var RoleController roleController
 func (ctr *roleController) Index(ctx *gin.Context) {
 	paginator := db.NewPaginatorWithCtx(ctx, 1, DefaultLimit)
 
-	var r = adminRequest.NewAdminRoleList()
-	if data, ok := r.Validate(ctx); !ok {
-		ctr.ResponseJSONErr(ctx, errno.ReqErr, data)
+	r, msg := request.Validation[adminRequest.AdminRoleList](ctx)
+	if len(msg) > 0 {
+		ctr.ResponseJSONErr(ctx, errno.ReqErr, msg)
 		return
 	}
 
@@ -95,7 +95,7 @@ func (ctr *roleController) Show(ctx *gin.Context) {
 	})
 }
 
-func getMenuTree(data []*admin_menu.AdminMenu, pid uint, menuIDs *[]uint) []map[string]interface{} {
+func getMenuTree(data []admin_menu.AdminMenu, pid uint, menuIDs *[]uint) []map[string]interface{} {
 	result := make([]map[string]interface{}, 0)
 
 	for index := range data {
@@ -116,9 +116,9 @@ func getMenuTree(data []*admin_menu.AdminMenu, pid uint, menuIDs *[]uint) []map[
 }
 
 func (ctr *roleController) Store(ctx *gin.Context) {
-	var r = adminRequest.NewCreateAdminRole()
-	if data, ok := r.Validate(ctx); !ok {
-		ctr.ResponseJSONErr(ctx, errno.ReqErr, data)
+	r, msg := request.Validation[adminRequest.CreateAdminRole](ctx)
+	if len(msg) > 0 {
+		ctr.ResponseJSONErr(ctx, errno.ReqErr, msg)
 		return
 	}
 
@@ -129,7 +129,7 @@ func (ctr *roleController) Store(ctx *gin.Context) {
 	}
 
 	// 获取菜单组
-	var menus []*admin_menu.AdminMenu
+	var menus []admin_menu.AdminMenu
 
 	err := admin_menu.NewDao().
 		Query(gin.H{"in_id": r.MenuIDs}, []string{"*"}, nil).
@@ -165,9 +165,9 @@ func (ctr *roleController) Update(ctx *gin.Context) {
 		return
 	}
 
-	var r = adminRequest.NewUpdateAdminRole()
-	if data, ok := r.Validate(ctx); !ok {
-		ctr.ResponseJSONErr(ctx, errno.ReqErr, data)
+	r, msg := request.Validation[adminRequest.UpdateAdminRole](ctx)
+	if len(msg) > 0 {
+		ctr.ResponseJSONErr(ctx, errno.ReqErr, msg)
 		return
 	}
 
@@ -269,9 +269,9 @@ func (ctr *roleController) Roles(ctx *gin.Context) {
 }
 
 func (ctr *roleController) KeyExist(ctx *gin.Context) {
-	var r = adminRequest.NewRoleKeyExistRequest()
-	if data, ok := r.Validate(ctx); !ok {
-		ctr.ResponseJSONErr(ctx, errno.ReqErr, data)
+	r, msg := request.Validation[adminRequest.RoleKeyExistRequest](ctx)
+	if len(msg) > 0 {
+		ctr.ResponseJSONErr(ctx, errno.ReqErr, msg)
 		return
 	}
 

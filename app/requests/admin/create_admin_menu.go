@@ -2,6 +2,8 @@ package request
 
 import (
 	"fagin/pkg/request"
+
+	"github.com/gin-gonic/gin"
 )
 
 type CreateAdminMenu struct {
@@ -22,22 +24,15 @@ type CreateAdminMenu struct {
 	IsHideChild   *uint8 `form:"is_hide_child" json:"is_hide_child" binding:"required,oneof=0 1"`
 	IsNoCache     *uint8 `form:"is_no_cache" json:"is_no_cache" binding:"required,oneof=0 1"`
 	Status        *uint8 `form:"status" json:"status" binding:"required,oneof=0 1"`
-
-	request.Validation `binding:"-"`
 }
 
-func NewCreateAdminMenu() *CreateAdminMenu {
-	r := new(CreateAdminMenu)
-	r.SetRequest(r)
+var _ request.Request = CreateAdminMenu{}
 
-	return r
-}
-
-func (*CreateAdminMenu) Message() map[string]string {
+func (CreateAdminMenu) Message() map[string]string {
 	return map[string]string{}
 }
 
-func (*CreateAdminMenu) Attributes() map[string]string {
+func (CreateAdminMenu) Attributes() map[string]string {
 	return map[string]string{
 		"Type":          "类型",
 		"ParentId":      "父ID",
@@ -57,4 +52,7 @@ func (*CreateAdminMenu) Attributes() map[string]string {
 		"IsNoCache":     "是否无缓存",
 		"Method":        "菜单请求方法",
 	}
+}
+func (r CreateAdminMenu) Validate(ctx *gin.Context) (any, map[string]string) {
+	return request.Validate[CreateAdminMenu](r, ctx)
 }

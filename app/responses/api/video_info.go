@@ -5,26 +5,19 @@ import (
 	"fagin/pkg/response"
 )
 
-type videoInfoList struct {
-	ms []*video_info.VideoInfo
+type videoInfoList []video_info.VideoInfo
 
-	response.Collect
+func NewVideoInfoList(models ...video_info.VideoInfo) *response.Collect[videoInfoList] {
+	return new(response.Collect[videoInfoList]).SetCollect(models)
 }
 
-func NewVideoInfoList(models ...*video_info.VideoInfo) response.Response {
-	res := videoInfoList{ms: models}
-	res.SetCollect(&res)
-
-	return &res
-}
-
-func (res *videoInfoList) Serialize() []map[string]interface{} {
+func (res videoInfoList) Serialize() []map[string]interface{} {
 	sm := make([]map[string]interface{}, 0, response.DefCap)
 
-	for i := range res.ms {
+	for i := range res {
 		m := map[string]interface{}{
-			"id":    res.ms[i].ID,
-			"title": res.ms[i].Title,
+			"id":    res[i].ID,
+			"title": res[i].Title,
 		}
 		sm = append(sm, m)
 	}
@@ -32,26 +25,19 @@ func (res *videoInfoList) Serialize() []map[string]interface{} {
 	return sm
 }
 
-type VideoInfoShow struct {
-	ms []*video_info.VideoInfo
+type VideoInfoShow []video_info.VideoInfo
 
-	response.Collect
+func NewVideoInfoShow(models ...video_info.VideoInfo) *response.Collect[videoInfoList] {
+	return new(response.Collect[videoInfoList]).SetCollect(models)
 }
 
-func NewVideoInfoShow(models ...*video_info.VideoInfo) response.Response {
-	res := VideoInfoShow{ms: models}
-	res.SetCollect(&res)
-
-	return &res
-}
-
-func (res *VideoInfoShow) Serialize() []map[string]interface{} {
+func (res VideoInfoShow) Serialize() []map[string]interface{} {
 	sm := make([]map[string]interface{}, 0, response.DefCap)
 
-	for i := range res.ms {
+	for i := range res {
 		m := map[string]interface{}{
-			"id":    res.ms[i].ID,
-			"title": res.ms[i].Title,
+			"id":    res[i].ID,
+			"title": res[i].Title,
 		}
 		sm = append(sm, m)
 	}

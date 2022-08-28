@@ -39,9 +39,9 @@ var AdminsController adminsController
 func (ctr *adminsController) Index(ctx *gin.Context) {
 	paginator := db.NewPaginatorWithCtx(ctx, 1, DefaultLimit)
 
-	var r = adminRequest.NewAdminUserList()
-	if data, ok := r.Validate(ctx); !ok {
-		ctr.ResponseJSONErr(ctx, errno.ReqErr, data)
+	r, msg := request.Validation[adminRequest.AdminUserList](ctx)
+	if len(msg) > 0 {
+		ctr.ResponseJSONErr(ctx, errno.ReqErr, msg)
 		return
 	}
 
@@ -120,9 +120,9 @@ func (ctr *adminsController) Show(ctx *gin.Context) {
 
 // Store 创建管理员
 func (ctr *adminsController) Store(ctx *gin.Context) {
-	var r = adminRequest.NewCreateAdminUser()
-	if data, ok := r.Validate(ctx); !ok {
-		ctr.ResponseJSONErr(ctx, errno.ReqErr, data)
+	r, msg := request.Validation[adminRequest.CreateAdminUser](ctx)
+	if len(msg) > 0 {
+		ctr.ResponseJSONErr(ctx, errno.ReqErr, msg)
 		return
 	}
 
@@ -178,9 +178,9 @@ func (ctr *adminsController) Update(ctx *gin.Context) {
 		return
 	}
 
-	var r = adminRequest.NewUpdateAdminUser()
-	if data, ok := r.Validate(ctx); !ok {
-		ctr.ResponseJSONErr(ctx, errno.ReqErr, data)
+	r, msg := request.Validation[adminRequest.UpdateAdminUser](ctx)
+	if len(msg) > 0 {
+		ctr.ResponseJSONErr(ctx, errno.ReqErr, msg)
 		return
 	}
 
@@ -277,9 +277,9 @@ func (ctr *adminsController) ResetPassword(ctx *gin.Context) {
 		return
 	}
 
-	var r = adminRequest.NewResetAdminUser()
-	if data, ok := r.Validate(ctx); !ok {
-		ctr.ResponseJSONErr(ctx, errno.ReqErr, data)
+	r, msg := request.Validation[adminRequest.ResetAdminUser](ctx)
+	if len(msg) > 0 {
+		ctr.ResponseJSONErr(ctx, errno.ReqErr, msg)
 		return
 	}
 
@@ -317,9 +317,9 @@ func (ctr *adminsController) Logout(ctx *gin.Context) {
 
 // UsernameExists 用户名是否已存在
 func (ctr *adminsController) UsernameExists(ctx *gin.Context) {
-	var r = adminRequest.NewAdminUsernameExistRequest()
-	if data, ok := r.Validate(ctx); !ok {
-		ctr.ResponseJSONErr(ctx, errno.ReqErr, data)
+	r, msg := request.Validation[adminRequest.AdminUsernameExistRequest](ctx)
+	if len(msg) > 0 {
+		ctr.ResponseJSONErr(ctx, errno.ReqErr, msg)
 		return
 	}
 
@@ -334,9 +334,9 @@ func (ctr *adminsController) UsernameExists(ctx *gin.Context) {
 
 // RolesRoute 角色路由
 func (ctr *adminsController) RolesRoute(ctx *gin.Context) {
-	var r = adminRequest.NewRolesRoute()
-	if data, ok := r.Validate(ctx); !ok {
-		ctr.ResponseJSONErr(ctx, errno.ReqErr, data)
+	r, msg := request.Validation[adminRequest.RolesRoute](ctx)
+	if len(msg) > 0 {
+		ctr.ResponseJSONErr(ctx, errno.ReqErr, msg)
 		return
 	}
 

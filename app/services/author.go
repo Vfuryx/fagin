@@ -12,8 +12,8 @@ type authorService struct{}
 
 var Author authorService
 
-func (*authorService) Index(params gin.H, columns []string, with gin.H, p *db.Paginator) ([]*author.Author, error) {
-	var ms []*author.Author
+func (*authorService) Index(params gin.H, columns []string, with gin.H, p *db.Paginator) ([]author.Author, error) {
+	var ms []author.Author
 	err := author.NewDao().Query(params, columns, with).Paginate(&ms, p)
 
 	return ms, errorw.UP(err)
@@ -46,8 +46,8 @@ func (*authorService) Deletes(ids []uint) error {
 	return errorw.UP(err)
 }
 
-func (*authorService) All(params gin.H, columns []string, with gin.H) ([]*author.Author, error) {
-	var ms []*author.Author
+func (*authorService) All(params gin.H, columns []string, with gin.H) ([]author.Author, error) {
+	var ms []author.Author
 	err := author.NewDao().Query(params, columns, with).Find(&ms)
 
 	return ms, errorw.UP(err)

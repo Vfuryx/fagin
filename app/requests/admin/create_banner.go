@@ -2,6 +2,8 @@ package request
 
 import (
 	"fagin/pkg/request"
+
+	"github.com/gin-gonic/gin"
 )
 
 type CreateBanner struct {
@@ -10,18 +12,11 @@ type CreateBanner struct {
 	Path   string `form:"path" json:"path" binding:"required,max=255"`
 	Sort   uint   `form:"sort" json:"sort" binding:"required"`
 	Status *uint8 `form:"status" json:"status" binding:"required,oneof=0 1"`
-
-	request.Validation `binding:"-"`
 }
 
-func NewCreateBanner() *CreateBanner {
-	r := new(CreateBanner)
-	r.SetRequest(r)
+var _ request.Request = CreateBanner{}
 
-	return r
-}
-
-func (*CreateBanner) Message() map[string]string {
+func (CreateBanner) Message() map[string]string {
 	return map[string]string{
 		// "Title.required":  "标题不能为空",
 		// "Title.max":       "标题不能大于32位",
@@ -35,7 +30,7 @@ func (*CreateBanner) Message() map[string]string {
 	}
 }
 
-func (*CreateBanner) Attributes() map[string]string {
+func (CreateBanner) Attributes() map[string]string {
 	return map[string]string{
 		"Title":  "标题",
 		"Banner": "轮播图",
@@ -43,4 +38,8 @@ func (*CreateBanner) Attributes() map[string]string {
 		"Sort":   "排序",
 		"Status": "状态",
 	}
+}
+
+func (r CreateBanner) Validate(ctx *gin.Context) (any, map[string]string) {
+	return request.Validate[CreateBanner](r, ctx)
 }

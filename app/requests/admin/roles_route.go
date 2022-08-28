@@ -2,31 +2,26 @@ package request
 
 import (
 	"fagin/pkg/request"
+
+	"github.com/gin-gonic/gin"
 )
 
 type RolesRoute struct {
 	Roles []uint `form:"roles[]" json:"roles" binding:"required,dive,required"`
-
-	request.Validation `binding:"-"`
 }
 
-func NewRolesRoute() *RolesRoute {
-	r := new(RolesRoute)
-	r.SetRequest(r)
+var _ request.Request = RolesRoute{}
 
-	return r
-}
-
-func (*RolesRoute) Message() map[string]string {
+func (RolesRoute) Message() map[string]string {
 	return map[string]string{}
 }
 
-func (*RolesRoute) Attributes() map[string]string {
+func (RolesRoute) Attributes() map[string]string {
 	return map[string]string{
 		"Roles": "角色组",
 	}
 }
 
-// func (r *RolesRoute) Validate(ctx *gin.Context) (map[string]string, bool) {
-//	return request.Validated(r, ctx)
-//}
+func (r RolesRoute) Validate(ctx *gin.Context) (any, map[string]string) {
+	return request.Validate[RolesRoute](r, ctx)
+}

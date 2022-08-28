@@ -3,7 +3,7 @@ package admin
 import (
 	"fagin/app/errno"
 	"fagin/app/models/tag"
-	admin_request "fagin/app/requests/admin"
+	adminRequest "fagin/app/requests/admin"
 	response "fagin/app/responses/admin"
 	"fagin/app/services"
 	"fagin/pkg/db"
@@ -67,9 +67,9 @@ func (ctr *tagController) Show(ctx *gin.Context) {
 
 // Store 创建
 func (ctr *tagController) Store(ctx *gin.Context) {
-	var r = admin_request.NewCreateTag()
-	if data, ok := r.Validate(ctx); !ok {
-		ctr.ResponseJSONErr(ctx, errno.ReqErr, data)
+	r, msg := request.Validation[adminRequest.CreateTag](ctx)
+	if len(msg) > 0 {
+		ctr.ResponseJSONErr(ctx, errno.ReqErr, msg)
 		return
 	}
 
@@ -95,9 +95,9 @@ func (ctr *tagController) Update(ctx *gin.Context) {
 		return
 	}
 
-	var r = admin_request.NewCreateTag()
-	if data, ok := r.Validate(ctx); !ok {
-		ctr.ResponseJSONErr(ctx, errno.ReqErr, data)
+	r, msg := request.Validation[adminRequest.CreateTag](ctx)
+	if len(msg) > 0 {
+		ctr.ResponseJSONErr(ctx, errno.ReqErr, msg)
 		return
 	}
 

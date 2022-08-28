@@ -48,11 +48,11 @@ func (d *Dao) Query(params map[string]interface{}, columns []string, with map[st
 	}
 
 	if v, ok = params["like_name"]; ok && v.(string) != "" {
-		model = model.Where("`name` LIKE ?", v)
+		model = model.Where("name LIKE ?", v)
 	}
 
 	if v, ok = params["status"]; ok {
-		model = model.Where("`status` = ?", v)
+		model = model.Where("status = ?", v)
 	}
 
 	if v, ok = params["orderBy"]; ok {

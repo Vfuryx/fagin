@@ -2,26 +2,26 @@ package request
 
 import (
 	"fagin/pkg/request"
+
+	"github.com/gin-gonic/gin"
 )
 
 type RoleKeyExistRequest struct {
 	Key string `form:"key" json:"key" binding:"required,max=32"`
-
-	request.Validation `binding:"-"`
 }
 
-func NewRoleKeyExistRequest() *RoleKeyExistRequest {
-	r := new(RoleKeyExistRequest)
-	r.SetRequest(r)
+var _ request.Request = RoleKeyExistRequest{}
 
-	return r
-}
-func (*RoleKeyExistRequest) Message() map[string]string {
+func (RoleKeyExistRequest) Message() map[string]string {
 	return map[string]string{}
 }
 
-func (*RoleKeyExistRequest) Attributes() map[string]string {
+func (RoleKeyExistRequest) Attributes() map[string]string {
 	return map[string]string{
 		"Key": "角色关键字",
 	}
+}
+
+func (r RoleKeyExistRequest) Validate(ctx *gin.Context) (any, map[string]string) {
+	return request.Validate[RoleKeyExistRequest](r, ctx)
 }

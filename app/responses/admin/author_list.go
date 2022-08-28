@@ -5,27 +5,20 @@ import (
 	"fagin/pkg/response"
 )
 
-type authorList struct {
-	ms []*author.Author
+type authorList []author.Author
 
-	response.Collect
+func NewAuthorList(models ...author.Author) *response.Collect[authorList] {
+	return new(response.Collect[authorList]).SetCollect(models)
 }
 
-func NewAuthorList(models ...*author.Author) response.Response {
-	res := authorList{ms: models}
-	res.SetCollect(&res)
-
-	return &res
-}
-
-func (res *authorList) Serialize() []map[string]interface{} {
+func (res authorList) Serialize() []map[string]interface{} {
 	sm := make([]map[string]interface{}, 0, response.DefCap)
 
-	for i := range res.ms {
+	for i := range res {
 		m := map[string]interface{}{
-			"id":     res.ms[i].ID,
-			"name":   res.ms[i].Name,
-			"status": res.ms[i].Status,
+			"id":     res[i].ID,
+			"name":   res[i].Name,
+			"status": res[i].Status,
 		}
 		sm = append(sm, m)
 	}

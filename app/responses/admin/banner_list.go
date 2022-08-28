@@ -5,30 +5,23 @@ import (
 	"fagin/pkg/response"
 )
 
-type bannerList struct {
-	ms []*banner.Banner
+type bannerList []banner.Banner
 
-	response.Collect
+func NewBannerList(models ...banner.Banner) *response.Collect[bannerList] {
+	return new(response.Collect[bannerList]).SetCollect(models)
 }
 
-func NewBannerList(models ...*banner.Banner) response.Response {
-	res := bannerList{ms: models}
-	res.SetCollect(&res)
-
-	return &res
-}
-
-func (res *bannerList) Serialize() []map[string]interface{} {
+func (res bannerList) Serialize() []map[string]interface{} {
 	sm := make([]map[string]interface{}, 0, response.DefCap)
 
-	for i := range res.ms {
+	for i := range res {
 		m := map[string]interface{}{
-			"id":     res.ms[i].ID,
-			"title":  res.ms[i].Title,
-			"banner": res.ms[i].Banner,
-			"path":   res.ms[i].Path,
-			"sort":   res.ms[i].Sort,
-			"status": res.ms[i].Status,
+			"id":     res[i].ID,
+			"title":  res[i].Title,
+			"banner": res[i].Banner,
+			"path":   res[i].Path,
+			"sort":   res[i].Sort,
+			"status": res[i].Status,
 		}
 		sm = append(sm, m)
 	}

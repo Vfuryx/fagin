@@ -6,32 +6,25 @@ import (
 	"fagin/pkg/response"
 )
 
-type operationLog struct {
-	ms []*aol.AdminOperationLog
+type operationLog []aol.AdminOperationLog
 
-	response.Collect
+func NewOperationLog(models ...aol.AdminOperationLog) *response.Collect[operationLog] {
+	return new(response.Collect[operationLog]).SetCollect(models)
 }
 
-func NewOperationLog(models ...*aol.AdminOperationLog) response.Response {
-	res := operationLog{ms: models}
-	res.SetCollect(&res)
-
-	return &res
-}
-
-func (res *operationLog) Serialize() []map[string]interface{} {
+func (res operationLog) Serialize() []map[string]interface{} {
 	sm := make([]map[string]interface{}, 0, response.DefCap)
 
-	for i := range res.ms {
+	for i := range res {
 		m := map[string]interface{}{
-			"id":         res.ms[i].ID,
-			"user":       res.ms[i].User,
-			"method":     res.ms[i].Method,
-			"path":       res.ms[i].Path,
-			"ip":         res.ms[i].IP,
-			"operation":  res.ms[i].Operation,
-			"module":     res.ms[i].Module,
-			"created_at": app.TimeToStr(res.ms[i].CreatedAt),
+			"id":         res[i].ID,
+			"user":       res[i].User,
+			"method":     res[i].Method,
+			"path":       res[i].Path,
+			"ip":         res[i].IP,
+			"operation":  res[i].Operation,
+			"module":     res[i].Module,
+			"created_at": app.TimeToStr(res[i].CreatedAt),
 		}
 		sm = append(sm, m)
 	}

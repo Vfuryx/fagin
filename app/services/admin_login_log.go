@@ -15,8 +15,8 @@ type adminLoginLog struct{}
 // AdminLoginLog 后台登录日志服务
 var AdminLoginLog adminLoginLog
 
-func (*adminLoginLog) List(params gin.H, columns []string, with gin.H, p *db.Paginator) ([]*all.AdminLoginLog, error) {
-	var loginLogs []*all.AdminLoginLog
+func (*adminLoginLog) List(params gin.H, columns []string, with gin.H, p *db.Paginator) ([]all.AdminLoginLog, error) {
+	var loginLogs []all.AdminLoginLog
 	err := all.NewDao().Query(params, columns, with).Paginate(&loginLogs, p)
 
 	return loginLogs, errorw.UP(err)

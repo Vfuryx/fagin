@@ -23,6 +23,7 @@ func init() {
 	cli.MigrateCmd.AddCommand(cli.MigrateCreateCmd)
 	cli.MigrateCmd.AddCommand(cli.MigrateResetCmd)
 	cli.MigrateCmd.AddCommand(cli.MigrateRollbackCmd)
+	cli.MigrateCmd.AddCommand(cli.MigrateRefreshCmd)
 	rootCmd.AddCommand(cli.MigrateCmd)
 	rootCmd.AddCommand(cli.ModelCmd)
 	rootCmd.AddCommand(cli.RequestCmd)

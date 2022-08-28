@@ -47,7 +47,7 @@ type %[2]sService struct{}
 
 var %[3]s %[2]sService
 
-func (*%[2]sService) Index(params gin.H, columns []string, with gin.H, p *db.Paginator) (ms []*%[4]s.%[3]s, err error) {
+func (*%[2]sService) Index(params gin.H, columns []string, with gin.H, p *db.Paginator) (ms []%[4]s.%[3]s, err error) {
 	err = %[4]s.NewDao().Query(params, columns, with).Paginate(&ms, p)
 
 	return ms, errorw.UP(err)

@@ -61,6 +61,9 @@ migrate\:reset:
 migrate\:rollback:
 	go run ./cmd/console/main.go migrate rollback
 
+migrate\:refresh:
+	go run ./cmd/console/main.go migrate refresh
+
 build:
 	go build -o ./bin/${Name} ./cmd/server
 

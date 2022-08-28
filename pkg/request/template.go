@@ -37,31 +37,29 @@ func CreateRequestTemplate(path, name string) {
 
 import (
 	"%[3]s/pkg/request"
+
+	"github.com/gin-gonic/gin"
 )
 
 type %[2]s struct {
-	request.Validation ` + "`binding:\"-\"`" + `
+
 }
 
-func New%[4]s() *%[2]s {
-	r := new(%[2]s)
-	r.SetRequest(r)
-	return r
-}
+var _ request.Request = %[2]s{}
 
-func (*%[2]s) Message() map[string]string {
+func (%[2]s) Message() map[string]string {
 	return map[string]string{
 	}
 }
 
-func (*%[2]s) Attributes() map[string]string {
+func (%[2]s) Attributes() map[string]string {
 	return map[string]string{
 	}
 }
 
-//func (r *%[2]s) Validate(ctx *gin.Context) (map[string]string, bool) {
-//	return request.Validated(r, ctx)
-//}
+func (r %[2]s) Validate(ctx *gin.Context) (any, map[string]string) {
+	return request.Validate[%[2]s](r, ctx)
+}
 `
 
 	var content = fmt.Sprintf(temp, packageName, structName, config.App().Name(), name)

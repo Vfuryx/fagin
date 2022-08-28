@@ -56,7 +56,7 @@ func (d *Dao) Query(params map[string]interface{}, columns []string, with map[st
 	}
 
 	if v, ok = params["title"]; ok {
-		model = model.Where("Title like %?%", v)
+		model = model.Where("title like %?%", v)
 	}
 
 	if v, ok = params["status"]; ok {

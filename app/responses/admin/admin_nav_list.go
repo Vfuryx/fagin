@@ -5,26 +5,19 @@ import (
 	"fagin/pkg/response"
 )
 
-type adminNavList struct {
-	ms []*admin_menu.AdminMenu
+type adminNavList []admin_menu.AdminMenu
 
-	response.Collect
+func NewAdminNavList(models ...admin_menu.AdminMenu) *response.Collect[adminNavList] {
+	return new(response.Collect[adminNavList]).SetCollect(models)
 }
 
-func NewAdminNavList(models ...*admin_menu.AdminMenu) response.Response {
-	res := adminNavList{ms: models}
-	res.SetCollect(&res)
-
-	return &res
-}
-
-func (r *adminNavList) Serialize() []map[string]interface{} {
-	var menu *admin_menu.AdminMenu
+func (r adminNavList) Serialize() []map[string]interface{} {
+	var menu admin_menu.AdminMenu
 
 	res := make([]map[string]interface{}, 0, response.DefCap)
 
-	for index := range r.ms {
-		menu = r.ms[index]
+	for index := range r {
+		menu = r[index]
 
 		meta := map[string]interface{}{
 			"title":              menu.Title,

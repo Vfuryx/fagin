@@ -215,10 +215,16 @@ pre-commit install
  make migrate:reset
 ```
 
-#### 数据迁移回滚一步
+#### 数据迁移回滚到上一次
 
 ```
  make migrate:rollback
+```
+
+#### 数据迁移回滚全部重写迁移
+
+```
+ make migrate:refresh
 ```
 
 #### 打包程序

@@ -2,7 +2,8 @@ package api
 
 import (
 	"fagin/app/errno"
-	api_request "fagin/app/requests/api"
+	apiRequest "fagin/app/requests/api"
+	"fagin/pkg/request"
 
 	"github.com/gin-gonic/gin"
 )
@@ -21,10 +22,9 @@ var IndexController indexController
 // @Accept  json
 // @Produce  json
 func (ctr *indexController) Index(ctx *gin.Context) {
-	var v = api_request.NewIndexRequest()
-
-	if data, ok := v.Validate(ctx); !ok {
-		ctr.ResponseJSONErr(ctx, errno.ReqErr, data)
+	_, msg := request.Validation[apiRequest.IndexRequest](ctx)
+	if len(msg) > 0 {
+		ctr.ResponseJSONErr(ctx, errno.ReqErr, msg)
 		return
 	}
 }

@@ -193,6 +193,10 @@ func (c *CasbinService) AddPolicyForRole(role, obj, act string) (bool, error) {
 
 // AddPolicies 添加策略
 func (c *CasbinService) AddPolicies(rules [][]string) (bool, error) {
+	if len(rules) == 0 {
+		return true, nil
+	}
+
 	cb, err := c.casbin()
 	if err != nil {
 		return false, err

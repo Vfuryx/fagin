@@ -2,6 +2,8 @@ package request
 
 import (
 	"fagin/pkg/request"
+
+	"github.com/gin-gonic/gin"
 )
 
 type UpdateWebsiteConfig struct {
@@ -18,18 +20,11 @@ type UpdateWebsiteConfig struct {
 	PublicSecurityRecord string `form:"public_security_record" json:"public_security_record" binding:"required,max=32"`
 	WebLogo              string `form:"web_logo" json:"web_logo" binding:"required,max=255"`
 	QRCode               string `form:"qr_code" json:"qr_code" binding:"required,max=255"`
-
-	request.Validation `binding:"-"`
 }
 
-func NewUpdateWebsiteConfig() *UpdateWebsiteConfig {
-	r := new(UpdateWebsiteConfig)
-	r.SetRequest(r)
+var _ request.Request = UpdateWebsiteConfig{}
 
-	return r
-}
-
-func (*UpdateWebsiteConfig) Message() map[string]string {
+func (UpdateWebsiteConfig) Message() map[string]string {
 	return map[string]string{
 		// "WebName.required":              "网站名称不能为空",
 		// "WebName.max":                   "网站名称不能大于32位",
@@ -61,7 +56,7 @@ func (*UpdateWebsiteConfig) Message() map[string]string {
 	}
 }
 
-func (*UpdateWebsiteConfig) Attributes() map[string]string {
+func (UpdateWebsiteConfig) Attributes() map[string]string {
 	return map[string]string{
 		"WebName":              "网站名称",
 		"WebEnName":            "网站英文名称",
@@ -77,4 +72,7 @@ func (*UpdateWebsiteConfig) Attributes() map[string]string {
 		"WebLogo":              "网站logo",
 		"QRCode":               "二维码",
 	}
+}
+func (r UpdateWebsiteConfig) Validate(ctx *gin.Context) (any, map[string]string) {
+	return request.Validate[UpdateWebsiteConfig](r, ctx)
 }

@@ -5,6 +5,7 @@ import (
 	adminRequest "fagin/app/requests/admin"
 	"fagin/app/services"
 	"fagin/config"
+	"fagin/pkg/request"
 
 	"github.com/gin-gonic/gin"
 )
@@ -36,9 +37,9 @@ func (ctr *companyIntroductionController) ShowCompanyIntroduction(ctx *gin.Conte
 }
 
 func (ctr *companyIntroductionController) UpdateCompanyIntroduction(ctx *gin.Context) {
-	var r = adminRequest.NewUpdateCompanyIntroduction()
-	if data, ok := r.Validate(ctx); !ok {
-		ctr.ResponseJSONErr(ctx, errno.ReqErr, data)
+	r, msg := request.Validation[adminRequest.UpdateCompanyIntroduction](ctx)
+	if len(msg) > 0 {
+		ctr.ResponseJSONErr(ctx, errno.ReqErr, msg)
 		return
 	}
 
@@ -60,9 +61,9 @@ func (ctr *companyIntroductionController) UpdateCompanyIntroduction(ctx *gin.Con
 
 // Upload 上传
 func (ctr *companyIntroductionController) Upload(ctx *gin.Context) {
-	var r = adminRequest.NewUploadCompanyImage()
-	if data, ok := r.Validate(ctx); !ok {
-		ctr.ResponseJSONErr(ctx, errno.ReqErr, data)
+	r, msg := request.Validation[adminRequest.UploadCompanyImage](ctx)
+	if len(msg) > 0 {
+		ctr.ResponseJSONErr(ctx, errno.ReqErr, msg)
 		return
 	}
 

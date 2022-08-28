@@ -2,6 +2,8 @@ package request
 
 import (
 	"fagin/pkg/request"
+
+	"github.com/gin-gonic/gin"
 )
 
 type CreateAdminDepartment struct {
@@ -10,22 +12,15 @@ type CreateAdminDepartment struct {
 	Remark   string `form:"remark" json:"remark" binding:"max=255"`
 	Sort     uint   `form:"sort" json:"sort" binding:""`
 	Status   *uint8 `form:"status" json:"status" binding:"required,oneof=0 1"`
-
-	request.Validation `binding:"-"`
 }
 
-func NewCreateAdminDepartment() *CreateAdminDepartment {
-	r := new(CreateAdminDepartment)
-	r.SetRequest(r)
+var _ request.Request = CreateAdminDepartment{}
 
-	return r
-}
-
-func (*CreateAdminDepartment) Message() map[string]string {
+func (CreateAdminDepartment) Message() map[string]string {
 	return map[string]string{}
 }
 
-func (*CreateAdminDepartment) Attributes() map[string]string {
+func (CreateAdminDepartment) Attributes() map[string]string {
 	return map[string]string{
 		"ParentID": "父id",
 		"Name":     "部门名称",
@@ -35,6 +30,6 @@ func (*CreateAdminDepartment) Attributes() map[string]string {
 	}
 }
 
-// func (r *createAdminDepartment) Validate(ctx *gin.Context) (map[string]string, bool) {
-//	return request.Validated(r, ctx)
-//}
+func (r CreateAdminDepartment) Validate(ctx *gin.Context) (any, map[string]string) {
+	return request.Validate[CreateAdminDepartment](r, ctx)
+}
