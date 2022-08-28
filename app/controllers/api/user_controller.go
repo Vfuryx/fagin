@@ -38,8 +38,7 @@ func (ctr *userController) Register(ctx *gin.Context) {
 		Status:   enums.StatusActive.Get(),
 	}
 
-	err := services.User.AddUser(&u).Error
-	if err != nil {
+	if err := services.User.AddUser(&u).Error; err != nil {
 		ctr.ResponseJSONErrLog(ctx, errno.CtxStoreErr, err)
 		return
 	}

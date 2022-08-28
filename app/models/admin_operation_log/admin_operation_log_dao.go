@@ -48,11 +48,11 @@ func (d *Dao) Query(params map[string]interface{}, columns []string, with map[st
 	}
 
 	if v, ok = params["like_path"]; ok && v.(string) != "" {
-		model = model.Where("`path` LIKE ?", v)
+		model = model.Where("path LIKE ?", v)
 	}
 
 	if v, ok = params["method"]; ok && v.(string) != "" {
-		model = model.Where("`method` = ?", v)
+		model = model.Where("method = ?", v)
 	}
 
 	if v, ok = params["start_time"]; ok {
@@ -60,7 +60,7 @@ func (d *Dao) Query(params map[string]interface{}, columns []string, with map[st
 	}
 
 	if v, ok = params["end_time"]; ok {
-		model = model.Where("`created_at` < ?", v)
+		model = model.Where("created_at < ?", v)
 	}
 
 	if v, ok = params["orderBy"]; ok {

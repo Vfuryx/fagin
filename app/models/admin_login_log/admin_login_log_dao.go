@@ -54,15 +54,15 @@ func (d *Dao) Query(params map[string]interface{}, columns []string, with map[st
 	}
 
 	if v, ok = params["like_login_name"]; ok && v.(string) != "" {
-		model = model.Where("`login_name` LIKE ?", v)
+		model = model.Where("login_name LIKE ?", v)
 	}
 
 	if v, ok = params["start_time"]; ok {
-		model = model.Where("`created_at` >= ?", v)
+		model = model.Where("created_at >= ?", v)
 	}
 
 	if v, ok = params["end_time"]; ok {
-		model = model.Where("`created_at` < ?", v)
+		model = model.Where("created_at < ?", v)
 	}
 
 	if v, ok = params["orderBy"]; ok {

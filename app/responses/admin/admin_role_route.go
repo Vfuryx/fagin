@@ -6,12 +6,12 @@ import (
 )
 
 type adminRoleRoute struct {
-	ms []*admin_menu.AdminMenu
+	ms []admin_menu.AdminMenu
 
 	response.Collect
 }
 
-func NewAdminRoleRoute(models ...*admin_menu.AdminMenu) response.Response {
+func NewAdminRoleRoute(models ...admin_menu.AdminMenu) response.Response {
 	res := adminRoleRoute{ms: models}
 	res.SetCollect(&res)
 
@@ -22,7 +22,7 @@ func (res *adminRoleRoute) Serialize() []map[string]interface{} {
 	return res.RouteTree(res.ms, 0)
 }
 
-func (res adminRoleRoute) RouteTree(data []*admin_menu.AdminMenu, pid uint) []map[string]interface{} {
+func (res adminRoleRoute) RouteTree(data []admin_menu.AdminMenu, pid uint) []map[string]interface{} {
 	result := make([]map[string]interface{}, 0, response.DefCap)
 
 	for index := range data {

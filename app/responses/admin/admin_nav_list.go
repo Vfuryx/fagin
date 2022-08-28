@@ -6,12 +6,12 @@ import (
 )
 
 type adminNavList struct {
-	ms []*admin_menu.AdminMenu
+	ms []admin_menu.AdminMenu
 
 	response.Collect
 }
 
-func NewAdminNavList(models ...*admin_menu.AdminMenu) response.Response {
+func NewAdminNavList(models ...admin_menu.AdminMenu) response.Response {
 	res := adminNavList{ms: models}
 	res.SetCollect(&res)
 
@@ -19,7 +19,7 @@ func NewAdminNavList(models ...*admin_menu.AdminMenu) response.Response {
 }
 
 func (r *adminNavList) Serialize() []map[string]interface{} {
-	var menu *admin_menu.AdminMenu
+	var menu admin_menu.AdminMenu
 
 	res := make([]map[string]interface{}, 0, response.DefCap)
 

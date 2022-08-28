@@ -42,7 +42,7 @@ func (r *adminRoleList) Serialize() []map[string]interface{} {
 	return sm
 }
 
-func (r adminRoleList) getMenuIDs(menus []*admin_menu.AdminMenu) []uint {
+func (r adminRoleList) getMenuIDs(menus []admin_menu.AdminMenu) []uint {
 	ids := make([]uint, 0)
 
 	for i := range menus {

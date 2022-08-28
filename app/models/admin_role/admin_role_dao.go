@@ -4,6 +4,7 @@ import (
 	"fagin/app/models/admin_menu"
 	"fagin/app/models/admin_role_menu"
 	"fagin/pkg/db"
+	"fagin/utils"
 	"strconv"
 	"strings"
 
@@ -60,23 +61,23 @@ func (d *Dao) Query(params map[string]interface{}, columns []string, with map[st
 	}
 
 	if v, ok = params["like_name"]; ok && v.(string) != "" {
-		model = model.Where("`name` LIKE ?", v)
+		model = model.Where("name LIKE ?", v)
 	}
 
 	if v, ok = params["like_key"]; ok && v.(string) != "" {
-		model = model.Where("`key` LIKE ?", v)
+		model = model.Where("key LIKE ?", v)
 	}
 
 	if v, ok = params["key"]; ok && v.(string) != "" {
-		model = model.Where("`key` = ?", v)
+		model = model.Where("key = ?", v)
 	}
 
 	if v, ok = params["status"]; ok {
-		model = model.Where("`status` = ?", v)
+		model = model.Where("status = ?", v)
 	}
 
 	if v, ok = params["type"]; ok {
-		model = model.Where("`type` = ?", v)
+		model = model.Where("type = ?", v)
 	}
 
 	if v, ok = params["orderBy"]; ok {
@@ -109,7 +110,7 @@ func (d *Dao) Update(id uint, data map[string]interface{}) error {
 	}
 
 	// 获取菜单组
-	var menus []*admin_menu.AdminMenu
+	var menus []admin_menu.AdminMenu
 
 	if v, ok := data["menuIDs"]; ok {
 		var ids = v.([]uint)
@@ -127,12 +128,12 @@ func (d *Dao) Update(id uint, data map[string]interface{}) error {
 		return err
 	}
 
-	err = db.ORM().Model(&AdminRole{ID: id}).Association("Menus").Replace(menus)
+	err = db.ORM().Model(&AdminRole{ID: id}).Association("Menus").Replace(&menus)
 
 	return err
 }
 
-func GetMenuAll(menus []*admin_menu.AdminMenu) ([]*admin_menu.AdminMenu, error) {
+func GetMenuAll(menus []admin_menu.AdminMenu) ([]admin_menu.AdminMenu, error) {
 	var (
 		mIDsExists = make(map[int]struct{})
 		mIDs       = make(map[int]struct{})
@@ -145,19 +146,20 @@ func GetMenuAll(menus []*admin_menu.AdminMenu) ([]*admin_menu.AdminMenu, error) 
 	for i := range menus {
 		mIDsExists[int(menus[i].ID)] = struct{}{}
 		idSlice = strings.Split(menus[i].Paths, "-")
-		idSlice = idSlice[1 : len(idSlice)-1]
+		idSlice[len(idSlice)-1] = utils.Uint64ToStr(uint64(menus[i].ID))
+		idSlice = idSlice[1:]
 
 		for index := range idSlice {
-			i, err = strconv.Atoi(idSlice[index])
+			id, err := strconv.Atoi(idSlice[index])
 			if err != nil {
 				return nil, err
 			}
 
-			_, ok = mIDs[i]
+			_, ok = mIDs[id]
 
-			_, ok2 = mIDsExists[i]
+			_, ok2 = mIDsExists[id]
 			if !ok && !ok2 {
-				mIDs[i] = struct{}{}
+				mIDs[id] = struct{}{}
 			}
 		}
 	}
@@ -170,7 +172,7 @@ func GetMenuAll(menus []*admin_menu.AdminMenu) ([]*admin_menu.AdminMenu, error) 
 		}
 	}
 
-	var menus2 []*admin_menu.AdminMenu
+	var menus2 []admin_menu.AdminMenu
 
 	err = admin_menu.NewDao().Query(gin.H{"in_id": ids}, []string{"id"}, nil).Find(&menus2)
 	if err != nil {

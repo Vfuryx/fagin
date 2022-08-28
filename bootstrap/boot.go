@@ -16,7 +16,7 @@ import (
 // Run 运行
 func Run() {
 	// 初始化配置
-	config.Init()
+	//config.Init()
 
 	// 初始化日志
 	logger.Init()

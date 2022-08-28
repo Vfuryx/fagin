@@ -7,6 +7,10 @@ import (
 	"github.com/spf13/viper"
 )
 
+func init() {
+	Init()
+}
+
 // Init 初始化配置
 func Init() {
 	appConfigInit()

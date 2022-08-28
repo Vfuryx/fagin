@@ -165,7 +165,7 @@ func (*adminUserService) CheckPassword(id uint, old string) error {
 	return nil
 }
 
-func (ser *adminUserService) GetRoutes(userID uint) ([]*admin_menu.AdminMenu, error) {
+func (ser *adminUserService) GetRoutes(userID uint) ([]admin_menu.AdminMenu, error) {
 	var err error
 
 	params := gin.H{"id": userID}
@@ -190,14 +190,14 @@ func (ser *adminUserService) GetRoutes(userID uint) ([]*admin_menu.AdminMenu, er
 	return ser.GetRoutesByRoleIDs(roleIds)
 }
 
-func (*adminUserService) GetRoutesByRoleIDs(roleIDs []uint) ([]*admin_menu.AdminMenu, error) {
+func (*adminUserService) GetRoutesByRoleIDs(roleIDs []uint) ([]admin_menu.AdminMenu, error) {
 	// 根据角色id获取菜单
 	params := gin.H{"in_id": roleIDs}
 	with := gin.H{
 		"Menus": func(db *gorm.DB) *gorm.DB {
 			return db.
 				Where("type in (?)", []int{enums.AdminMenuTypeDir.Get(), enums.AdminMenuTypeMenu.Get()}).
-				Where("status = ?", enums.StatusActive).
+				Where("status = ?", enums.StatusActive.Get()).
 				Order("sort desc, id asc")
 		},
 	}
@@ -213,7 +213,7 @@ func (*adminUserService) GetRoutesByRoleIDs(roleIDs []uint) ([]*admin_menu.Admin
 	var (
 		// 遍历出菜单
 		ids   = make(map[uint]uint)
-		menus []*admin_menu.AdminMenu
+		menus []admin_menu.AdminMenu
 	)
 
 	for _, adminRole := range roles {
@@ -256,7 +256,7 @@ func (*adminUserService) GetPermissionCode(userID uint) ([]string, error) {
 			return db.
 				Select([]string{"id", "permission"}).
 				Where("type = ?", enums.AdminMenuTypePermission.Get()).
-				Where("status = ?", enums.StatusActive).
+				Where("status = ?", enums.StatusActive.Get()).
 				Order("sort desc, id asc")
 		},
 	}

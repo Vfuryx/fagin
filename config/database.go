@@ -27,6 +27,15 @@ var LogLevelMap = map[string]logger.LogLevel{
 	"info":   logger.Info,
 }
 
+const DBDriverMysql = "mysql"
+const DBDriverPostgres = "postgres"
+
+// DriverMap map
+var DriverMap = map[string]struct{}{
+	DBDriverMysql:    {},
+	DBDriverPostgres: {},
+}
+
 func databaseConfigInit() {
 	var ok bool
 
@@ -42,8 +51,12 @@ func databaseConfigInit() {
 		connMaxLifetime: conf.GetInt("db.conn_max_life_time", 5), //nolint:gomnd // 设置每个链接的过期时间 （分钟）
 	}
 
-	c.logLevel, ok = LogLevelMap[conf.GetString("db.level", "error")]
-	if !ok {
+	c.driver = conf.GetString("db.driver", DBDriverMysql)
+	if _, ok = DriverMap[c.driver]; !ok {
+		c.driver = DBDriverMysql
+	}
+
+	if c.logLevel, ok = LogLevelMap[conf.GetString("db.level", "error")]; !ok {
 		c.logLevel = logger.Error
 	}
 
@@ -52,6 +65,7 @@ func databaseConfigInit() {
 
 // DatabaseConfig 数据库配置
 type DatabaseConfig struct {
+	driver          string
 	debug           bool
 	logLevel        logger.LogLevel // (silent error warn info)
 	host            string
@@ -62,6 +76,10 @@ type DatabaseConfig struct {
 	maxIdleConns    int // 设置最大空闲连接数
 	maxOpenConns    int // 设置最大连接数
 	connMaxLifetime int // 设置每个链接的过期时间 （分钟）
+}
+
+func (db *DatabaseConfig) Driver() string {
+	return db.driver
 }
 
 func (db *DatabaseConfig) Debug() bool {
@@ -106,6 +124,14 @@ func (db *DatabaseConfig) ConnMaxLifetime() int {
 
 // GetConnectLink 获取 conn 链接
 func (db *DatabaseConfig) GetConnectLink() string {
-	const link = "%s:%s@(%s:%s)/%s?charset=utf8mb4&parseTime=True&loc=Local&collation=utf8mb4_unicode_ci"
-	return fmt.Sprintf(link, db.User(), db.Password(), db.Host(), db.Port(), db.Name())
+	switch db.driver {
+	case DBDriverMysql:
+		const link = "%s:%s@(%s:%s)/%s?charset=utf8mb4&parseTime=True&loc=Local&collation=utf8mb4_unicode_ci"
+		return fmt.Sprintf(link, db.User(), db.Password(), db.Host(), db.Port(), db.Name())
+	case DBDriverPostgres:
+		const link = "host=%s user=%s password=%s dbname=%s port=%s sslmode=disable TimeZone=Asia/Shanghai"
+		return fmt.Sprintf(link, db.Host(), db.User(), db.Password(), db.Name(), db.Port())
+	default:
+		return ""
+	}
 }

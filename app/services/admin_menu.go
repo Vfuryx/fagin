@@ -56,32 +56,7 @@ func (*adminMenuService) MenuExists(id uint) bool {
 }
 
 func (*adminMenuService) Create(m *admin_menu.AdminMenu) error {
-	err := admin_menu.NewDao().Create(m)
-	if err != nil {
-		return errorw.UP(err)
-	}
-	// 设置路径
-	return setPaths(m)
-}
-
-// 设置路径
-func setPaths(menus *admin_menu.AdminMenu) error {
-	adminMenu := admin_menu.New()
-
-	paths := ""
-
-	// 判断父ID是否为0
-	if menus.ParentID == 0 {
-		paths = "0-" + utils.Uint64ToStr(uint64(menus.ID))
-	} else {
-		err := adminMenu.Dao().FindByID(menus.ParentID, []string{"id", "paths"})
-		if err != nil {
-			return errorw.UP(err)
-		}
-		paths = adminMenu.Paths + "-" + utils.Uint64ToStr(uint64(menus.ID))
-	}
-
-	return errorw.UP(menus.Dao().Update(menus.ID, gin.H{"paths": paths}))
+	return errorw.UP(admin_menu.NewDao().CreateAndSetPaths(m))
 }
 
 func (*adminMenuService) Update(id uint, data gin.H) error {

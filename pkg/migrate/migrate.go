@@ -3,35 +3,71 @@ package migrate
 import (
 	"fagin/config"
 	"fagin/pkg/db"
+	"fagin/utils"
+	"path/filepath"
+
 	"fmt"
+	"log"
 	"os"
 	"path"
 	"strings"
-	"text/template"
 	"time"
 
-	migrate "github.com/rubenv/sql-migrate"
+	"github.com/go-gormigrate/gormigrate/v2"
 )
+
+var migrations = make([]*gormigrate.Migration, 0, 20)
+
+func newMigrate() *gormigrate.Gormigrate {
+	option := &gormigrate.Options{
+		TableName:                 "migrations",
+		IDColumnName:              "id",
+		IDColumnSize:              255,
+		UseTransaction:            true,
+		ValidateUnknownMigrations: false,
+	}
+
+	return gormigrate.New(db.ORM(), option, migrations)
+}
+
+func Add(migration *gormigrate.Migration) {
+	migrations = append(migrations, migration)
+}
 
 // CreateMigration 创建迁移文件
 func CreateMigration(name string) error {
 	dir := config.App().MigrationsPath()
 
-	var templateContent = `
--- +migrate Up
-
--- +migrate Down
-`
-
-	tpl := template.Must(template.New("new_migration").Parse(templateContent))
-
 	if _, err := os.Stat(dir); os.IsNotExist(err) {
 		return err
 	}
 
-	fileName := fmt.Sprintf("%s_%s.sql", time.Now().Format("20060102150405"), strings.TrimSpace(name))
-	pathName := path.Join(dir, fileName)
-	f, err := os.Create(pathName)
+	name = utils.Underscore(strings.TrimSpace(name))
+	fileName := fmt.Sprintf("%s_%s.go", time.Now().Format("20060102150405"), name)
+	mPath := path.Join(dir, fileName)
+
+	// 判断是否有重复文件
+	dirs, err := os.ReadDir(dir)
+	if err != nil {
+		panic(err)
+	}
+
+	ext := ""
+	for _, f := range dirs {
+		if ext = filepath.Ext(f.Name()); ext == ".go" {
+			// 去除文件后缀 .go
+			n := strings.TrimSuffix(f.Name(), filepath.Ext(f.Name()))
+			if n[strings.IndexByte(n, '_')+1:] == name {
+				log.Fatalln("文件已经存在")
+			}
+		}
+	}
+
+	if err != nil {
+		return err
+	}
+
+	f, err := os.Create(mPath)
 
 	if err != nil {
 		return err
@@ -39,68 +75,71 @@ func CreateMigration(name string) error {
 
 	defer func() { _ = f.Close() }()
 
-	if err := tpl.Execute(f, nil); err != nil {
+	var templateContent = `
+package migrations
+
+import (
+	"fagin/pkg/migrate"
+
+	"github.com/go-gormigrate/gormigrate/v2"
+	"gorm.io/gorm"
+)
+
+func init() {
+	migrate.Add(&gormigrate.Migration{
+		ID: "%s",
+		Migrate: func(tx *gorm.DB) error {
+			return
+		},
+		Rollback: func(tx *gorm.DB) error {
+			return
+		},
+	})
+}
+`
+
+	if _, err = f.WriteString(fmt.Sprintf(templateContent, fileName)); err != nil {
 		return err
 	}
 
-	fmt.Printf("Created migration %s", pathName)
+	fmt.Printf("Created migration %s", mPath)
 
 	return nil
 }
 
 // Migration 迁移数据库
 func Migration() {
-	migrations := &migrate.FileMigrationSource{
-		Dir: config.App().MigrationsPath(),
-	}
-
-	database, err := db.ORM().DB()
+	err := newMigrate().Migrate()
 	if err != nil {
-		panic(err)
+		log.Fatalf("Could not migrate: %v", err)
 	}
-
-	n, err := migrate.Exec(database, "mysql", migrations, migrate.Up)
-	if err != nil {
-		panic(err)
-	}
-
-	fmt.Printf("Applied %d migrations!\n", n)
 }
 
 // Rollback 重置最后一条迁移
 func Rollback() {
-	source := &migrate.FileMigrationSource{
-		Dir: config.App().MigrationsPath(),
-	}
+	var err error
 
-	database, err := db.ORM().DB()
-	if err != nil {
-		panic(err)
+	if err = newMigrate().RollbackLast(); err != nil {
+		log.Fatalf("Could not migrate: %v", err)
 	}
-
-	_, err = migrate.ExecMax(database, "mysql", source, migrate.Down, 1)
-	if err != nil {
-		panic(err)
-	}
-
-	fmt.Printf("Applied 1 migration")
 }
 
 // Reset 重置数据库
 func Reset() {
-	migrations := &migrate.FileMigrationSource{
-		Dir: config.App().MigrationsPath(),
-	}
+	var err error
 
-	database, err := db.ORM().DB()
-	if err != nil {
-		panic(err)
+	for {
+		if err = newMigrate().RollbackLast(); err != nil {
+			break
+		}
 	}
+}
 
-	n, err := migrate.Exec(database, "mysql", migrations, migrate.Down)
-	if err != nil {
-		panic(err)
-	}
+// Refresh 回滚所有迁移，并运行所有迁移
+func Refresh() {
+	// 回滚所有迁移
+	Reset()
 
-	fmt.Printf("Applied %d migrations!\n", n)
+	// 再次执行所有迁移
+	Migration()
 }
