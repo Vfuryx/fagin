@@ -102,10 +102,10 @@ require (
 	github.com/ugorji/go/codec v1.2.7 // indirect
 	go.uber.org/multierr v1.7.0 // indirect
 	golang.org/x/image v0.0.0-20211028202545-6944b10bf410 // indirect
-	golang.org/x/net v0.0.0-20220418201149-a630d4f3e7a2 // indirect
-	golang.org/x/sys v0.0.0-20220412211240-33da011f77ad // indirect
-	golang.org/x/text v0.3.7 // indirect
-	golang.org/x/tools v0.1.11-0.20220316014157-77aa08bb151a // indirect
+	golang.org/x/net v0.0.0-20220722155237-a158d28d115b // indirect
+	golang.org/x/sys v0.0.0-20220722155257-8c9f86f7a55f // indirect
+	golang.org/x/text v0.3.8 // indirect
+	golang.org/x/tools v0.1.12 // indirect
 	google.golang.org/protobuf v1.28.0 // indirect
 	gopkg.in/ini.v1 v1.66.4 // indirect
 	gopkg.in/natefinch/lumberjack.v2 v2.0.0 // indirect
