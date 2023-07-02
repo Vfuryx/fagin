@@ -2,7 +2,7 @@ package logger
 
 import (
 	"errors"
-	"fagin/config"
+	"fadmin/config"
 	"io"
 	"os"
 	"sync"

@@ -2,8 +2,8 @@ package config
 
 import (
 	"embed"
-	"fagin/resources"
-	"fagin/resources/static"
+	"fadmin/resources"
+	"fadmin/resources/static"
 	t "html/template"
 	"sync/atomic"
 	"time"

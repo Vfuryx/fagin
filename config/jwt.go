@@ -1,7 +1,7 @@
 package config
 
 import (
-	"fagin/pkg/conf"
+	"fadmin/pkg/conf"
 	"sync/atomic"
 )
 

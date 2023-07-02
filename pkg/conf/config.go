@@ -1,7 +1,7 @@
 package conf
 
 import (
-	"fagin/pkg/paths"
+	"fadmin/pkg/paths"
 	"fmt"
 	"os"
 	"path"

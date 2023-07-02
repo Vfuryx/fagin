@@ -1,7 +1,7 @@
 package logger
 
 import (
-	"fagin/config"
+	"fadmin/config"
 	"io"
 	"os"
 	"time"

@@ -1,13 +1,11 @@
 //go:build windows
-// +build windows
 
 package server
 
 import (
 	"context"
-	"fagin/app"
-	"fagin/config"
-	"fmt"
+	"fadmin/config"
+	"github.com/gofiber/fiber/v2"
 	"log"
 	"net/http"
 	"os"
@@ -16,21 +14,7 @@ import (
 	"time"
 )
 
-func ListenAndServe(handler http.Handler) {
-	// 设置服务
-	srv := &http.Server{
-		Addr:    "127.0.0.1:" + config.App().Port,
-		Handler: handler,
-		//ReadTimeout:    setting.ReadTimeout,
-		//WriteTimeout:   setting.WriteTimeout,
-		MaxHeaderBytes: 32 << 20,
-	}
-
-	// 不是正式环境打印监听端口
-	if ok := app.IsProd(); !ok {
-		fmt.Printf("[GIN-debug] Listening and serving HTTP on %s \n", config.App().Port)
-	}
-
+func ListenAndServe(srv *fiber.App) {
 	// 开始监听服务
 	go serve(srv)
 
@@ -45,24 +29,24 @@ func ListenAndServe(handler http.Handler) {
 
 	log.Println("Shutdown Server ...")
 
-	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-	if err := srv.Shutdown(ctx); err != nil {
+	if err := srv.Shutdown(); err != nil {
 		log.Fatal("Server Shutdown:", err)
 	}
 
 	// catching ctx.Done(). timeout of 1 seconds.
 	select {
 	case <-ctx.Done():
-		log.Println("timeout of 1 seconds.")
+		log.Println("timeout of 10 seconds.")
 	}
 	log.Println("Server exiting")
 }
 
 // 开始监听服务 (阻塞进程)
-func serve(server *http.Server) {
+func serve(srv *fiber.App) {
 	// service connections
-	if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+	if err := srv.Listen("127.0.0.1:" + config.App().Port()); err != nil && err != http.ErrServerClosed {
 		log.Fatalf("listen: %s\n", err)
 	}
 }

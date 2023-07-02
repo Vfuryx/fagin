@@ -2,17 +2,16 @@ package no_router
 
 import (
 	"errors"
+	"github.com/gofiber/fiber/v2"
 	"strings"
 	"sync"
-
-	"github.com/gin-gonic/gin"
 )
 
 // Node 压缩字典树（Radix Tree）
 // 参考 http://c.biancheng.net/view/5403.html
 type Node struct {
 	Path  string
-	Func  gin.HandlerFunc
+	Func  fiber.Handler
 	Trees map[string]*Node // 并发读写 加锁
 }
 
@@ -27,7 +26,7 @@ func NewNode() *Node {
 	}
 }
 
-func (n *Node) Set(path string, f gin.HandlerFunc) {
+func (n *Node) Set(path string, f fiber.Handler) {
 	n.Path = path
 	n.Func = f
 }
@@ -59,7 +58,7 @@ func (n *Node) Add(name string, no *Node) {
 	rwMut.Unlock()
 }
 
-func (n *Node) SetPathAndFunc(basePath string, f gin.HandlerFunc) error {
+func (n *Node) SetPathAndFunc(basePath string, f fiber.Handler) error {
 	if basePath == "/" {
 		n.Func = f
 		return nil
@@ -107,7 +106,7 @@ func (n *Node) SetPathAndFunc(basePath string, f gin.HandlerFunc) error {
 	return nil
 }
 
-func (n *Node) GetPathFunc(basePath string) gin.HandlerFunc {
+func (n *Node) GetPathFunc(basePath string) fiber.Handler {
 	// 过滤前后的/
 	basePath = strings.Trim(basePath, "/")
 	// 分割uri
@@ -139,7 +138,7 @@ func (n *Node) GetPathFunc(basePath string) gin.HandlerFunc {
 }
 
 // NoRoute 存入 NoRouteMap
-func NoRoute(basePath string, handle gin.HandlerFunc) {
+func NoRoute(basePath string, handle fiber.Handler) {
 	err := rootNode.SetPathAndFunc(basePath, handle)
 	if err != nil {
 		panic(err)
@@ -147,8 +146,10 @@ func NoRoute(basePath string, handle gin.HandlerFunc) {
 }
 
 // NoRouteHandle 404处理
-func NoRouteHandle(ctx *gin.Context) {
-	if fun := rootNode.GetPathFunc(ctx.Request.RequestURI); fun != nil {
-		fun(ctx)
+func NoRouteHandle(ctx *fiber.Ctx) error {
+	if fun := rootNode.GetPathFunc(ctx.Path()); fun != nil {
+		return fun(ctx)
 	}
+
+	return nil
 }
