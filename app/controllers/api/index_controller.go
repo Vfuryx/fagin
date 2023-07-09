@@ -6,11 +6,13 @@ import (
 )
 
 type indexController struct {
+	BaseController
 }
 
 var IndexController indexController
 
 func (ctr *indexController) Index(ctx *fiber.Ctx) error {
 	logger.Log().Error("test index err")
-	return ctx.JSON(fiber.Map{"m": "index"})
+
+	return ctr.ResponseJSONOK(ctx, fiber.Map{"m": "index"})
 }
