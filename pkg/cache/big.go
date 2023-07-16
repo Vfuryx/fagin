@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"encoding/gob"
 	"errors"
-	"fagin/config"
+	"fadmin/config"
 	"time"
 
 	"github.com/allegro/bigcache/v3"

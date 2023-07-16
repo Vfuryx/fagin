@@ -1,8 +1,8 @@
 package cache
 
 import (
-	"fagin/config"
-	"fagin/utils"
+	"fadmin/config"
+	"fadmin/utils"
 	"fmt"
 	"log"
 	"os"

@@ -2,7 +2,7 @@ package cache
 
 import (
 	"errors"
-	"fagin/config"
+	"fadmin/config"
 	"fmt"
 	"sync"
 	"time"

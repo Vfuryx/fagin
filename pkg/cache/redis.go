@@ -3,7 +3,7 @@ package cache
 import (
 	"context"
 	"errors"
-	"fagin/config"
+	"fadmin/config"
 	"time"
 
 	"github.com/go-redis/redis/v8"
