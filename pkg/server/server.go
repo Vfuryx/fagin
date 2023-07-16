@@ -4,12 +4,11 @@
 package server
 
 import (
-	"context"
-	"fagin/app"
-	"fagin/config"
+	"fadmin/app"
+	"fadmin/config"
 	"fmt"
+	"github.com/gofiber/fiber/v2"
 	"log"
-	"net"
 	"net/http"
 	"os"
 	"os/signal"
@@ -20,7 +19,7 @@ import (
 	"github.com/cloudflare/tableflip"
 )
 
-func ListenAndServe(handler http.Handler) {
+func ListenAndServe(srv *fiber.App) {
 	upg, err := tableflip.New(tableflip.Options{
 		PIDFile: config.App().RootPath() + "/app.pid",
 	})
@@ -33,25 +32,8 @@ func ListenAndServe(handler http.Handler) {
 	// Do an upgrade on SIGHUP
 	go waitUpgrade(upg)
 
-	// Listen must be called before Ready
-	ln, err := upg.Listen("tcp", ":"+config.App().Port())
-	if err != nil {
-		log.Panicln("Can't listen:", err)
-	}
-
-	const base = 32 << 20
-
-	// 设置服务
-	server := &http.Server{
-		Addr:    ":" + config.App().Port(),
-		Handler: handler,
-		//ReadTimeout:    setting.ReadTimeout,
-		//WriteTimeout:   setting.WriteTimeout,
-		MaxHeaderBytes: base,
-	}
-
 	// 开始监听服务
-	go serve(server, ln)
+	go serve(srv)
 
 	// 记录 pid
 	err = os.WriteFile(config.App().RootPath()+"/app.pid", []byte(strconv.Itoa(syscall.Getpid())), os.ModePerm)
@@ -83,7 +65,7 @@ func ListenAndServe(handler http.Handler) {
 	})
 
 	// Wait for connections to drain.
-	_ = server.Shutdown(context.Background())
+	_ = srv.Shutdown()
 }
 
 // waitUpgrade Do an upgrade on SIGHUP
@@ -100,8 +82,9 @@ func waitUpgrade(upg *tableflip.Upgrader) {
 }
 
 // 开始监听服务 (阻塞进程)
-func serve(server *http.Server, ln net.Listener) {
-	if err := server.Serve(ln); err != http.ErrServerClosed {
-		log.Println("HTTP server:", err)
+func serve(srv *fiber.App) {
+	// service connections
+	if err := srv.Listen("127.0.0.1:" + config.App().Port()); err != nil && err != http.ErrServerClosed {
+		log.Fatalf("listen: %s\n", err)
 	}
 }
