@@ -19,6 +19,7 @@ require (
 	github.com/spf13/viper v1.16.0
 	go.uber.org/atomic v1.9.0
 	go.uber.org/zap v1.24.0
+	golang.org/x/crypto v0.9.0
 	gorm.io/gorm v1.25.1
 )
 
