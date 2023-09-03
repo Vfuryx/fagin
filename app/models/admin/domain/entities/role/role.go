@@ -1,14 +1,12 @@
 package role
 
-import (
-	"gorm.io/plugin/soft_delete"
-)
+import "gorm.io/plugin/soft_delete"
 
 type AdminRole struct {
-	ID        uint `gorm:"primarykey"`
-	CreatedAt uint
-	UpdatedAt uint
-	DeletedAt soft_delete.DeletedAt `gorm:"index"`
+	ID        uint                  `gorm:"primarykey" json:"id,omitempty"`
+	CreatedAt uint                  `json:"created_at,omitempty"`
+	UpdatedAt uint                  `json:"updated_at,omitempty"`
+	DeletedAt soft_delete.DeletedAt `gorm:"index" json:"deleted_at,omitempty"`
 
 	Type   uint8  `gorm:"not null;default:0;comment:菜单类型 0:总后台 1:商家后台 2:集团后台;column:type;"`
 	Name   string `gorm:"type:varchar(128);not null;default:'';comment:角色名称;column:name;"`
@@ -25,7 +23,7 @@ func (*AdminRole) TableName() string {
 	return "admin_role"
 }
 
-func (user *AdminRole) Add(username string, nickName string) error {
+func (r *AdminRole) Add(username string, nickName string) error {
 	var err error
 	//if err = user.setUsername(username); err != nil {
 	//	return err
