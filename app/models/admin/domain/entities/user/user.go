@@ -1,17 +1,15 @@
 package user
 
 import (
-	"time"
-
-	"gorm.io/gorm"
+	"gorm.io/plugin/soft_delete"
 )
 
 // AdminUser 管理员
 type AdminUser struct {
 	ID        uint `gorm:"primarykey"`
-	CreatedAt time.Time
-	UpdatedAt time.Time
-	DeletedAt gorm.DeletedAt `gorm:"index"`
+	CreatedAt uint
+	UpdatedAt uint
+	DeletedAt soft_delete.DeletedAt `gorm:"index"`
 
 	Status      uint8  `gorm:"not null;default:1;comment:状态: 0=>关闭 1=>开启;column:status;"`
 	Username    string `gorm:"type:varchar(64);not null;default:'';comment:用户名;column:username"`
