@@ -17,3 +17,14 @@ func (UserRepository) Find(id uint) (*user.AdminUser, error) {
 
 	return model, nil
 }
+
+func (UserRepository) FindItems(ids []uint) ([]user.AdminUser, error) {
+	columns := []string{"*"}
+	var model []user.AdminUser
+	err := db.ORM().Select(columns).Where("id = ?", ids).Find(model).Error
+	if err != nil {
+		return nil, err
+	}
+
+	return model, nil
+}

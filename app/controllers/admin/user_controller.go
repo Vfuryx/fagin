@@ -1,6 +1,7 @@
 package admin
 
 import (
+	"fadmin/app/controllers/admin/transform/user_transform"
 	"fadmin/app/models/admin/searches"
 	adminServices "fadmin/app/models/admin/services"
 	"fadmin/pkg/logger"
@@ -19,10 +20,15 @@ func (ctr *userController) Index(ctx *fiber.Ctx) error {
 	search := new(searches.UserSearch)
 	uints, err := search.Load(ctx).Search()
 	if err != nil {
-		return err
+		return ctr.ResponseJSONErr(ctx, err, nil)
 	}
-	search.GetPagination()
-	return ctr.ResponseJSONOK(ctx, fiber.Map{"m": uints})
+
+	transform, err := user_transform.AdminUserListTransform(uints, search.GetPagination())
+	if err != nil {
+		return ctr.ResponseJSONErr(ctx, err, nil)
+	}
+
+	return ctr.ResponseJSONOK(ctx, transform)
 }
 
 func (ctr *userController) Add(ctx *fiber.Ctx) error {
