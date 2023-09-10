@@ -1,5 +1,5 @@
 package services
 
-func User() adminUserService {
-	return adminUserService{}
+func User() AdminUserService {
+	return AdminUserService{}
 }
